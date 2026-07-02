@@ -1,0 +1,4 @@
+# Project-local Codex CLI defaults.
+# These keep Codex scoped to this workspace unless a task needs broader access.
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"

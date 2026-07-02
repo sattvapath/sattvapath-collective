@@ -1,0 +1,1441 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sattva Path Admin</title>
+    <style>
+      :root {
+        --ink: #253027;
+        --muted: #5f6d61;
+        --paper: #fbf7ef;
+        --soft: #f1eadc;
+        --leaf: #486347;
+        --gold: #b88442;
+        --white: #fffdf8;
+        --line: rgba(37, 48, 39, 0.16);
+        --shadow: 0 20px 50px rgba(37, 48, 39, 0.14);
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: Georgia, "Times New Roman", serif;
+        line-height: 1.6;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .header {
+        border-bottom: 1px solid var(--line);
+        background: rgba(251, 247, 239, 0.96);
+      }
+
+      .nav,
+      .wrap {
+        width: min(1160px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        min-height: 68px;
+      }
+
+      .brand {
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .button,
+      button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 10px 16px;
+        border: 1px solid transparent;
+        border-radius: var(--radius);
+        background: var(--leaf);
+        color: var(--white);
+        cursor: pointer;
+        font: 700 0.92rem Arial, sans-serif;
+        text-decoration: none;
+      }
+
+      .button.secondary,
+      button.secondary {
+        background: transparent;
+        border-color: rgba(72, 99, 71, 0.45);
+        color: var(--leaf);
+      }
+
+      .button.danger,
+      button.danger {
+        background: #8a3d35;
+      }
+
+      .hero {
+        padding: 56px 0 28px;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--gold);
+        font: 700 0.78rem Arial, sans-serif;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 780px;
+        font-size: clamp(2.3rem, 6vw, 5rem);
+        line-height: 1.08;
+      }
+
+      h2 {
+        font-size: clamp(1.6rem, 3vw, 2.5rem);
+        line-height: 1.1;
+      }
+
+      .lead {
+        max-width: 760px;
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 1.12rem;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+        gap: 24px;
+        align-items: start;
+        padding: 24px 0 72px;
+      }
+
+      .panel,
+      .event-card,
+      .field-preview {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--white);
+        box-shadow: var(--shadow);
+      }
+
+      .panel {
+        padding: 24px;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 16px;
+        margin-top: 22px;
+      }
+
+      .two {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      label,
+      legend {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--ink);
+        font: 700 0.92rem Arial, sans-serif;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 10px 12px;
+        background: var(--white);
+        color: var(--ink);
+        font: 0.96rem Arial, sans-serif;
+      }
+
+      textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+
+      fieldset {
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      .checks {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .check {
+        display: flex;
+        gap: 9px;
+        align-items: flex-start;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fffdf8;
+        font: 0.9rem Arial, sans-serif;
+      }
+
+      .check input {
+        width: auto;
+        min-height: auto;
+        margin-top: 3px;
+        accent-color: var(--leaf);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .event-list {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .admin-stack {
+        display: grid;
+        gap: 24px;
+        padding: 24px 0 0;
+      }
+
+      .event-card {
+        padding: 18px;
+        box-shadow: none;
+      }
+
+      .event-card p {
+        color: var(--muted);
+        font-family: Arial, sans-serif;
+        font-size: 0.94rem;
+      }
+
+      .event-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0;
+      }
+
+      .pill {
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: var(--soft);
+        color: var(--leaf);
+        font: 700 0.76rem Arial, sans-serif;
+      }
+
+      .field-preview {
+        display: grid;
+        gap: 10px;
+        margin-top: 18px;
+        padding: 18px;
+        box-shadow: none;
+      }
+
+      .field-preview div {
+        min-height: 38px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 8px 10px;
+        color: var(--muted);
+        font-family: Arial, sans-serif;
+      }
+
+      .note {
+        margin-top: 14px;
+        padding: 14px;
+        border-radius: var(--radius);
+        background: var(--soft);
+        color: var(--muted);
+        font-family: Arial, sans-serif;
+        font-size: 0.9rem;
+      }
+
+      .note.success {
+        border: 1px solid rgba(72, 99, 71, 0.35);
+        background: rgba(72, 99, 71, 0.1);
+        color: var(--leaf);
+      }
+
+      .note.error {
+        border: 1px solid rgba(156, 107, 79, 0.45);
+        background: rgba(156, 107, 79, 0.12);
+        color: #6d3724;
+      }
+
+      .form-status {
+        margin-top: 18px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fffdf8;
+        color: var(--muted);
+        font-family: Arial, sans-serif;
+        font-size: 0.94rem;
+      }
+
+      .form-status.success {
+        border-color: rgba(72, 99, 71, 0.35);
+        background: rgba(72, 99, 71, 0.1);
+        color: var(--leaf);
+      }
+
+      .form-status.error {
+        border-color: rgba(156, 107, 79, 0.45);
+        background: rgba(156, 107, 79, 0.12);
+        color: #6d3724;
+      }
+
+      .mini-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .mini-item {
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fffdf8;
+      }
+
+      .mini-item img {
+        width: 100%;
+        max-height: 180px;
+        border-radius: var(--radius);
+        object-fit: cover;
+      }
+
+      .response-box {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .response-note {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #f7efe1;
+        color: var(--muted);
+      }
+
+      .login-screen {
+        padding: 56px 0 72px;
+      }
+
+      .login-card {
+        width: min(520px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--white);
+        box-shadow: var(--shadow);
+      }
+
+      .reset-panel {
+        margin-top: 22px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+      }
+
+      .permission-note {
+        margin-top: 8px;
+        color: var(--muted);
+        font: 0.88rem Arial, sans-serif;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 900px) {
+        .layout,
+        .two,
+        .checks {
+          grid-template-columns: 1fr;
+        }
+
+        .nav {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 14px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <nav class="nav">
+        <a class="brand" href="index.html">Sattva Path Collective</a>
+        <a class="button secondary" href="index.html#events">View Public Events</a>
+      </nav>
+    </header>
+
+    <section class="login-screen" id="loginScreen">
+      <div class="login-card">
+        <p class="eyebrow">Admin login</p>
+        <h1>Sign in to edit the site.</h1>
+        <p class="lead">
+          Owner access can manage all sections, pictures, events, and limited editor accounts.
+        </p>
+        <form id="loginForm" class="form-grid">
+          <div>
+            <label for="loginUsername">Username</label>
+            <input id="loginUsername" autocomplete="username" required>
+          </div>
+          <div>
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" autocomplete="current-password" required>
+          </div>
+          <div class="actions">
+            <button type="submit">Sign In</button>
+          </div>
+          <p class="note" id="loginMessage" role="alert" hidden></p>
+        </form>
+        <div class="reset-panel">
+          <p class="eyebrow">Password reset</p>
+          <p class="permission-note">
+            Prototype reset: enter the username, reset code, and new password. Production should use a secure email reset link.
+          </p>
+          <form id="passwordResetForm" class="form-grid">
+            <div>
+              <label for="resetUsername">Username</label>
+              <input id="resetUsername" autocomplete="username" required>
+            </div>
+            <div>
+              <label for="resetCode">Reset code</label>
+              <input id="resetCode" type="password" required>
+            </div>
+            <div>
+              <label for="resetPassword">New password</label>
+              <input id="resetPassword" type="password" autocomplete="new-password" minlength="8" required>
+            </div>
+            <div class="actions">
+              <button class="secondary" type="submit">Reset Password</button>
+            </div>
+            <p class="note" id="resetMessage" role="alert" hidden></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <main id="adminApp" hidden>
+      <section class="hero">
+        <div class="wrap">
+          <p class="eyebrow">Owner area</p>
+          <h1>Create and manage the site.</h1>
+          <p class="lead">
+            Edit page sections, add pictures, create custom content, and manage retreats, meditation sessions, and kirtan/bhajan gatherings with registration forms.
+          </p>
+          <div class="actions">
+            <button class="secondary" type="button" id="logoutButton">Sign Out</button>
+          </div>
+          <p class="form-status" id="adminStatus" role="status" aria-live="polite" hidden></p>
+        </div>
+      </section>
+
+      <div class="wrap admin-stack">
+        <section class="panel" data-permission="content">
+          <p class="eyebrow">Site content</p>
+          <h2>Edit existing sections</h2>
+          <form id="contentForm" class="form-grid">
+            <div class="two">
+              <div>
+                <label for="sectionKey">Section</label>
+                <select id="sectionKey"></select>
+              </div>
+              <div>
+                <label for="sectionImage">Image path or uploaded image</label>
+                <input id="sectionImage" placeholder="assets/images/profile-photo.png or uploaded image data">
+              </div>
+            </div>
+            <div>
+              <label for="sectionKicker">Small label</label>
+              <input id="sectionKicker">
+            </div>
+            <div>
+              <label for="sectionTitle">Section title</label>
+              <input id="sectionTitle">
+            </div>
+            <div>
+              <label for="sectionBody">Section text</label>
+              <textarea id="sectionBody"></textarea>
+            </div>
+            <div class="actions">
+              <button type="submit">Save Section</button>
+              <button class="secondary" type="button" id="resetSectionButton">Restore Default</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel" data-permission="sections">
+          <p class="eyebrow">New section</p>
+          <h2>Create custom section</h2>
+          <form id="customSectionForm" class="form-grid">
+            <input type="hidden" id="customSectionId">
+            <div class="two">
+              <div>
+                <label for="customStatus">Status</label>
+                <select id="customStatus">
+                  <option value="Posted">Posted</option>
+                  <option value="Draft">Draft</option>
+                </select>
+              </div>
+              <div>
+                <label for="customImage">Image path or uploaded image</label>
+                <input id="customImage" placeholder="Optional">
+              </div>
+            </div>
+            <div>
+              <label for="customKicker">Small label</label>
+              <input id="customKicker" placeholder="Reflection, Offering, Practice">
+            </div>
+            <div>
+              <label for="customTitle">Title</label>
+              <input id="customTitle" required>
+            </div>
+            <div>
+              <label for="customBody">Text</label>
+              <textarea id="customBody" required></textarea>
+            </div>
+            <div class="actions">
+              <button type="submit">Save Custom Section</button>
+              <button class="secondary" type="button" id="resetCustomButton">Start New Section</button>
+            </div>
+          </form>
+          <div class="mini-list" id="customSectionList"></div>
+        </section>
+
+        <section class="panel" data-permission="images">
+          <p class="eyebrow">Pictures</p>
+          <h2>Add and manage pictures</h2>
+          <form id="imageForm" class="form-grid">
+            <div class="two">
+              <div>
+                <label for="imageStatus">Status</label>
+                <select id="imageStatus">
+                  <option value="Posted">Posted</option>
+                  <option value="Draft">Draft</option>
+                </select>
+              </div>
+              <div>
+                <label for="imageFile">Picture file</label>
+                <input id="imageFile" type="file" accept="image/*" required>
+              </div>
+            </div>
+            <div>
+              <label for="imageTitle">Title</label>
+              <input id="imageTitle" required placeholder="Meditation space, retreat moment, host portrait">
+            </div>
+            <div>
+              <label for="imageCategory">Category</label>
+              <input id="imageCategory" placeholder="Past retreat, meditation, kirtan/bhajan, nature">
+            </div>
+            <div>
+              <label for="imageAlt">Alt text</label>
+              <input id="imageAlt" placeholder="Describe the image for accessibility">
+            </div>
+            <div>
+              <label for="imageCaption">Caption</label>
+              <textarea id="imageCaption"></textarea>
+            </div>
+            <div class="actions">
+              <button type="submit">Add Picture</button>
+            </div>
+          </form>
+          <div class="mini-list" id="imageList"></div>
+        </section>
+      </div>
+
+      <div class="wrap layout">
+        <section class="panel" data-permission="events">
+          <p class="eyebrow">Event details</p>
+          <h2 id="formTitle">Create new event</h2>
+          <form id="eventForm" class="form-grid">
+            <input type="hidden" id="eventId">
+            <div class="two">
+              <div>
+                <label for="eventType">Event type</label>
+                <select id="eventType" required>
+                  <option value="Retreat">Retreat</option>
+                  <option value="Meditation">Meditation</option>
+                  <option value="Kirtan/Bhajan">Kirtan/Bhajan</option>
+                </select>
+              </div>
+              <div>
+                <label for="eventStatus">Status</label>
+                <select id="eventStatus">
+                  <option value="Posted">Posted</option>
+                  <option value="Draft">Draft</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label for="eventTitle">Title</label>
+              <input id="eventTitle" required placeholder="Sattva Path Retreat">
+            </div>
+
+            <div class="two">
+              <div>
+                <label for="eventDate">Date or date range</label>
+                <input id="eventDate" required placeholder="September 19-20, 2026">
+              </div>
+              <div>
+                <label for="eventLocation">Location</label>
+                <input id="eventLocation" required placeholder="Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558">
+              </div>
+            </div>
+
+            <div class="two">
+              <div>
+                <label for="eventPrice">Price or fee</label>
+                <input id="eventPrice" placeholder="$449 early bird / $499 regular">
+              </div>
+              <div>
+                <label for="eventAge">Age requirement</label>
+                <input id="eventAge" placeholder="18 years or older">
+              </div>
+            </div>
+
+            <div>
+              <label for="eventDescription">Description</label>
+              <textarea id="eventDescription" required placeholder="A gentle gathering for peace, reflection, meditation, and spiritual connection."></textarea>
+            </div>
+
+            <fieldset>
+              <legend>Registration fields to include</legend>
+              <div class="checks" id="fieldChoices"></div>
+            </fieldset>
+
+            <div>
+              <label for="customField">Add custom registration field</label>
+              <div class="two">
+                <input id="customField" placeholder="Example: Preferred mantra or song request">
+                <button class="secondary" type="button" id="addFieldButton">Add Field</button>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="submit">Post Event</button>
+              <button class="secondary" type="button" id="resetButton">Start New</button>
+            </div>
+          </form>
+        </section>
+
+        <aside class="panel" data-permission="events">
+          <p class="eyebrow">Registration preview</p>
+          <h2>Selected fields</h2>
+          <div class="field-preview" id="fieldPreview"></div>
+          <div class="note">
+            Prototype note: this static version stores events in this browser. A public production site will need a backend/database so visitors can see events from any device and submit real registrations.
+          </div>
+        </aside>
+      </div>
+
+      <section class="wrap panel" aria-label="Saved events" data-permission="events">
+        <p class="eyebrow">Posted and draft events</p>
+        <h2>Manage events</h2>
+        <div class="event-list" id="eventList"></div>
+      </section>
+
+      <section class="wrap panel" aria-label="Access management" data-owner-only>
+        <p class="eyebrow">Access management</p>
+        <h2>Give limited edit access</h2>
+        <p class="permission-note">
+          Create a separate local prototype login and choose exactly what that person can edit.
+        </p>
+        <form id="userForm" class="form-grid">
+          <div class="two">
+            <div>
+              <label for="newUsername">Username</label>
+              <input id="newUsername" required>
+            </div>
+            <div>
+              <label for="newPassword">Password</label>
+              <input id="newPassword" type="password" required>
+            </div>
+          </div>
+          <fieldset>
+            <legend>Allowed editing areas</legend>
+            <div class="checks">
+              <label class="check"><input type="checkbox" name="userPermission" value="content"> Existing page sections</label>
+              <label class="check"><input type="checkbox" name="userPermission" value="sections"> New custom sections</label>
+              <label class="check"><input type="checkbox" name="userPermission" value="images"> Pictures/gallery</label>
+              <label class="check"><input type="checkbox" name="userPermission" value="events"> Events and registration pages</label>
+              <label class="check"><input type="checkbox" name="userPermission" value="emotions"> What's on Your Heart</label>
+            </div>
+          </fieldset>
+          <div class="actions">
+            <button type="submit">Create / Update Login</button>
+          </div>
+        </form>
+        <div class="mini-list" id="userList"></div>
+      </section>
+
+      <section class="wrap panel" aria-label="What's on Your Heart moderation" data-permission="emotions">
+        <p class="eyebrow">What's on Your Heart</p>
+        <h2>Review and respond</h2>
+        <p class="permission-note">
+          Public host responses appear on What's on Your Heart only when the visitor allows them. Private response requests need to be answered separately using the visitor's email, and community replies are shown when community response is open. Owner/admin can hide or delete any post when needed.
+        </p>
+        <div class="mini-list" id="emotionAdminList"></div>
+      </section>
+    </main>
+
+    <script>
+      const storageKey = "sattva-events";
+      const contentKey = "sattva-site-content";
+      const customSectionsKey = "sattva-custom-sections";
+      const imageKey = "sattva-images";
+      const emotionKey = "sattva-emotions";
+      const usersKey = "sattva-admin-users";
+      const sessionKey = "sattva-admin-session";
+      const ownerUsername = "owner";
+      const ownerPassword = "SattvaPath2026!";
+      const prototypeResetCode = "SattvaReset2026!";
+      const allPermissions = ["content", "sections", "images", "events", "emotions"];
+      const defaultFields = [
+        "Full name",
+        "Email",
+        "Phone number",
+        "Emergency contact",
+        "Accommodation preference",
+        "Dietary considerations",
+        "Accessibility or mobility needs",
+        "Questions or notes",
+        "Payment acknowledgment",
+        "Liability / cancellation agreement"
+      ];
+
+      const sectionDefaults = {
+        hero: {
+          label: "Homepage hero",
+          kicker: "Spiritual guidance, meditation, and retreats",
+          title: "Come as you are. Find stillness within.",
+          body: "A calming, personal space for those seeking peace, acceptance, and inner clarity while living a full human life.",
+          image: "assets/images/hero-retreat.png"
+        },
+        welcome: {
+          label: "Personal welcome",
+          kicker: "Personal welcome",
+          title: "You are welcome exactly where you are.",
+          body: "Wherever you are in life right now, you are not wrong for being there.\n\nSattva Path Collective was created as a gentle space for spiritual guidance, meditation, and retreats that support you in finding peace within your present moment.\n\nThe approach is simple: you do not have to leave your life behind to become spiritual. You can learn to bring stillness, awareness, and acceptance into the life you are already living.",
+          image: "assets/images/meditation-space.png"
+        },
+        guidance: {
+          label: "Guidance paths",
+          kicker: "Three gentle paths",
+          title: "Choose the doorway that meets you today.",
+          body: "Explore spiritual guidance, meditation, or retreat details at your own pace.",
+          image: ""
+        },
+        meditation: {
+          label: "Meditation for real life",
+          kicker: "Meditation for real life",
+          title: "Spirituality does not ask you to abandon your life.",
+          body: "Guidance can support anything and everything: stress, uncertainty, relationship questions, grief, change, spiritual searching, or the quiet sense that something within you is asking to be heard.\n\nMeditation can begin gently. You do not need to be perfect, silent, advanced, or separate from ordinary life. You can begin with what you can do, where you are.",
+          image: "assets/images/retreat-setting.png"
+        },
+        retreat: {
+          label: "Main retreat",
+          kicker: "Upcoming retreat",
+          title: "Sattva Path Retreat",
+          body: "A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life.",
+          image: ""
+        },
+        about: {
+          label: "Meet the host",
+          kicker: "About the path",
+          title: "Meet the host: a gentle story, not a performance.",
+          body: "Dr Nirupama Gupta's path into spiritual guidance began through her own search for light during a difficult season. She understands what it can feel like to walk through uncertainty, questions, and heaviness while still trying to live everyday life.\n\nOver time, meditation and spiritual reflection helped her find more peace, acceptance, and trust in the present moment. She began sharing these reflections through Sattva Path Collective so others could know they do not have to abandon their lives or become someone else to begin healing.\n\nBefore this offering took form, Dr Nirupama Gupta spent many years walking paths of study, discipline, and service in different ways. Her early work led her deeply into science, where she earned a PhD in Biochemistry from the University of Michigan Medical School. Her professional life later moved into the IT field, where she continues to work with structure, problem-solving, and project leadership, supported by her PMP certification. Alongside all of this, her study of Hindustani classical vocal music and her journey toward Sangeet Visharad continue to keep her connected to devotion, practice, and inner listening.\n\nOver time, these different paths began to meet in a quieter place. Science taught her to observe with care, technology taught her to work with complexity, music taught her surrender and devotion, and meditation taught her to return to the stillness beneath it all. Spirituality became less about leaving the world behind and more about learning how to live in it with presence, acceptance, and trust.\n\nHer guidance is gentle and grounded. She offers meditation, reflection, and spiritual support for those who are seeking clarity, peace, and a deeper connection with themselves.",
+          image: "assets/images/profile-photo.png"
+        },
+        assistant: {
+          label: "Assistant",
+          kicker: "Sattva Path Assistant",
+          title: "A gentle welcome for every visitor.",
+          body: "The assistant can answer basic questions, guide visitors to retreat registration, and invite them to contact you when a question needs a personal response.",
+          image: ""
+        },
+        contact: {
+          label: "Contact",
+          kicker: "Contact and inquiry",
+          title: "Begin with a simple question.",
+          body: "If you are curious about spiritual guidance, meditation, or the upcoming retreat, you are welcome to reach out.",
+          image: ""
+        }
+      };
+
+      let customFields = [];
+      const form = document.querySelector("#eventForm");
+      const fieldChoices = document.querySelector("#fieldChoices");
+      const fieldPreview = document.querySelector("#fieldPreview");
+      const eventList = document.querySelector("#eventList");
+      const formTitle = document.querySelector("#formTitle");
+      const sectionKey = document.querySelector("#sectionKey");
+      const contentForm = document.querySelector("#contentForm");
+      const customSectionForm = document.querySelector("#customSectionForm");
+      const customSectionList = document.querySelector("#customSectionList");
+      const imageForm = document.querySelector("#imageForm");
+      const imageList = document.querySelector("#imageList");
+      const loginScreen = document.querySelector("#loginScreen");
+      const adminApp = document.querySelector("#adminApp");
+      const loginForm = document.querySelector("#loginForm");
+      const loginMessage = document.querySelector("#loginMessage");
+      const passwordResetForm = document.querySelector("#passwordResetForm");
+      const resetMessage = document.querySelector("#resetMessage");
+      const userForm = document.querySelector("#userForm");
+      const userList = document.querySelector("#userList");
+      const emotionAdminList = document.querySelector("#emotionAdminList");
+      const adminStatus = document.querySelector("#adminStatus");
+
+      function getEvents() {
+        return getJson(storageKey);
+      }
+
+      function saveEvents(events) {
+        localStorage.setItem(storageKey, JSON.stringify(events));
+      }
+
+      function getJson(key) {
+        try {
+          return JSON.parse(localStorage.getItem(key) || (key === contentKey ? "{}" : "[]"));
+        } catch {
+          return key === contentKey ? {} : [];
+        }
+      }
+
+      function setJson(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+
+      function hostPreferenceLabel(emotion) {
+        const preference = emotion.hostResponsePreference || emotion.responsePreference || "No host response";
+        if (preference === "Public response") return "Host may respond publicly";
+        if (preference === "Private response") return "Host may respond privately";
+        if (preference === "No response needed") return "No host response";
+        return preference;
+      }
+
+      function showAdminStatus(message, type = "success") {
+        adminStatus.textContent = message;
+        adminStatus.className = `form-status ${type}`;
+        adminStatus.hidden = false;
+      }
+
+      function showResetMessage(message, type = "success") {
+        resetMessage.textContent = message;
+        resetMessage.className = `note ${type}`;
+        resetMessage.hidden = false;
+      }
+
+      function seedOwnerUser() {
+        const users = getJson(usersKey);
+        if (users.some((user) => user.username === ownerUsername)) return;
+        users.push({
+          username: ownerUsername,
+          password: ownerPassword,
+          role: "owner",
+          permissions: allPermissions
+        });
+        setJson(usersKey, users);
+      }
+
+      function currentUser() {
+        const username = sessionStorage.getItem(sessionKey);
+        return getJson(usersKey).find((user) => user.username === username);
+      }
+
+      function hasPermission(permission) {
+        const user = currentUser();
+        return user?.role === "owner" || user?.permissions?.includes(permission);
+      }
+
+      function applyAccess() {
+        const user = currentUser();
+        const signedIn = Boolean(user);
+        loginScreen.hidden = signedIn;
+        adminApp.hidden = !signedIn;
+        if (!signedIn) return;
+
+        document.querySelectorAll("[data-permission]").forEach((panel) => {
+          panel.hidden = !hasPermission(panel.dataset.permission);
+        });
+
+        document.querySelectorAll("[data-owner-only]").forEach((panel) => {
+          panel.hidden = user.role !== "owner";
+        });
+
+        renderUsers();
+      }
+
+      function renderUsers() {
+        if (!userList || !currentUser() || currentUser().role !== "owner") return;
+        const users = getJson(usersKey);
+        userList.innerHTML = users.map((user) => `
+          <div class="mini-item">
+            <h3>${user.username}</h3>
+            <p>${user.role === "owner" ? "Owner" : `Editor: ${user.permissions.join(", ") || "no permissions"}`}</p>
+            ${user.role === "owner" ? "" : `
+              <div class="actions">
+                <button class="danger" type="button" data-user-delete="${user.username}">Remove Access</button>
+              </div>
+            `}
+          </div>
+        `).join("");
+      }
+
+      function populateSectionSelector() {
+        sectionKey.innerHTML = Object.entries(sectionDefaults)
+          .map(([key, section]) => `<option value="${key}">${section.label}</option>`)
+          .join("");
+        loadSectionEditor();
+      }
+
+      function sectionValue(key, field) {
+        const saved = getJson(contentKey);
+        return saved[`${key}.${field}`] || sectionDefaults[key][field] || "";
+      }
+
+      function loadSectionEditor() {
+        const key = sectionKey.value;
+        document.querySelector("#sectionKicker").value = sectionValue(key, "kicker");
+        document.querySelector("#sectionTitle").value = sectionValue(key, "title");
+        document.querySelector("#sectionBody").value = sectionValue(key, "body");
+        document.querySelector("#sectionImage").value = sectionValue(key, "image");
+      }
+
+      function resetSectionEditor() {
+        const key = sectionKey.value;
+        const saved = getJson(contentKey);
+        ["kicker", "title", "body", "image"].forEach((field) => delete saved[`${key}.${field}`]);
+        setJson(contentKey, saved);
+        loadSectionEditor();
+      }
+
+      function customSectionFromForm() {
+        return {
+          id: document.querySelector("#customSectionId").value || crypto.randomUUID(),
+          status: document.querySelector("#customStatus").value,
+          kicker: document.querySelector("#customKicker").value.trim(),
+          title: document.querySelector("#customTitle").value.trim(),
+          body: document.querySelector("#customBody").value.trim(),
+          image: document.querySelector("#customImage").value.trim()
+        };
+      }
+
+      function resetCustomSectionForm() {
+        customSectionForm.reset();
+        document.querySelector("#customSectionId").value = "";
+      }
+
+      function renderCustomSectionsAdmin() {
+        const sections = getJson(customSectionsKey);
+        customSectionList.innerHTML = sections.length ? sections.map((section) => `
+          <div class="mini-item">
+            ${section.image ? `<img src="${section.image}" alt="${section.title}">` : ""}
+            <h3>${section.title}</h3>
+            <p>${section.kicker || "Custom section"} · ${section.status}</p>
+            <div class="actions">
+              <button class="secondary" type="button" data-section-edit="${section.id}">Edit</button>
+              <button class="danger" type="button" data-section-delete="${section.id}">Delete</button>
+            </div>
+          </div>
+        `).join("") : `<p class="note">No custom sections yet.</p>`;
+      }
+
+      function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function renderImagesAdmin() {
+        const images = getJson(imageKey);
+        imageList.innerHTML = images.length ? images.map((image) => `
+          <div class="mini-item">
+            <img src="${image.src}" alt="${image.alt || image.title}">
+            <h3>${image.title}</h3>
+            <p>${image.status} · ${image.category || "General"}${image.caption ? ` · ${image.caption}` : ""}</p>
+            <div class="actions">
+              <button class="secondary" type="button" data-copy-image="${image.id}">Copy Image Reference</button>
+              <button class="danger" type="button" data-image-delete="${image.id}">Delete</button>
+            </div>
+          </div>
+        `).join("") : `<p class="note">No uploaded pictures yet.</p>`;
+      }
+
+      function renderEmotionAdmin() {
+        const emotions = getJson(emotionKey).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        emotionAdminList.innerHTML = emotions.length ? emotions.map((emotion) => {
+          const hostPreference = hostPreferenceLabel(emotion);
+          const communityPreference = emotion.communityResponsePreference || "No community response";
+          const replies = emotion.communityReplies || [];
+          const publicResponseBox = hostPreference === "Host may respond publicly"
+            ? `
+              <textarea data-response-input="${emotion.id}" placeholder="Write public host response">${emotion.publicResponse || ""}</textarea>
+              <button class="secondary" type="button" data-emotion-respond="${emotion.id}">Save Public Response</button>
+            `
+            : `<p class="response-note">${hostPreference === "Host may respond privately" ? `Visitor asked for a private host response${emotion.email ? ` at ${emotion.email}` : ", but no email was provided"}.` : "Visitor asked for no host response."}</p>`;
+
+          return `
+            <div class="mini-item">
+              <h3>${emotion.name || "Anonymous"} - ${emotion.word}</h3>
+              <p>${emotion.message}</p>
+              <p>Host: ${hostPreference}${emotion.email ? ` - Email: ${emotion.email}` : ""}</p>
+              <p>Community: ${communityPreference} - Replies: ${replies.length}</p>
+              ${emotion.publicResponse ? `<p><strong>Public response:</strong> ${emotion.publicResponse}</p>` : ""}
+              ${replies.length ? `<p><strong>Community replies:</strong> ${replies.map((reply) => `${reply.name || "Anonymous"}: ${reply.message}`).join(" | ")}</p>` : ""}
+              <div class="response-box">
+                ${publicResponseBox}
+                <div class="actions">
+                  <button class="secondary" type="button" data-emotion-hide="${emotion.id}">${emotion.status === "Hidden" ? "Show" : "Hide"}</button>
+                  <button class="danger" type="button" data-emotion-delete="${emotion.id}">Delete Post</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("") : `<p class="note">No What's on Your Heart posts yet.</p>`;
+      }
+
+      function allFields() {
+        return [...defaultFields, ...customFields.filter(Boolean)];
+      }
+
+      function renderFieldChoices(selected = defaultFields.slice(0, 4)) {
+        fieldChoices.innerHTML = "";
+        allFields().forEach((field) => {
+          const id = `field-${field.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`;
+          const label = document.createElement("label");
+          label.className = "check";
+          label.innerHTML = `
+            <input type="checkbox" value="${field}" id="${id}" ${selected.includes(field) ? "checked" : ""}>
+            <span>${field}</span>
+          `;
+          fieldChoices.appendChild(label);
+        });
+        renderPreview();
+      }
+
+      function selectedFields() {
+        return [...fieldChoices.querySelectorAll("input:checked")].map((field) => field.value);
+      }
+
+      function renderPreview() {
+        const fields = selectedFields();
+        fieldPreview.innerHTML = fields.length
+          ? fields.map((field) => `<div>${field}</div>`).join("")
+          : "<div>No fields selected yet.</div>";
+      }
+
+      function resetForm() {
+        form.reset();
+        document.querySelector("#eventId").value = "";
+        formTitle.textContent = "Create new event";
+        renderFieldChoices(defaultFields.slice(0, 4));
+      }
+
+      sectionKey.addEventListener("change", loadSectionEditor);
+
+      loginForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const username = document.querySelector("#loginUsername").value.trim();
+        const password = document.querySelector("#loginPassword").value;
+        const user = getJson(usersKey).find((item) => item.username === username && item.password === password);
+        if (!user) {
+          loginMessage.hidden = false;
+          loginMessage.textContent = "The username or password did not match.";
+          return;
+        }
+        sessionStorage.setItem(sessionKey, user.username);
+        loginForm.reset();
+        loginMessage.hidden = true;
+        applyAccess();
+        showAdminStatus("Signed in. You can now manage the site.", "success");
+      });
+
+      passwordResetForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const username = document.querySelector("#resetUsername").value.trim();
+        const resetCode = document.querySelector("#resetCode").value;
+        const password = document.querySelector("#resetPassword").value;
+        const users = getJson(usersKey);
+        const userIndex = users.findIndex((user) => user.username === username);
+
+        if (resetCode !== prototypeResetCode) {
+          showResetMessage("The reset code did not match.", "error");
+          return;
+        }
+
+        if (userIndex < 0) {
+          showResetMessage("No admin or editor login was found for that username.", "error");
+          return;
+        }
+
+        if (password.length < 8) {
+          showResetMessage("Please choose a password with at least 8 characters.", "error");
+          return;
+        }
+
+        users[userIndex].password = password;
+        setJson(usersKey, users);
+        passwordResetForm.reset();
+        showResetMessage("Password reset. You can now sign in with the new password.", "success");
+      });
+
+      document.querySelector("#logoutButton").addEventListener("click", () => {
+        sessionStorage.removeItem(sessionKey);
+        adminStatus.hidden = true;
+        applyAccess();
+      });
+
+      userForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const username = document.querySelector("#newUsername").value.trim();
+        const password = document.querySelector("#newPassword").value;
+        const permissions = [...userForm.querySelectorAll("input[name='userPermission']:checked")]
+          .map((input) => input.value);
+        if (!username || !password) {
+          showAdminStatus("Please enter a username and password for the editor login.", "error");
+          return;
+        }
+        if (username === ownerUsername) {
+          showAdminStatus("The owner login cannot be overwritten. Choose a different username.", "error");
+          return;
+        }
+        const users = getJson(usersKey);
+        const existing = users.findIndex((user) => user.username === username);
+        const nextUser = { username, password, role: "editor", permissions };
+        if (existing >= 0) users[existing] = nextUser;
+        else users.push(nextUser);
+        setJson(usersKey, users);
+        userForm.reset();
+        renderUsers();
+        showAdminStatus(`Editor login saved for ${username}.`, "success");
+      });
+
+      userList.addEventListener("click", (event) => {
+        const username = event.target.dataset.userDelete;
+        if (!username) return;
+        setJson(usersKey, getJson(usersKey).filter((user) => user.username !== username));
+        renderUsers();
+        showAdminStatus(`Access removed for ${username}.`, "success");
+      });
+
+      contentForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const key = sectionKey.value;
+        const saved = getJson(contentKey);
+        saved[`${key}.kicker`] = document.querySelector("#sectionKicker").value.trim();
+        saved[`${key}.title`] = document.querySelector("#sectionTitle").value.trim();
+        saved[`${key}.body`] = document.querySelector("#sectionBody").value.trim();
+        saved[`${key}.image`] = document.querySelector("#sectionImage").value.trim();
+        setJson(contentKey, saved);
+        showAdminStatus("Section saved. Refresh the public page to see the change.", "success");
+      });
+
+      document.querySelector("#resetSectionButton").addEventListener("click", () => {
+        resetSectionEditor();
+        showAdminStatus("Section restored to the default text and image.", "success");
+      });
+
+      customSectionForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const next = customSectionFromForm();
+        const sections = getJson(customSectionsKey);
+        const index = sections.findIndex((section) => section.id === next.id);
+        if (index >= 0) sections[index] = next;
+        else sections.push(next);
+        setJson(customSectionsKey, sections);
+        resetCustomSectionForm();
+        renderCustomSectionsAdmin();
+        showAdminStatus("Custom section saved.", "success");
+      });
+
+      document.querySelector("#resetCustomButton").addEventListener("click", () => {
+        resetCustomSectionForm();
+        showAdminStatus("Custom section form cleared.", "success");
+      });
+
+      customSectionList.addEventListener("click", (event) => {
+        const editId = event.target.dataset.sectionEdit;
+        const deleteId = event.target.dataset.sectionDelete;
+        const sections = getJson(customSectionsKey);
+
+        if (editId) {
+          const section = sections.find((item) => item.id === editId);
+          if (!section) return;
+          document.querySelector("#customSectionId").value = section.id;
+          document.querySelector("#customStatus").value = section.status;
+          document.querySelector("#customKicker").value = section.kicker;
+          document.querySelector("#customTitle").value = section.title;
+          document.querySelector("#customBody").value = section.body;
+          document.querySelector("#customImage").value = section.image;
+          showAdminStatus("Custom section loaded for editing.", "success");
+        }
+
+        if (deleteId) {
+          setJson(customSectionsKey, sections.filter((section) => section.id !== deleteId));
+          renderCustomSectionsAdmin();
+          showAdminStatus("Custom section deleted.", "success");
+        }
+      });
+
+      imageForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!imageForm.checkValidity()) {
+          imageForm.reportValidity();
+          showAdminStatus("Please add a picture file and title before saving.", "error");
+          return;
+        }
+        const file = document.querySelector("#imageFile").files[0];
+        if (!file) {
+          showAdminStatus("Please choose a picture file before saving.", "error");
+          return;
+        }
+        const images = getJson(imageKey);
+        try {
+          images.push({
+            id: crypto.randomUUID(),
+            status: document.querySelector("#imageStatus").value,
+            title: document.querySelector("#imageTitle").value.trim(),
+            category: document.querySelector("#imageCategory").value.trim() || "General",
+            alt: document.querySelector("#imageAlt").value.trim(),
+            caption: document.querySelector("#imageCaption").value.trim(),
+            src: await fileToDataUrl(file)
+          });
+          setJson(imageKey, images);
+          imageForm.reset();
+          renderImagesAdmin();
+          showAdminStatus("Picture saved to the gallery manager.", "success");
+        } catch {
+          showAdminStatus("The picture could not be read. Please try a different image file.", "error");
+        }
+      });
+
+      imageList.addEventListener("click", async (event) => {
+        const deleteId = event.target.dataset.imageDelete;
+        const copyId = event.target.dataset.copyImage;
+        const images = getJson(imageKey);
+
+        if (deleteId) {
+          setJson(imageKey, images.filter((image) => image.id !== deleteId));
+          renderImagesAdmin();
+          showAdminStatus("Picture deleted.", "success");
+        }
+
+        if (copyId) {
+          const image = images.find((item) => item.id === copyId);
+          if (!image) return;
+          try {
+            await navigator.clipboard.writeText(image.src);
+            event.target.textContent = "Copied";
+            showAdminStatus("Image reference copied.", "success");
+          } catch {
+            showAdminStatus("Copy was blocked by the browser. You can still use the saved image from this page.", "error");
+          }
+        }
+      });
+
+      emotionAdminList.addEventListener("click", (event) => {
+        const respondId = event.target.dataset.emotionRespond;
+        const hideId = event.target.dataset.emotionHide;
+        const deleteId = event.target.dataset.emotionDelete;
+        const emotions = getJson(emotionKey);
+
+        if (respondId) {
+          const emotion = emotions.find((item) => item.id === respondId);
+          if (!emotion) return;
+          emotion.publicResponse = document.querySelector(`[data-response-input="${respondId}"]`).value.trim();
+          setJson(emotionKey, emotions);
+          renderEmotionAdmin();
+          showAdminStatus("Public host response saved.", "success");
+        }
+
+        if (hideId) {
+          const emotion = emotions.find((item) => item.id === hideId);
+          if (!emotion) return;
+          emotion.status = emotion.status === "Hidden" ? "Posted" : "Hidden";
+          setJson(emotionKey, emotions);
+          renderEmotionAdmin();
+          showAdminStatus(`Heart post ${emotion.status === "Hidden" ? "hidden" : "shown"}.`, "success");
+        }
+
+        if (deleteId) {
+          setJson(emotionKey, emotions.filter((emotion) => emotion.id !== deleteId));
+          renderEmotionAdmin();
+          showAdminStatus("Heart post deleted.", "success");
+        }
+      });
+
+      function renderEvents() {
+        const events = getEvents();
+        if (!events.length) {
+          eventList.innerHTML = `<p class="note">No events created yet.</p>`;
+          return;
+        }
+
+        eventList.innerHTML = events.map((event) => `
+          <article class="event-card">
+            <h3>${event.title}</h3>
+            <div class="event-meta">
+              <span class="pill">${event.type}</span>
+              <span class="pill">${event.status}</span>
+              <span class="pill">${event.date}</span>
+            </div>
+            <p>${event.location}</p>
+            <p>${event.description}</p>
+            <div class="actions">
+              <a class="button secondary" href="event-register.html?id=${event.id}">Registration Form</a>
+              <button class="secondary" type="button" data-edit="${event.id}">Edit</button>
+              <button class="danger" type="button" data-delete="${event.id}">Delete</button>
+            </div>
+          </article>
+        `).join("");
+      }
+
+      function eventFromForm() {
+        return {
+          id: document.querySelector("#eventId").value || crypto.randomUUID(),
+          type: document.querySelector("#eventType").value,
+          status: document.querySelector("#eventStatus").value,
+          title: document.querySelector("#eventTitle").value.trim(),
+          date: document.querySelector("#eventDate").value.trim(),
+          location: document.querySelector("#eventLocation").value.trim(),
+          price: document.querySelector("#eventPrice").value.trim(),
+          age: document.querySelector("#eventAge").value.trim(),
+          description: document.querySelector("#eventDescription").value.trim(),
+          fields: selectedFields()
+        };
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          showAdminStatus("Please complete the required event fields before posting.", "error");
+          return;
+        }
+        if (!selectedFields().length) {
+          showAdminStatus("Choose at least one registration field for this event.", "error");
+          return;
+        }
+        const next = eventFromForm();
+        const events = getEvents();
+        const existingIndex = events.findIndex((saved) => saved.id === next.id);
+        if (existingIndex >= 0) {
+          events[existingIndex] = next;
+        } else {
+          events.push(next);
+        }
+        saveEvents(events);
+        resetForm();
+        renderEvents();
+        showAdminStatus("Event saved. Posted events will appear on the public site.", "success");
+      });
+
+      fieldChoices.addEventListener("change", renderPreview);
+
+      document.querySelector("#addFieldButton").addEventListener("click", () => {
+        const input = document.querySelector("#customField");
+        const value = input.value.trim();
+        if (!value) {
+          showAdminStatus("Write a custom field name before adding it.", "error");
+          return;
+        }
+        if (allFields().includes(value)) {
+          showAdminStatus("That registration field already exists.", "error");
+          return;
+        }
+        customFields.push(value);
+        input.value = "";
+        renderFieldChoices([...selectedFields(), value]);
+        showAdminStatus(`Registration field added: ${value}.`, "success");
+      });
+
+      document.querySelector("#resetButton").addEventListener("click", () => {
+        resetForm();
+        showAdminStatus("Event form cleared.", "success");
+      });
+
+      eventList.addEventListener("click", (event) => {
+        const editId = event.target.dataset.edit;
+        const deleteId = event.target.dataset.delete;
+        const events = getEvents();
+
+        if (editId) {
+          const saved = events.find((item) => item.id === editId);
+          if (!saved) return;
+          document.querySelector("#eventId").value = saved.id;
+          document.querySelector("#eventType").value = saved.type;
+          document.querySelector("#eventStatus").value = saved.status;
+          document.querySelector("#eventTitle").value = saved.title;
+          document.querySelector("#eventDate").value = saved.date;
+          document.querySelector("#eventLocation").value = saved.location;
+          document.querySelector("#eventPrice").value = saved.price || "";
+          document.querySelector("#eventAge").value = saved.age || "";
+          document.querySelector("#eventDescription").value = saved.description;
+          customFields = [...new Set([...customFields, ...saved.fields.filter((field) => !defaultFields.includes(field))])];
+          renderFieldChoices(saved.fields);
+          formTitle.textContent = "Edit event";
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          showAdminStatus("Event loaded for editing.", "success");
+        }
+
+        if (deleteId) {
+          saveEvents(events.filter((item) => item.id !== deleteId));
+          renderEvents();
+          showAdminStatus("Event deleted.", "success");
+        }
+      });
+
+      renderFieldChoices();
+      renderEvents();
+      populateSectionSelector();
+      renderCustomSectionsAdmin();
+      renderImagesAdmin();
+      renderEmotionAdmin();
+      seedOwnerUser();
+      applyAccess();
+    </script>
+  </body>
+</html>

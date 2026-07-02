@@ -1,0 +1,13 @@
+# Local caches (uv installs / caches)
+.uv-cache/
+.uv-python/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp

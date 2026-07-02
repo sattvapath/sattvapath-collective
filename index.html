@@ -1,0 +1,1699 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sattva Path Collective</title>
+    <meta
+      name="description"
+      content="Spiritual guidance, meditation, and retreats for people seeking peace, acceptance, and inner clarity."
+    >
+    <style>
+      :root {
+        --ink: #253027;
+        --muted: #5f6d61;
+        --paper: #fbf7ef;
+        --soft: #f1eadc;
+        --leaf: #486347;
+        --moss: #6f7f56;
+        --gold: #b88442;
+        --clay: #9c6b4f;
+        --white: #fffdf8;
+        --line: rgba(37, 48, 39, 0.16);
+        --shadow: 0 20px 50px rgba(37, 48, 39, 0.16);
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: Georgia, "Times New Roman", serif;
+        line-height: 1.6;
+      }
+
+      .skip-link {
+        position: absolute;
+        left: 16px;
+        top: 12px;
+        z-index: 100;
+        padding: 10px 14px;
+        border-radius: var(--radius);
+        background: var(--ink);
+        color: var(--white);
+        font-family: Arial, sans-serif;
+        font-weight: 700;
+        transform: translateY(-140%);
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+      :focus-visible {
+        outline: 3px solid var(--gold);
+        outline-offset: 3px;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: rgba(251, 247, 239, 0.94);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(14px);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        width: min(1180px, calc(100% - 32px));
+        min-height: 68px;
+        margin: 0 auto;
+      }
+
+      .brand {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-decoration: none;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-family: Arial, sans-serif;
+        font-size: 0.88rem;
+      }
+
+      .nav-links a {
+        color: var(--muted);
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 11px 18px;
+        border: 1px solid transparent;
+        border-radius: var(--radius);
+        background: var(--leaf);
+        color: var(--white);
+        font-family: Arial, sans-serif;
+        font-size: 0.92rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform 160ms ease, background 160ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+        background: #394f39;
+      }
+
+      .button:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
+      }
+
+      .button.secondary {
+        background: transparent;
+        border-color: rgba(72, 99, 71, 0.45);
+        color: var(--leaf);
+      }
+
+      .button.secondary:hover {
+        background: rgba(72, 99, 71, 0.08);
+      }
+
+      .hero .button.hero-emotion,
+      .hero .button.hero-question {
+        border-color: var(--leaf);
+        background: var(--leaf);
+        color: var(--white);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+      }
+
+      .hero .button.hero-emotion:hover,
+      .hero .button.hero-question:hover {
+        background: #394f39;
+        color: var(--white);
+      }
+
+      .hero {
+        position: relative;
+        min-height: calc(100vh - 68px);
+        display: grid;
+        align-items: end;
+        overflow: hidden;
+        background: #253027;
+      }
+
+      .hero img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(90deg, rgba(20, 29, 23, 0.78), rgba(20, 29, 23, 0.42) 48%, rgba(20, 29, 23, 0.12)),
+          linear-gradient(0deg, rgba(20, 29, 23, 0.58), rgba(20, 29, 23, 0.08) 45%);
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 1;
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 88px 0 72px;
+        color: var(--white);
+      }
+
+      .eyebrow {
+        margin: 0 0 14px;
+        color: #f1d5a1;
+        font-family: Arial, sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        max-width: 720px;
+        font-size: clamp(2.8rem, 8vw, 6.4rem);
+      }
+
+      h2 {
+        font-size: clamp(2rem, 5vw, 4rem);
+      }
+
+      h3 {
+        font-size: 1.35rem;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .hero-copy {
+        max-width: 620px;
+        margin-top: 22px;
+        font-size: clamp(1.08rem, 2.5vw, 1.35rem);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 30px;
+      }
+
+      section {
+        padding: 84px 0;
+      }
+
+      .section-inner {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+        gap: 48px;
+        align-items: center;
+      }
+
+      .section-kicker {
+        margin-bottom: 12px;
+        color: var(--gold);
+        font-family: Arial, sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .lead {
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 1.18rem;
+      }
+
+      .body-copy {
+        display: grid;
+        gap: 16px;
+        margin-top: 26px;
+        color: var(--muted);
+        font-size: 1.02rem;
+      }
+
+      .image-frame {
+        overflow: hidden;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+
+      .image-frame img {
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+      }
+
+      .profile-card {
+        display: grid;
+        gap: 22px;
+        justify-self: end;
+        align-self: start;
+        width: min(100%, 300px);
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--white);
+        box-shadow: var(--shadow);
+      }
+
+      .profile-photo {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 4 / 5;
+        min-height: 0;
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, #e9dfcf, #f8f2e8);
+      }
+
+      .profile-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+      }
+
+      .profile-placeholder {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 28px;
+        border: 1px dashed rgba(72, 99, 71, 0.35);
+        background: rgba(255, 253, 248, 0.64);
+        color: var(--leaf);
+        text-align: center;
+      }
+
+      .profile-placeholder span {
+        display: block;
+        font-family: Arial, sans-serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .profile-placeholder strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 1.7rem;
+        line-height: 1.15;
+      }
+
+      .band {
+        background: var(--soft);
+      }
+
+      .paths {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 34px;
+      }
+
+      .path-card,
+      .expect-card,
+      .assistant-panel {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--white);
+      }
+
+      .path-card {
+        min-height: 210px;
+        padding: 28px;
+      }
+
+      .path-card p,
+      .expect-card p {
+        margin-top: 12px;
+        color: var(--muted);
+      }
+
+      .expect-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 34px;
+      }
+
+      .expect-card {
+        padding: 24px;
+      }
+
+      .dynamic-events {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 34px;
+      }
+
+      .custom-section-grid,
+      .site-gallery,
+      .emotion-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 34px;
+      }
+
+      .custom-section,
+      .gallery-item,
+      .emotion-card,
+      .dynamic-event {
+        display: grid;
+        gap: 12px;
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--white);
+      }
+
+      .custom-section img,
+      .gallery-item img {
+        aspect-ratio: 4 / 3;
+        border-radius: var(--radius);
+        object-fit: cover;
+      }
+
+      .photo-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 24px;
+      }
+
+      .photo-filter {
+        min-height: 36px;
+        padding: 8px 12px;
+        border: 1px solid rgba(72, 99, 71, 0.35);
+        border-radius: 999px;
+        background: transparent;
+        color: var(--leaf);
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-weight: 700;
+      }
+
+      .photo-filter.is-active {
+        background: var(--leaf);
+        color: var(--white);
+      }
+
+      .dynamic-event p {
+        color: var(--muted);
+      }
+
+      .event-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .event-tag {
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: var(--soft);
+        color: var(--leaf);
+        font-family: Arial, sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .emotion-form {
+        display: grid;
+        gap: 14px;
+        margin-top: 32px;
+        padding: 24px;
+        border: 1px solid rgba(184, 132, 66, 0.38);
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, #fffdf8, #f8f0e3);
+        box-shadow: var(--shadow);
+      }
+
+      .emotion-form label {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--ink);
+        font-family: Arial, sans-serif;
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      .emotion-form input,
+      .emotion-form textarea,
+      .emotion-form select {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 10px 12px;
+        background: #fffdf8;
+        color: var(--ink);
+        font: 0.96rem Arial, sans-serif;
+      }
+
+      .emotion-form textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+
+      .form-status {
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fffdf8;
+        color: var(--muted);
+        font-family: Arial, sans-serif;
+        font-size: 0.94rem;
+      }
+
+      .form-status.success {
+        border-color: rgba(72, 99, 71, 0.35);
+        background: rgba(72, 99, 71, 0.1);
+        color: var(--leaf);
+      }
+
+      .form-status.error {
+        border-color: rgba(156, 107, 79, 0.45);
+        background: rgba(156, 107, 79, 0.12);
+        color: #6d3724;
+      }
+
+      .speech-field {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: start;
+      }
+
+      .speech-field .speech-button {
+        width: 46px;
+        min-height: 46px;
+        padding: 0;
+        border-color: rgba(72, 99, 71, 0.45);
+      }
+
+      .speech-button svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+      }
+
+      .speech-button[aria-pressed="true"] {
+        background: var(--gold);
+        color: var(--ink);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .emotion-card {
+        box-shadow: none;
+      }
+
+      .emotion-card p {
+        color: var(--muted);
+      }
+
+      .host-response {
+        padding: 12px;
+        border-left: 3px solid var(--gold);
+        background: var(--soft);
+        color: var(--muted);
+      }
+
+      .community-replies {
+        display: grid;
+        gap: 10px;
+        padding-top: 4px;
+      }
+
+      .community-reply {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fffdf8;
+      }
+
+      .reply-form {
+        display: grid;
+        gap: 10px;
+        padding-top: 4px;
+      }
+
+      .reply-form input,
+      .reply-form textarea {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 10px 12px;
+        font: inherit;
+        background: #fffdf8;
+      }
+
+      .reply-form textarea {
+        min-height: 84px;
+        resize: vertical;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+
+      .retreat {
+        background: #263528;
+        color: var(--white);
+      }
+
+      .retreat .section-kicker,
+      .retreat .lead {
+        color: #f1d5a1;
+      }
+
+      .retreat-details {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 30px;
+      }
+
+      .detail {
+        min-height: 112px;
+        padding: 18px;
+        border: 1px solid rgba(255, 253, 248, 0.2);
+        border-radius: var(--radius);
+        background: rgba(255, 253, 248, 0.08);
+        font-family: Arial, sans-serif;
+      }
+
+      .detail span {
+        display: block;
+        margin-bottom: 6px;
+        color: #f1d5a1;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .retreat-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 28px;
+        margin: 30px 0 0;
+        padding: 0;
+        list-style: none;
+        color: rgba(255, 253, 248, 0.86);
+      }
+
+      .retreat-list li {
+        position: relative;
+        padding-left: 22px;
+      }
+
+      .retreat-list li::before {
+        content: "";
+        position: absolute;
+        top: 0.72em;
+        left: 0;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #f1d5a1;
+      }
+
+      .assistant-section {
+        background: #fbf7ef;
+      }
+
+      .assistant-wrap {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+        gap: 36px;
+        align-items: start;
+      }
+
+      .assistant-panel {
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .assistant-head {
+        padding: 20px 22px;
+        background: var(--leaf);
+        color: var(--white);
+      }
+
+      .assistant-head h3 {
+        font-family: Arial, sans-serif;
+        font-size: 1rem;
+      }
+
+      .assistant-messages {
+        display: grid;
+        gap: 12px;
+        min-height: 220px;
+        max-height: 320px;
+        padding: 18px;
+        overflow: auto;
+      }
+
+      .message {
+        width: fit-content;
+        max-width: 92%;
+        padding: 12px 14px;
+        border-radius: var(--radius);
+        background: var(--soft);
+        color: var(--ink);
+        font-family: Arial, sans-serif;
+        font-size: 0.92rem;
+        line-height: 1.45;
+      }
+
+      .message.user {
+        justify-self: end;
+        background: #dfe8d9;
+      }
+
+      .quick-questions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 0 18px 18px;
+      }
+
+      .quick-questions button,
+      .assistant-form button {
+        border: 1px solid rgba(72, 99, 71, 0.35);
+        border-radius: var(--radius);
+        background: transparent;
+        color: var(--leaf);
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-size: 0.85rem;
+      }
+
+      .quick-questions button {
+        padding: 8px 10px;
+      }
+
+      .assistant-form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        padding: 18px;
+        border-top: 1px solid var(--line);
+      }
+
+      .assistant-form input {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 0 12px;
+        background: var(--white);
+        color: var(--ink);
+        font: 0.92rem Arial, sans-serif;
+      }
+
+      .assistant-form button {
+        min-height: 44px;
+        padding: 0 16px;
+        background: var(--leaf);
+        color: var(--white);
+        font-weight: 700;
+      }
+
+      .contact {
+        background: var(--soft);
+      }
+
+      .contact-box {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: center;
+        padding: 36px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--white);
+      }
+
+      footer {
+        padding: 34px 0;
+        color: var(--muted);
+        font-family: Arial, sans-serif;
+        font-size: 0.88rem;
+      }
+
+      .footer-inner {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      @media (max-width: 860px) {
+        .nav {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 14px 0;
+        }
+
+        .nav-links {
+          width: 100%;
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .hero {
+          min-height: 740px;
+        }
+
+        .split,
+        .assistant-wrap,
+        .contact-box {
+          grid-template-columns: 1fr;
+        }
+
+        .profile-card {
+          justify-self: center;
+          width: min(100%, 280px);
+        }
+
+        .paths,
+        .expect-grid,
+        .dynamic-events,
+        .custom-section-grid,
+        .site-gallery,
+        .emotion-list,
+        .retreat-details,
+        .retreat-list {
+          grid-template-columns: 1fr;
+        }
+
+        section {
+          padding: 64px 0;
+        }
+
+        .footer-inner {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#home">Skip to main content</a>
+    <div class="sr-only" id="speechStatus" aria-live="polite"></div>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="#home">Sattva Path Collective</a>
+        <div class="nav-links">
+          <a href="#about">About</a>
+          <a href="#guidance">Guidance</a>
+          <a href="#meditation">Meditation</a>
+          <a href="#retreat">Retreat</a>
+          <a href="#events">Events</a>
+          <a href="#photos">Photos</a>
+          <a href="#emotion-board">What's on Your Heart</a>
+          <a href="#assistant">Assistant</a>
+          <a href="register.html">Register</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="home">
+      <section class="hero" aria-label="Sattva Path Collective welcome">
+        <img data-image="hero.image" src="assets/images/hero-retreat.png" alt="A peaceful meditation cushion overlooking sunlit hills and trees">
+        <div class="hero-content">
+          <p class="eyebrow" data-content="hero.kicker">Spiritual guidance, meditation, and retreats</p>
+          <h1 data-content="hero.title">Come as you are. Find stillness within.</h1>
+          <p class="hero-copy" data-content="hero.body">
+            A calming, personal space for those seeking peace, acceptance, and inner clarity while living a full human life.
+          </p>
+          <div class="actions">
+            <a class="button" href="#retreat">View Upcoming Retreat</a>
+            <a class="button secondary hero-emotion" href="#emotion-board">Share What's on Your Heart</a>
+            <a class="button secondary hero-question" href="#contact">Ask a Question</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="welcome">
+        <div class="section-inner split">
+          <div>
+            <p class="section-kicker" data-content="welcome.kicker">Personal welcome</p>
+            <h2 data-content="welcome.title">You are welcome exactly where you are.</h2>
+            <div class="body-copy" data-content="welcome.body">
+              <p>
+                Wherever you are in life right now, you are not wrong for being there.
+              </p>
+              <p>
+                Sattva Path Collective was created as a gentle space for spiritual guidance, meditation, and retreats that support you in finding peace within your present moment.
+              </p>
+              <p>
+                The approach is simple: you do not have to leave your life behind to become spiritual. You can learn to bring stillness, awareness, and acceptance into the life you are already living.
+              </p>
+            </div>
+          </div>
+          <div class="image-frame">
+            <img data-image="welcome.image" src="assets/images/meditation-space.png" alt="A calm meditation space with cushions, candlelight, and greenery">
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="emotion-board">
+        <div class="section-inner">
+          <p class="section-kicker">What's on your heart</p>
+          <h2>A gentle place to name what is present today.</h2>
+          <p class="lead">
+            Visitors are welcome to share what is on their heart by name or anonymously, and choose whether the host, the community, both, or neither may respond.
+          </p>
+          <form class="emotion-form" id="emotionForm">
+            <div>
+              <label for="emotionName">Name</label>
+              <input id="emotionName" data-speech placeholder="Your name, or leave blank for anonymous">
+            </div>
+            <div>
+              <label for="emotionWord">Emotion or feeling of the day</label>
+              <input id="emotionWord" data-speech required placeholder="Peaceful, heavy, hopeful, uncertain...">
+            </div>
+            <div>
+              <label for="emotionMessage">What would you like to share?</label>
+              <textarea id="emotionMessage" data-speech required></textarea>
+            </div>
+            <div>
+              <label for="hostResponsePreference">Would you like a host response?</label>
+              <select id="hostResponsePreference">
+                <option value="No host response">No, thank you</option>
+                <option value="Host may respond publicly">Yes, publicly on the board</option>
+                <option value="Host may respond privately">Yes, privately by email</option>
+              </select>
+            </div>
+            <div>
+              <label for="communityResponsePreference">Would you like community responses?</label>
+              <select id="communityResponsePreference">
+                <option value="Community may respond">Yes, allow gentle community responses</option>
+                <option value="No community response">No, keep responses closed</option>
+              </select>
+            </div>
+            <div id="emotionEmailWrap" hidden>
+              <label for="emotionEmail">Email for private response</label>
+              <input id="emotionEmail" type="email" placeholder="Only needed for private response">
+            </div>
+            <div class="actions">
+              <button class="button" type="submit">Post What's on Your Heart</button>
+            </div>
+            <p class="form-status" id="heartStatus" role="status" aria-live="polite" hidden></p>
+          </form>
+          <div class="emotion-list" id="emotionList"></div>
+        </div>
+      </section>
+
+      <section id="guidance">
+        <div class="section-inner">
+          <p class="section-kicker" data-content="guidance.kicker">Three gentle paths</p>
+          <h2 data-content="guidance.title">Choose the doorway that meets you today.</h2>
+          <p class="lead" data-content="guidance.body">
+            Explore spiritual guidance, meditation, or retreat details at your own pace.
+          </p>
+          <div class="paths">
+            <article class="path-card">
+              <h3>Spiritual Guidance</h3>
+              <p>Support for clarity, trust, and acceptance while moving through life's questions.</p>
+            </article>
+            <article class="path-card" id="meditation">
+              <h3>Meditation</h3>
+              <p>Simple practices to slow down, listen inward, and meet yourself without judgment.</p>
+            </article>
+            <article class="path-card">
+              <h3>Retreats</h3>
+              <p>Dedicated time away from routine to reconnect with peace, reflection, and spiritual presence.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-inner split">
+          <div class="image-frame">
+            <img data-image="meditation.image" src="assets/images/retreat-setting.png" alt="A peaceful outdoor retreat gathering circle beneath trees">
+          </div>
+          <div>
+            <p class="section-kicker" data-content="meditation.kicker">Meditation for real life</p>
+            <h2 data-content="meditation.title">Spirituality does not ask you to abandon your life.</h2>
+            <div class="body-copy" data-content="meditation.body">
+              <p>
+                Guidance can support anything and everything: stress, uncertainty, relationship questions, grief, change, spiritual searching, or the quiet sense that something within you is asking to be heard.
+              </p>
+              <p>
+                Meditation can begin gently. You do not need to be perfect, silent, advanced, or separate from ordinary life. You can begin with what you can do, where you are.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="section-inner">
+          <p class="section-kicker">What you can expect</p>
+          <h2>Gentle support, never pressure.</h2>
+          <div class="expect-grid">
+            <article class="expect-card">
+              <h3>Presence</h3>
+              <p>You will be met with care, respect, and without judgment.</p>
+            </article>
+            <article class="expect-card">
+              <h3>Practice</h3>
+              <p>Meditation and reflection help you slow down and listen inward.</p>
+            </article>
+            <article class="expect-card">
+              <h3>Guidance</h3>
+              <p>Spiritual support honors your own path, pace, and lived experience.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="retreat" id="retreat">
+        <div class="section-inner">
+          <p class="section-kicker" data-content="retreat.kicker">Upcoming retreat</p>
+          <h2 data-content="retreat.title">Sattva Path Retreat</h2>
+          <p class="lead" data-content="retreat.body">
+            A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life.
+          </p>
+          <div class="retreat-details" aria-label="Retreat details">
+            <div class="detail"><span>Dates</span>September 19-20, 2026</div>
+            <div class="detail"><span>Location</span>Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558</div>
+            <div class="detail"><span>Organizer</span>Sattva Path Collective LLC</div>
+            <div class="detail"><span>Age</span>18 years or older</div>
+          </div>
+          <ul class="retreat-list">
+            <li>Feel more peaceful and grounded in your current season of life.</li>
+            <li>Learn simple meditation practices for everyday living.</li>
+            <li>Release pressure around what has passed or what feels lost.</li>
+            <li>Trust that your path can unfold without force.</li>
+            <li>Return to daily life with more acceptance, clarity, and steadiness.</li>
+            <li>Remember that you are in the right place at the right time.</li>
+          </ul>
+          <div class="actions">
+            <a class="button" href="register.html">Register for the Retreat</a>
+            <a class="button secondary" href="#contact">Ask a Question</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="customSections" hidden>
+        <div class="section-inner">
+          <p class="section-kicker">More from Sattva Path</p>
+          <h2>Additional reflections and offerings.</h2>
+          <div class="custom-section-grid" id="customSectionGrid"></div>
+        </div>
+      </section>
+
+      <section id="events">
+        <div class="section-inner">
+          <p class="section-kicker">Additional gatherings</p>
+          <h2>Upcoming retreats, meditation, kirtan, and bhajan events.</h2>
+          <p class="lead">
+            New events created by the site owner will appear here.
+          </p>
+          <div class="dynamic-events" id="dynamicEvents"></div>
+        </div>
+      </section>
+
+      <section class="band" id="about">
+        <div class="section-inner split" id="host">
+          <div>
+            <p class="section-kicker" data-content="about.kicker">About the path</p>
+            <h2 data-content="about.title">Meet the host: a gentle story, not a performance.</h2>
+            <div class="body-copy" data-content="about.body">
+              <p>
+                Dr Nirupama Gupta's path into spiritual guidance began through her own search for light during a difficult season. She understands what it can feel like to walk through uncertainty, questions, and heaviness while still trying to live everyday life.
+              </p>
+              <p>
+                Over time, meditation and spiritual reflection helped her find more peace, acceptance, and trust in the present moment. She began sharing these reflections through Sattva Path Collective so others could know they do not have to abandon their lives or become someone else to begin healing.
+              </p>
+              <p>
+                Before this offering took form, Dr Nirupama Gupta spent many years walking paths of study, discipline, and service in different ways. Her early work led her deeply into science, where she earned a PhD in Biochemistry from the University of Michigan Medical School. Her professional life later moved into the IT field, where she continues to work with structure, problem-solving, and project leadership, supported by her PMP certification. Alongside all of this, her study of Hindustani classical vocal music and her journey toward Sangeet Visharad continue to keep her connected to devotion, practice, and inner listening.
+              </p>
+              <p>
+                Over time, these different paths began to meet in a quieter place. Science taught her to observe with care, technology taught her to work with complexity, music taught her surrender and devotion, and meditation taught her to return to the stillness beneath it all. Spirituality became less about leaving the world behind and more about learning how to live in it with presence, acceptance, and trust.
+              </p>
+              <p>
+                Her guidance is gentle and grounded. She offers meditation, reflection, and spiritual support for those who are seeking clarity, peace, and a deeper connection with themselves.
+              </p>
+            </div>
+          </div>
+          <div class="profile-card">
+            <div class="profile-photo">
+              <img
+                data-image="about.image"
+                src="assets/images/profile-photo.png"
+                alt="Sattva Path Collective host"
+                onerror="this.hidden=true; this.nextElementSibling.hidden=false;"
+              >
+              <div class="profile-placeholder" hidden>
+                <div>
+                  <span>Profile photo</span>
+                  <strong>Your photo will appear here</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="photos">
+        <div class="section-inner">
+          <p class="section-kicker">Photo</p>
+          <h2>Past event pictures and moments from the path.</h2>
+          <p class="lead">
+            Browse posted photos by category.
+          </p>
+          <div class="photo-filters" id="photoFilters"></div>
+          <div class="site-gallery" id="siteGallery"></div>
+        </div>
+      </section>
+
+      <section class="assistant-section" id="assistant">
+        <div class="section-inner assistant-wrap">
+          <div>
+            <p class="section-kicker" data-content="assistant.kicker">Sattva Path Assistant</p>
+            <h2 data-content="assistant.title">A gentle welcome for every visitor.</h2>
+            <p class="lead" data-content="assistant.body">
+              The assistant can answer basic questions, guide visitors to retreat registration, and invite them to contact you when a question needs a personal response.
+            </p>
+            <div class="body-copy">
+              <p>
+                It is intentionally simple and bounded: warm, helpful, and clear that it does not replace direct spiritual guidance from the organizer.
+              </p>
+            </div>
+          </div>
+          <div class="assistant-panel" aria-label="Sattva Path Assistant demo">
+            <div class="assistant-head">
+              <h3>Sattva Path Assistant</h3>
+            </div>
+            <div class="assistant-messages" id="assistantMessages" aria-live="polite">
+              <div class="message">
+                Welcome to Sattva Path Collective. I can help with guidance, meditation, retreat details, or how to ask a question. You are welcome to begin exactly where you are.
+              </div>
+            </div>
+            <div class="quick-questions" aria-label="Common questions">
+              <button type="button" data-question="What is Sattva Path Collective?">What is this space?</button>
+              <button type="button" data-question="When is the retreat?">Retreat details</button>
+              <button type="button" data-question="Do I need meditation experience?">Meditation experience</button>
+              <button type="button" data-question="How do I register?">Register</button>
+            </div>
+            <form class="assistant-form" id="assistantForm">
+              <input id="assistantInput" name="question" autocomplete="off" data-speech placeholder="Ask a basic question" aria-label="Ask the Sattva Path Assistant">
+              <button type="submit">Ask</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="contact" id="contact">
+        <div class="section-inner">
+          <div class="contact-box">
+            <div>
+              <p class="section-kicker" data-content="contact.kicker">Contact and inquiry</p>
+              <h2 data-content="contact.title">Begin with a simple question.</h2>
+              <p class="lead" data-content="contact.body">
+                If you are curious about spiritual guidance, meditation, or the upcoming retreat, you are welcome to reach out.
+              </p>
+            </div>
+            <div class="actions">
+              <a class="button" href="register.html">Begin a Conversation</a>
+              <a class="button secondary" href="register.html">Register</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <span>Sattva Path Collective LLC</span>
+        <span><a href="admin.html">Owner/Admin</a></span>
+      </div>
+    </footer>
+
+    <script>
+      const answers = [
+        {
+          match: ["what", "space", "sattva", "collective", "about"],
+          answer:
+            "Sattva Path Collective is a calming space for spiritual guidance, meditation, and retreats. The approach is gentle: begin where you are and bring spirituality into real daily life."
+        },
+        {
+          match: ["retreat", "when", "date", "where", "location"],
+          answer:
+            "The Sattva Path Retreat is September 19-20, 2026 at Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558. It is organized by Sattva Path Collective LLC and is for adults 18 years or older. For direct questions, email Sattvapathcollective@gmail.com."
+        },
+        {
+          match: ["register", "registration", "sign", "join"],
+          answer:
+            "You can register for the retreat through the Sattva Path registration page on this site. Use the Register link in the navigation or retreat section."
+        },
+        {
+          match: ["meditation", "experience", "beginner", "new"],
+          answer:
+            "Prior meditation experience is not required. The guidance is gentle and supports simple meditation practices that can fit into everyday life."
+        },
+        {
+          match: ["guidance", "spiritual", "help"],
+          answer:
+            "Spiritual guidance here is not about leaving your life behind. It is support for finding peace, clarity, acceptance, and trust while living fully in the world."
+        },
+        {
+          match: ["age", "adult", "18"],
+          answer:
+            "The retreat is only for individuals 18 years or older."
+        },
+        {
+          match: ["contact", "question", "inquire", "email"],
+          answer:
+            "For direct questions, email Sattvapathcollective@gmail.com. The upcoming retreat location is Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558. You can also use the registration form to begin a conversation."
+        }
+      ];
+
+      const messages = document.querySelector("#assistantMessages");
+      const form = document.querySelector("#assistantForm");
+      const input = document.querySelector("#assistantInput");
+      const dynamicEvents = document.querySelector("#dynamicEvents");
+      const customSectionGrid = document.querySelector("#customSectionGrid");
+      const customSections = document.querySelector("#customSections");
+      const siteGallery = document.querySelector("#siteGallery");
+      const photoFilters = document.querySelector("#photoFilters");
+      const emotionForm = document.querySelector("#emotionForm");
+      const emotionList = document.querySelector("#emotionList");
+      const hostResponsePreference = document.querySelector("#hostResponsePreference");
+      const communityResponsePreference = document.querySelector("#communityResponsePreference");
+      const emotionEmailWrap = document.querySelector("#emotionEmailWrap");
+      const emotionEmail = document.querySelector("#emotionEmail");
+      const heartStatus = document.querySelector("#heartStatus");
+      const speechStatus = document.querySelector("#speechStatus");
+      let activePhotoCategory = "All";
+      let activeRecognition = null;
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function hostPreferenceLabel(emotion) {
+        const preference = emotion.hostResponsePreference || emotion.responsePreference || "No host response";
+        if (preference === "Public response") return "Host may respond publicly";
+        if (preference === "Private response") return "Host may respond privately";
+        if (preference === "No response needed") return "No host response";
+        return preference;
+      }
+
+      function addMessage(text, type = "") {
+        const bubble = document.createElement("div");
+        bubble.className = type ? `message ${type}` : "message";
+        bubble.textContent = text;
+        messages.appendChild(bubble);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      function answerQuestion(question) {
+        const normalized = question.toLowerCase();
+        const found = answers.find((item) =>
+          item.match.some((word) => normalized.includes(word))
+        );
+        return found
+          ? found.answer
+          : "I can answer basic questions about guidance, meditation, the retreat, registration, and contact. For personal spiritual guidance or specific retreat questions, please email Sattvapathcollective@gmail.com. The retreat location is Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558.";
+      }
+
+      function askAssistant(question) {
+        const clean = question.trim();
+        if (!clean) return;
+        addMessage(clean, "user");
+        addMessage(answerQuestion(clean));
+      }
+
+      function showHeartStatus(message, type = "success") {
+        heartStatus.textContent = message;
+        heartStatus.className = `form-status ${type}`;
+        heartStatus.hidden = false;
+      }
+
+      function getJson(key, fallback = []) {
+        try {
+          return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+        } catch {
+          return fallback;
+        }
+      }
+
+      function setJson(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+
+      function heartPostWarning(text) {
+        const clean = String(text || "").toLowerCase();
+        const phoneLike = clean.replace(/\D/g, "").length >= 7;
+        const asksForPhone = /\b(phone|number|call|text|contact|mobile)\b/.test(clean);
+        const asksOnlyForPhone = /\b(what|share|send|give|provide|need|want|asking|ask)\b.*\b(phone|number|mobile)\b/.test(clean);
+        const meaningfulWords = clean
+          .replace(/[\d\s()+.\-]/g, " ")
+          .split(/\s+/)
+          .filter((word) => word.length > 2);
+        const sexualOrViolentTerms = [
+          "sex", "sexual", "nude", "naked", "porn", "kill", "murder", "attack", "weapon", "gun", "stab", "blood", "violent", "violence"
+        ];
+
+        if (sexualOrViolentTerms.some((term) => clean.includes(term))) {
+          return "This space is for gentle emotional sharing. Posts using sexual or violent language cannot be posted here. For direct support, email Sattvapathcollective@gmail.com.";
+        }
+
+        if ((phoneLike && asksForPhone && meaningfulWords.length <= 4) || (asksOnlyForPhone && meaningfulWords.length <= 8)) {
+          return "Please do not post only a phone number or a request for a phone number here. For contact, email Sattvapathcollective@gmail.com. Retreat location: Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558.";
+        }
+
+        return "";
+      }
+
+      function setSpeechStatus(message) {
+        if (speechStatus) speechStatus.textContent = message;
+      }
+
+      function enhanceSpeechFields(root = document) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        root.querySelectorAll("[data-speech]").forEach((field) => {
+          if (field.dataset.speechReady === "true") return;
+          field.dataset.speechReady = "true";
+          const wrapper = document.createElement("div");
+          wrapper.className = "speech-field";
+          field.parentNode.insertBefore(wrapper, field);
+          wrapper.appendChild(field);
+
+          const button = document.createElement("button");
+          button.className = "button secondary speech-button";
+          button.type = "button";
+          button.innerHTML = `
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <path d="M12 19v3"></path>
+              <path d="M8 22h8"></path>
+            </svg>
+          `;
+          button.setAttribute("aria-label", `Use voice input for ${field.getAttribute("aria-label") || field.id || "this field"}`);
+          button.title = "Use voice input";
+          button.setAttribute("aria-pressed", "false");
+
+          if (!SpeechRecognition) {
+            button.disabled = true;
+            button.title = "Voice input is unavailable in this browser";
+            wrapper.appendChild(button);
+            return;
+          }
+
+          button.addEventListener("click", () => {
+            if (activeRecognition) {
+              activeRecognition.stop();
+              activeRecognition = null;
+            }
+
+            const recognition = new SpeechRecognition();
+            activeRecognition = recognition;
+            recognition.lang = "en-US";
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+            button.setAttribute("aria-pressed", "true");
+            setSpeechStatus("Listening. Speak now.");
+
+            recognition.onresult = (event) => {
+              const transcript = event.results[0][0].transcript.trim();
+              const separator = field.value && field.tagName === "TEXTAREA" ? " " : "";
+              field.value = `${field.value}${separator}${transcript}`.trim();
+              field.dispatchEvent(new Event("input", { bubbles: true }));
+              setSpeechStatus("Speech added to the field.");
+            };
+
+            recognition.onerror = () => {
+              setSpeechStatus("Voice input did not work. You can type or try again.");
+            };
+
+            recognition.onend = () => {
+              button.setAttribute("aria-pressed", "false");
+              if (activeRecognition === recognition) activeRecognition = null;
+            };
+
+            recognition.start();
+          });
+
+          wrapper.appendChild(button);
+        });
+      }
+
+      function paragraphsFromText(text) {
+        return String(text || "")
+          .split(/\n{2,}/)
+          .map((paragraph) => paragraph.trim())
+          .filter(Boolean)
+          .map((paragraph) => `<p>${paragraph}</p>`)
+          .join("");
+      }
+
+      function applySiteContent() {
+        const content = getJson("sattva-site-content", {});
+        document.querySelectorAll("[data-content]").forEach((element) => {
+          const value = content[element.dataset.content];
+          if (!value) return;
+          if (element.classList.contains("body-copy")) {
+            element.innerHTML = paragraphsFromText(value);
+          } else {
+            element.textContent = value;
+          }
+        });
+
+        document.querySelectorAll("[data-image]").forEach((image) => {
+          const value = content[image.dataset.image];
+          if (value) image.src = value;
+        });
+      }
+
+      function renderCustomSections() {
+        const sections = getJson("sattva-custom-sections")
+          .filter((section) => section.status === "Posted");
+        customSections.hidden = sections.length === 0;
+        customSectionGrid.innerHTML = sections.map((section) => `
+          <article class="custom-section">
+            ${section.image ? `<img src="${section.image}" alt="${section.title}">` : ""}
+            <p class="section-kicker">${section.kicker || "Sattva Path"}</p>
+            <h3>${section.title}</h3>
+            <div>${paragraphsFromText(section.body)}</div>
+          </article>
+        `).join("");
+      }
+
+      function renderGallery() {
+        const images = getJson("sattva-images")
+          .filter((image) => image.status === "Posted");
+        const categories = ["All", ...new Set(images.map((image) => image.category || "General"))];
+        photoFilters.innerHTML = categories.map((category) => `
+          <button class="photo-filter ${category === activePhotoCategory ? "is-active" : ""}" type="button" data-category="${escapeHtml(category)}">${escapeHtml(category)}</button>
+        `).join("");
+
+        const visibleImages = activePhotoCategory === "All"
+          ? images
+          : images.filter((image) => (image.category || "General") === activePhotoCategory);
+
+        if (!images.length) {
+          siteGallery.innerHTML = `
+            <article class="gallery-item">
+              <h3>No photos posted yet.</h3>
+              <p>Past event photos added by the host will appear here.</p>
+            </article>
+          `;
+          return;
+        }
+
+        siteGallery.innerHTML = visibleImages.map((image) => `
+          <article class="gallery-item">
+            <img src="${image.src}" alt="${image.alt || image.title}">
+            <div class="event-tags"><span class="event-tag">${escapeHtml(image.category || "General")}</span></div>
+            <h3>${escapeHtml(image.title)}</h3>
+            ${image.caption ? `<p>${escapeHtml(image.caption)}</p>` : ""}
+          </article>
+        `).join("");
+      }
+
+      function renderEmotions() {
+        const emotions = getJson("sattva-emotions")
+          .filter((emotion) => emotion.status !== "Hidden")
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        emotionList.innerHTML = emotions.length ? emotions.map((emotion) => {
+          const hostPreference = hostPreferenceLabel(emotion);
+          const communityPreference = emotion.communityResponsePreference || "No community response";
+          const communityOpen = communityPreference === "Community may respond";
+          const replies = emotion.communityReplies || [];
+          return `
+            <article class="emotion-card">
+              <div class="event-tags">
+                <span class="event-tag">${escapeHtml(emotion.word)}</span>
+              </div>
+              <h3>${escapeHtml(emotion.name || "Anonymous")}</h3>
+              <p>${escapeHtml(emotion.message)}</p>
+              ${emotion.publicResponse ? `<div class="host-response"><strong>Host response:</strong><br>${escapeHtml(emotion.publicResponse)}</div>` : ""}
+              ${replies.length ? `
+                <div class="community-replies">
+                  <strong>Community responses</strong>
+                  ${replies.map((reply) => `
+                    <div class="community-reply">
+                      <strong>${escapeHtml(reply.name || "Anonymous")}</strong>
+                      <p>${escapeHtml(reply.message)}</p>
+                    </div>
+                  `).join("")}
+                </div>
+              ` : ""}
+              ${communityOpen ? `
+                <form class="reply-form" data-reply-form="${emotion.id}">
+                  <input data-speech data-reply-name placeholder="Your name, or leave blank for anonymous">
+                  <textarea data-speech data-reply-message required placeholder="Offer a kind response"></textarea>
+                  <button class="button secondary" type="submit">Respond</button>
+                </form>
+              ` : ""}
+            </article>
+          `;
+        }).join("") : `
+          <article class="emotion-card">
+            <h3>No emotions shared yet.</h3>
+            <p>This board is open when someone feels ready to name what is present for them.</p>
+          </article>
+        `;
+        enhanceSpeechFields(emotionList);
+      }
+
+      photoFilters.addEventListener("click", (event) => {
+        const category = event.target.dataset.category;
+        if (!category) return;
+        activePhotoCategory = category;
+        renderGallery();
+      });
+
+      hostResponsePreference.addEventListener("change", () => {
+        const needsEmail = hostResponsePreference.value === "Host may respond privately";
+        emotionEmailWrap.hidden = !needsEmail;
+        emotionEmail.required = needsEmail;
+        if (!needsEmail) emotionEmail.value = "";
+      });
+
+      emotionForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!emotionForm.checkValidity()) {
+          emotionForm.reportValidity();
+          showHeartStatus("Please complete the required fields before posting.", "error");
+          return;
+        }
+        const hostPreference = hostResponsePreference.value;
+        const warning = heartPostWarning([
+          document.querySelector("#emotionWord").value,
+          document.querySelector("#emotionMessage").value
+        ].join(" "));
+        if (warning) {
+          showHeartStatus(warning, "error");
+          return;
+        }
+        const emotions = getJson("sattva-emotions");
+        try {
+          emotions.push({
+            id: crypto.randomUUID(),
+            status: "Posted",
+            createdAt: new Date().toISOString(),
+            name: document.querySelector("#emotionName").value.trim(),
+            word: document.querySelector("#emotionWord").value.trim(),
+            message: document.querySelector("#emotionMessage").value.trim(),
+            hostResponsePreference: hostPreference,
+            communityResponsePreference: communityResponsePreference.value,
+            email: hostPreference === "Host may respond privately" ? document.querySelector("#emotionEmail").value.trim() : "",
+            publicResponse: "",
+            communityReplies: []
+          });
+          setJson("sattva-emotions", emotions);
+          emotionForm.reset();
+          emotionEmailWrap.hidden = true;
+          emotionEmail.required = false;
+          showHeartStatus("Thank you. Your note has been added to What's on Your Heart.", "success");
+          renderEmotions();
+        } catch {
+          showHeartStatus("Your note could not be saved in this browser. Please try again or contact the host.", "error");
+        }
+      });
+
+      emotionList.addEventListener("submit", (event) => {
+        const replyForm = event.target.closest("[data-reply-form]");
+        if (!replyForm) return;
+        event.preventDefault();
+        const emotions = getJson("sattva-emotions");
+        const emotion = emotions.find((item) => item.id === replyForm.dataset.replyForm);
+        if (!emotion || emotion.communityResponsePreference !== "Community may respond") return;
+        const message = replyForm.querySelector("[data-reply-message]").value.trim();
+        if (!message) return;
+        const warning = heartPostWarning(message);
+        if (warning) {
+          showHeartStatus(warning, "error");
+          return;
+        }
+        try {
+          emotion.communityReplies = emotion.communityReplies || [];
+          emotion.communityReplies.push({
+            id: crypto.randomUUID(),
+            createdAt: new Date().toISOString(),
+            name: replyForm.querySelector("[data-reply-name]").value.trim(),
+            message
+          });
+          setJson("sattva-emotions", emotions);
+          showHeartStatus("Your community response has been added.", "success");
+          renderEmotions();
+        } catch {
+          showHeartStatus("Your response could not be saved in this browser. Please try again.", "error");
+        }
+      });
+
+      document.querySelectorAll("[data-question]").forEach((button) => {
+        button.addEventListener("click", () => askAssistant(button.dataset.question));
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        askAssistant(input.value);
+        input.value = "";
+        input.focus();
+      });
+
+      function renderDynamicEvents() {
+        const events = getJson("sattva-events")
+          .filter((event) => event.status === "Posted");
+
+        if (!events.length) {
+          dynamicEvents.innerHTML = `
+            <article class="dynamic-event">
+              <div class="event-tags">
+                <span class="event-tag">Owner area</span>
+              </div>
+              <h3>No additional events posted yet.</h3>
+              <p>Use the owner/admin link in the footer to create meditation, kirtan/bhajan, or future retreat events.</p>
+              <div class="actions">
+                <a class="button secondary" href="admin.html">Open Admin</a>
+              </div>
+            </article>
+          `;
+          return;
+        }
+
+        dynamicEvents.innerHTML = events.map((event) => `
+          <article class="dynamic-event">
+            <div class="event-tags">
+              <span class="event-tag">${event.type}</span>
+              <span class="event-tag">${event.date}</span>
+            </div>
+            <h3>${event.title}</h3>
+            <p>${event.location}</p>
+            <p>${event.description}</p>
+            ${event.price ? `<p><strong>Fee:</strong> ${event.price}</p>` : ""}
+            ${event.age ? `<p><strong>Age:</strong> ${event.age}</p>` : ""}
+            <div class="actions">
+              <a class="button" href="event-register.html?id=${event.id}">Register</a>
+            </div>
+          </article>
+        `).join("");
+      }
+
+      renderDynamicEvents();
+      applySiteContent();
+      renderCustomSections();
+      renderGallery();
+      renderEmotions();
+      enhanceSpeechFields();
+    </script>
+  </body>
+</html>
