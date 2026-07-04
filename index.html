@@ -962,51 +962,45 @@
         </div>
       </section>
 
-      <section class="band" id="emotion-board">
-        <div class="section-inner">
-          <p class="section-kicker">What's on your heart</p>
-          <h2>A gentle place to name what is present today.</h2>
-          <p class="lead">
-            Visitors are welcome to share what is on their heart by name or anonymously, and choose whether the host, the community, both, or neither may respond.
-          </p>
-          <form class="emotion-form" id="emotionForm">
-            <div>
-              <label for="emotionName">Name</label>
-              <input id="emotionName" data-speech placeholder="Your name, or leave blank for anonymous">
+      <section class="band" id="about">
+        <div class="section-inner split" id="host">
+          <div>
+            <p class="section-kicker" data-content="about.kicker">About the path</p>
+            <h2 data-content="about.title">Meet the host: a gentle story, not a performance.</h2>
+            <div class="body-copy" data-content="about.body">
+              <p>
+                Dr Nirupama Gupta's path into spiritual guidance began through her own search for light during a difficult season. She understands what it can feel like to walk through uncertainty, questions, and heaviness while still trying to live everyday life.
+              </p>
+              <p>
+                Over time, meditation and spiritual reflection helped her find more peace, acceptance, and trust in the present moment. She began sharing these reflections through Sattva Path Collective so others could know they do not have to abandon their lives or become someone else to begin healing.
+              </p>
+              <p>
+                Before this offering took form, Dr Nirupama Gupta spent many years walking paths of study, discipline, and service in different ways. Her early work led her deeply into science, where she earned a PhD in Biochemistry from the University of Michigan Medical School. Her professional life later moved into the IT field, where she continues to work with structure, problem-solving, and project leadership, supported by her PMP certification. Alongside all of this, her study of Hindustani classical vocal music and her journey toward Sangeet Visharad continue to keep her connected to devotion, practice, and inner listening.
+              </p>
+              <p>
+                Over time, these different paths began to meet in a quieter place. Science taught her to observe with care, technology taught her to work with complexity, music taught her surrender and devotion, and meditation taught her to return to the stillness beneath it all. Spirituality became less about leaving the world behind and more about learning how to live in it with presence, acceptance, and trust.
+              </p>
+              <p>
+                Her guidance is gentle and grounded. She offers meditation, reflection, and spiritual support for those who are seeking clarity, peace, and a deeper connection with themselves.
+              </p>
             </div>
-            <div>
-              <label for="emotionWord">Emotion or feeling of the day</label>
-              <input id="emotionWord" data-speech required placeholder="Peaceful, heavy, hopeful, uncertain...">
+          </div>
+          <div class="profile-card">
+            <div class="profile-photo">
+              <img
+                data-image="about.image"
+                src="assets/images/profile-photo.png"
+                alt="Sattva Path Collective host"
+                onerror="this.hidden=true; this.nextElementSibling.hidden=false;"
+              >
+              <div class="profile-placeholder" hidden>
+                <div>
+                  <span>Profile photo</span>
+                  <strong>Your photo will appear here</strong>
+                </div>
+              </div>
             </div>
-            <div>
-              <label for="emotionMessage">What would you like to share?</label>
-              <textarea id="emotionMessage" data-speech required></textarea>
-            </div>
-            <div>
-              <label for="hostResponsePreference">Would you like a host response?</label>
-              <select id="hostResponsePreference">
-                <option value="No host response">No, thank you</option>
-                <option value="Host may respond publicly">Yes, publicly on the board</option>
-                <option value="Host may respond privately">Yes, privately by email</option>
-              </select>
-            </div>
-            <div>
-              <label for="communityResponsePreference">Would you like community responses?</label>
-              <select id="communityResponsePreference">
-                <option value="Community may respond">Yes, allow gentle community responses</option>
-                <option value="No community response">No, keep responses closed</option>
-              </select>
-            </div>
-            <div id="emotionEmailWrap" hidden>
-              <label for="emotionEmail">Email for private response</label>
-              <input id="emotionEmail" type="email" placeholder="Only needed for private response">
-            </div>
-            <div class="actions">
-              <button class="button" type="submit">Post What's on Your Heart</button>
-            </div>
-            <p class="form-status" id="heartStatus" role="status" aria-live="polite" hidden></p>
-          </form>
-          <div class="emotion-list" id="emotionList"></div>
+          </div>
         </div>
       </section>
 
@@ -1022,7 +1016,7 @@
               <h3>Spiritual Guidance</h3>
               <p>Support for clarity, trust, and acceptance while moving through life's questions.</p>
             </article>
-            <article class="path-card" id="meditation">
+            <article class="path-card">
               <h3>Meditation</h3>
               <p>Simple practices to slow down, listen inward, and meet yourself without judgment.</p>
             </article>
@@ -1034,7 +1028,7 @@
         </div>
       </section>
 
-      <section>
+      <section id="meditation">
         <div class="section-inner split">
           <div class="image-frame">
             <img data-image="meditation.image" src="assets/images/retreat-setting.png" alt="A peaceful outdoor retreat gathering circle beneath trees">
@@ -1122,48 +1116,6 @@
         </div>
       </section>
 
-      <section class="band" id="about">
-        <div class="section-inner split" id="host">
-          <div>
-            <p class="section-kicker" data-content="about.kicker">About the path</p>
-            <h2 data-content="about.title">Meet the host: a gentle story, not a performance.</h2>
-            <div class="body-copy" data-content="about.body">
-              <p>
-                Dr Nirupama Gupta's path into spiritual guidance began through her own search for light during a difficult season. She understands what it can feel like to walk through uncertainty, questions, and heaviness while still trying to live everyday life.
-              </p>
-              <p>
-                Over time, meditation and spiritual reflection helped her find more peace, acceptance, and trust in the present moment. She began sharing these reflections through Sattva Path Collective so others could know they do not have to abandon their lives or become someone else to begin healing.
-              </p>
-              <p>
-                Before this offering took form, Dr Nirupama Gupta spent many years walking paths of study, discipline, and service in different ways. Her early work led her deeply into science, where she earned a PhD in Biochemistry from the University of Michigan Medical School. Her professional life later moved into the IT field, where she continues to work with structure, problem-solving, and project leadership, supported by her PMP certification. Alongside all of this, her study of Hindustani classical vocal music and her journey toward Sangeet Visharad continue to keep her connected to devotion, practice, and inner listening.
-              </p>
-              <p>
-                Over time, these different paths began to meet in a quieter place. Science taught her to observe with care, technology taught her to work with complexity, music taught her surrender and devotion, and meditation taught her to return to the stillness beneath it all. Spirituality became less about leaving the world behind and more about learning how to live in it with presence, acceptance, and trust.
-              </p>
-              <p>
-                Her guidance is gentle and grounded. She offers meditation, reflection, and spiritual support for those who are seeking clarity, peace, and a deeper connection with themselves.
-              </p>
-            </div>
-          </div>
-          <div class="profile-card">
-            <div class="profile-photo">
-              <img
-                data-image="about.image"
-                src="assets/images/profile-photo.png"
-                alt="Sattva Path Collective host"
-                onerror="this.hidden=true; this.nextElementSibling.hidden=false;"
-              >
-              <div class="profile-placeholder" hidden>
-                <div>
-                  <span>Profile photo</span>
-                  <strong>Your photo will appear here</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section id="photos">
         <div class="section-inner">
           <p class="section-kicker">Photo</p>
@@ -1173,6 +1125,54 @@
           </p>
           <div class="photo-filters" id="photoFilters"></div>
           <div class="site-gallery" id="siteGallery"></div>
+        </div>
+      </section>
+
+      <section class="band" id="emotion-board">
+        <div class="section-inner">
+          <p class="section-kicker">What's on your heart</p>
+          <h2>A gentle place to name what is present today.</h2>
+          <p class="lead">
+            Visitors are welcome to share what is on their heart by name or anonymously, and choose whether the host, the community, both, or neither may respond.
+          </p>
+          <form class="emotion-form" id="emotionForm">
+            <div>
+              <label for="emotionName">Name</label>
+              <input id="emotionName" data-speech placeholder="Your name, or leave blank for anonymous">
+            </div>
+            <div>
+              <label for="emotionWord">Emotion or feeling of the day</label>
+              <input id="emotionWord" data-speech required placeholder="Peaceful, heavy, hopeful, uncertain...">
+            </div>
+            <div>
+              <label for="emotionMessage">What would you like to share?</label>
+              <textarea id="emotionMessage" data-speech required></textarea>
+            </div>
+            <div>
+              <label for="hostResponsePreference">Would you like a host response?</label>
+              <select id="hostResponsePreference">
+                <option value="No host response">No, thank you</option>
+                <option value="Host may respond publicly">Yes, publicly on the board</option>
+                <option value="Host may respond privately">Yes, privately by email</option>
+              </select>
+            </div>
+            <div>
+              <label for="communityResponsePreference">Would you like community responses?</label>
+              <select id="communityResponsePreference">
+                <option value="Community may respond">Yes, allow gentle community responses</option>
+                <option value="No community response">No, keep responses closed</option>
+              </select>
+            </div>
+            <div id="emotionEmailWrap" hidden>
+              <label for="emotionEmail">Email for private response</label>
+              <input id="emotionEmail" type="email" placeholder="Only needed for private response">
+            </div>
+            <div class="actions">
+              <button class="button" type="submit">Post What's on Your Heart</button>
+            </div>
+            <p class="form-status" id="heartStatus" role="status" aria-live="polite" hidden></p>
+          </form>
+          <div class="emotion-list" id="emotionList"></div>
         </div>
       </section>
 
