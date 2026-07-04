@@ -97,7 +97,7 @@
 
       .hero-inner,
       .content {
-        width: min(1120px, calc(100% - 32px));
+        width: min(1320px, calc(100% - 32px));
         margin: 0 auto;
       }
 
@@ -173,8 +173,8 @@
 
       .content {
         display: grid;
-        grid-template-columns: minmax(0, 0.72fr) minmax(340px, 1.28fr);
-        gap: 28px;
+        grid-template-columns: minmax(280px, 0.55fr) minmax(0, 1.45fr);
+        gap: 32px;
         align-items: start;
         padding: 48px 0 80px;
       }
@@ -278,28 +278,59 @@
         font: 1rem Arial, sans-serif;
       }
 
+      select {
+        padding-right: 40px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%235f6d61' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='2 2 6 6 10 2'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        background-size: 12px 8px;
+      }
+
       textarea {
         min-height: 110px;
         resize: vertical;
       }
 
       .speech-field {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 8px;
-        align-items: start;
+        position: relative;
+        display: block;
+      }
+
+      .speech-field > input,
+      .speech-field > textarea {
+        padding-right: 46px;
       }
 
       .speech-field .speech-button {
-        width: 46px;
-        min-height: 46px;
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 34px;
+        min-height: 34px;
         padding: 0;
-        border-color: rgba(72, 99, 71, 0.45);
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        border-radius: 6px;
+      }
+
+      .speech-field .speech-button:hover:not(:disabled) {
+        background: rgba(72, 99, 71, 0.08);
+        color: var(--leaf);
+      }
+
+      .speech-field .speech-button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
       }
 
       .speech-button svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         stroke: currentColor;
         stroke-width: 2;
         stroke-linecap: round;
@@ -392,9 +423,9 @@
 
       .payment-total {
         display: grid;
-        gap: 4px;
+        gap: 10px;
         margin-top: 16px;
-        padding: 16px;
+        padding: 20px;
         border: 1px solid rgba(72, 99, 71, 0.28);
         border-radius: var(--radius);
         background: #eef4e8;
@@ -416,11 +447,20 @@
         font-size: 0.88rem;
       }
 
+      .payment-total + .help {
+        margin-top: 18px;
+      }
+
       .participant-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 14px;
       }
+
+      .participant-grid > .span-2 { grid-column: span 2; }
+      .participant-grid > .span-5 { grid-column: span 5; }
+      .participant-grid > .span-6 { grid-column: span 6; }
+      .participant-grid > .span-12 { grid-column: span 12; }
 
       .required {
         color: var(--clay);
@@ -553,7 +593,7 @@
         display: flex;
         justify-content: space-between;
         gap: 18px;
-        width: min(1120px, calc(100% - 32px));
+        width: min(1320px, calc(100% - 32px));
         margin: 0 auto;
       }
 
@@ -576,6 +616,10 @@
 
         .participant-grid {
           grid-template-columns: 1fr;
+        }
+
+        .participant-grid > * {
+          grid-column: 1 / -1;
         }
       }
     </style>
@@ -726,6 +770,7 @@
             <div class="actions">
               <button class="button" type="submit">Submit Registration</button>
               <a class="button secondary" href="retreat.html">Review Retreat Details</a>
+              <button class="button secondary" type="button" id="cancelBtn">Cancel &amp; clear form</button>
             </div>
 
             <div class="success" id="successMessage" role="status">
@@ -1070,24 +1115,29 @@
           additionalParticipants.insertAdjacentHTML("beforeend", `
             <div class="group-card">
               <h3>Participant ${index}</h3>
+              ${isPrimary ? '<input type="hidden" name="entry.1187409292" data-group-field="fullNameHidden" data-participant-index="' + index + '">' : ""}
               <div class="participant-grid">
-                <div>
-                  <label for="participant-${index}-name">Full name <span class="required">*</span></label>
-                  <input id="participant-${index}-name" ${isPrimary ? 'name="entry.1187409292"' : ""} data-group-field="name" data-participant-index="${index}" type="text" autocomplete="name" data-speech required>
+                <div class="span-5">
+                  <label for="participant-${index}-firstName">First name <span class="required">*</span></label>
+                  <input id="participant-${index}-firstName" data-group-field="firstName" data-participant-index="${index}" type="text" autocomplete="given-name" data-speech required>
                 </div>
-                <div>
+                <div class="span-5">
+                  <label for="participant-${index}-lastName">Last name <span class="required">*</span></label>
+                  <input id="participant-${index}-lastName" data-group-field="lastName" data-participant-index="${index}" type="text" autocomplete="family-name" data-speech required>
+                </div>
+                <div class="span-2">
                   <label for="participant-${index}-age">Age <span class="required">*</span></label>
-                  <input id="participant-${index}-age" data-group-field="age" data-participant-index="${index}" type="number" min="18" max="120" inputmode="numeric" required>
+                  <input id="participant-${index}-age" data-group-field="age" data-participant-index="${index}" type="number" min="18" max="120" inputmode="numeric" data-speech required>
                 </div>
-                <div>
+                <div class="span-6">
                   <label for="participant-${index}-email">Email <span class="required">*</span></label>
-                  <input id="participant-${index}-email" ${isPrimary ? 'name="emailAddress"' : ""} data-group-field="email" data-participant-index="${index}" type="email" autocomplete="email" required>
+                  <input id="participant-${index}-email" ${isPrimary ? 'name="emailAddress"' : ""} data-group-field="email" data-participant-index="${index}" type="email" autocomplete="email" data-speech required>
                 </div>
-                <div>
+                <div class="span-6">
                   <label for="participant-${index}-phone">Phone number <span class="required">*</span></label>
                   <input id="participant-${index}-phone" ${isPrimary ? 'name="entry.557662615"' : ""} data-group-field="phone" data-participant-index="${index}" type="tel" autocomplete="tel" data-phone data-speech required>
                 </div>
-                <div>
+                <div class="span-12">
                   <label for="participant-${index}-accommodation">Accommodation type and fee <span class="required">*</span></label>
                   <select id="participant-${index}-accommodation" ${isPrimary ? 'name="entry.1480115925"' : ""} data-group-field="accommodation" data-participant-index="${index}" required>
                     <option value="">Select accommodation and fee</option>
@@ -1097,7 +1147,7 @@
                     <option value="Single accommodation - Regular fee $599" data-fee="599">Single accommodation - Regular fee $599</option>
                   </select>
                 </div>
-                <div>
+                <div class="span-12">
                   <label for="participant-${index}-roommate">Preferred roommate, if choosing shared accommodation</label>
                   <input id="participant-${index}-roommate" ${isPrimary ? 'name="entry.1016074176"' : ""} data-group-field="roommate" data-participant-index="${index}" type="text" data-speech>
                 </div>
@@ -1125,9 +1175,12 @@
         for (let index = 1; index <= total; index += 1) {
           const field = (name) => additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="${name}"]`)?.value || "";
           const accommodationField = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="accommodation"]`);
+          const fullName = `${field("firstName")} ${field("lastName")}`.trim();
           participants.push({
             role: `Participant ${index}`,
-            name: field("name"),
+            name: fullName,
+            firstName: field("firstName"),
+            lastName: field("lastName"),
             age: field("age"),
             email: field("email"),
             phone: field("phone"),
@@ -1313,10 +1366,20 @@
         }
       });
 
+      function syncFullNameHiddenFields() {
+        additionalParticipants.querySelectorAll('[data-group-field="fullNameHidden"]').forEach((hidden) => {
+          const idx = hidden.dataset.participantIndex;
+          const first = (additionalParticipants.querySelector(`[data-participant-index="${idx}"][data-group-field="firstName"]`)?.value || "").trim();
+          const last = (additionalParticipants.querySelector(`[data-participant-index="${idx}"][data-group-field="lastName"]`)?.value || "").trim();
+          hidden.value = `${first} ${last}`.trim();
+        });
+      }
+
       form.addEventListener("submit", (event) => {
         emailPreview.classList.remove("is-visible");
         updateRoommateRequirements();
         updatePaymentTotal();
+        syncFullNameHiddenFields();
         validatePhones();
         if (!validateFormInline()) {
           event.preventDefault();
@@ -1334,7 +1397,7 @@
           event.preventDefault();
           duplicates.forEach((participant) => {
             const index = Number(participant.role.replace("Participant ", ""));
-            const field = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="name"]`);
+            const field = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="firstName"]`);
             if (field) setFieldError(field, "This looks like a duplicate registration with the same participant name and matching details.");
           });
           showError("Please fix the highlighted fields before submitting registration.");
@@ -1346,6 +1409,7 @@
         const groupSummary = buildRegistrationSummary(participants);
         questions.value = [originalNotes, groupSummary].filter(Boolean).join("\n\n");
         saveStoredSignatures([...savedSignatures, ...signatures]);
+        clearFormState();
         successMessage.classList.add("is-visible");
         showConfirmationEmailPreview(participants);
         setTimeout(() => {
@@ -1354,10 +1418,84 @@
         }, 500);
       });
 
-      participantCount.addEventListener("change", renderAdditionalParticipants);
+      participantCount.addEventListener("change", () => {
+        renderAdditionalParticipants();
+        snapshotForm();
+      });
+
+      const FORM_STATE_KEY = "sattva-retreat-registration-inprogress";
+      const TOP_LEVEL_FIELDS = ["#zelleName", "#questions", "#paymentConfirm", "#ageConfirm", "#liabilityConfirm"];
+
+      function snapshotForm() {
+        try {
+          const state = { participantCount: participantCount.value, participants: [] };
+          TOP_LEVEL_FIELDS.forEach((selector) => {
+            const el = document.querySelector(selector);
+            if (!el) return;
+            state[selector] = el.type === "checkbox" ? el.checked : el.value;
+          });
+          additionalParticipants.querySelectorAll("[data-participant-index]").forEach((el) => {
+            const idx = Number(el.dataset.participantIndex);
+            const key = el.dataset.groupField;
+            if (!key || key === "fullNameHidden") return;
+            state.participants[idx] = state.participants[idx] || {};
+            state.participants[idx][key] = el.value;
+          });
+          sessionStorage.setItem(FORM_STATE_KEY, JSON.stringify(state));
+        } catch { /* ignore quota errors */ }
+      }
+
+      function restoreForm() {
+        try {
+          const raw = sessionStorage.getItem(FORM_STATE_KEY);
+          if (!raw) return;
+          const state = JSON.parse(raw);
+          if (state.participantCount) {
+            participantCount.value = state.participantCount;
+            renderAdditionalParticipants();
+          }
+          TOP_LEVEL_FIELDS.forEach((selector) => {
+            const el = document.querySelector(selector);
+            if (!el || !(selector in state)) return;
+            if (el.type === "checkbox") el.checked = !!state[selector];
+            else el.value = state[selector];
+          });
+          if (Array.isArray(state.participants)) {
+            state.participants.forEach((data, idx) => {
+              if (!data) return;
+              Object.entries(data).forEach(([key, val]) => {
+                const el = additionalParticipants.querySelector(`[data-participant-index="${idx}"][data-group-field="${key}"]`);
+                if (el) el.value = val;
+              });
+            });
+          }
+          updateRoommateRequirements();
+          updatePaymentTotal();
+        } catch { /* ignore malformed state */ }
+      }
+
+      function clearFormState() {
+        try { sessionStorage.removeItem(FORM_STATE_KEY); } catch { /* noop */ }
+      }
+
+      form.addEventListener("input", snapshotForm);
+      form.addEventListener("change", snapshotForm);
+
+      document.querySelector("#cancelBtn").addEventListener("click", () => {
+        if (!confirm("Clear all fields on this form? This cannot be undone.")) return;
+        clearFormState();
+        form.reset();
+        participantCount.value = "1";
+        renderAdditionalParticipants();
+        updatePaymentTotal();
+        hideError();
+        successMessage.classList.remove("is-visible");
+        emailPreview.classList.remove("is-visible");
+      });
 
       applyRetreatDetails();
       renderAdditionalParticipants();
+      restoreForm();
       enhanceSpeechFields();
     </script>
   </body>
