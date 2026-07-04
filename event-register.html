@@ -278,7 +278,7 @@
     <header class="header">
       <nav class="wrap nav">
         <a class="brand" href="index.html">Sattva Path Collective</a>
-        <a class="button secondary" href="index.html#events">Back to Events</a>
+        <a class="button secondary" href="events.html">Back to Events</a>
       </nav>
     </header>
 
@@ -403,7 +403,7 @@
           <h1>Event not found</h1>
           <p class="lead">This event may have been deleted or is not available in this browser.</p>
         `;
-        card.innerHTML = `<a class="button" href="index.html#events">Return to Events</a>`;
+        card.innerHTML = `<a class="button" href="events.html">Return to Events</a>`;
       } else {
         header.innerHTML = `
           <p class="eyebrow">${event.type} registration</p>
@@ -424,7 +424,7 @@
             ${(event.fields || ["Full name", "Email", "Phone number"]).map(inputFor).join("")}
             <div class="actions">
               <button type="submit">Submit Registration</button>
-              <a class="button secondary" href="index.html#events">Cancel</a>
+              <a class="button secondary" href="events.html">Cancel</a>
             </div>
           </form>
           <div class="notice" id="doneMessage" hidden>

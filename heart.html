@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>What's on Your Heart | Sattva Path Collective</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="mask-icon" href="favicon.svg" color="#B8695C" />
+    <meta name="description" content="A gentle place to share what's on your heart, by name or anonymously.">
+    <link rel="canonical" href="https://sattvapathcollective.com/heart.html" />
+    <meta name="theme-color" content="#B8695C" />
+    <meta name="author" content="Sattva Path Collective" />
+    <meta name="robots" content="index,follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Sattva Path Collective" />
+    <meta property="og:title" content="What's on Your Heart | Sattva Path Collective" />
+    <meta property="og:description" content="A gentle place to share what's on your heart, by name or anonymously." />
+    <meta property="og:url" content="https://sattvapathcollective.com/heart.html" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content="https://sattvapathcollective.com/assets/images/hero-retreat.png" />
+    <meta property="og:image:width" content="1536" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:image:alt" content="A serene retreat setting evoking calm and reflection" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="What's on Your Heart | Sattva Path Collective" />
+    <meta name="twitter:description" content="A gentle place to share what's on your heart, by name or anonymously." />
+    <meta name="twitter:image" content="https://sattvapathcollective.com/assets/images/hero-retreat.png" />
+
+    <link rel="stylesheet" href="assets/styles.css">
+  </head>
+  <body>
+    <div class="sr-only" id="speechStatus" aria-live="polite"></div>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html">Sattva Path Collective</a>
+        <div class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="guidance.html">Guidance</a>
+          <a href="meditation.html">Meditation</a>
+          <a href="retreat.html">Retreat</a>
+          <a href="events.html">Events</a>
+          <a href="photos.html">Photos</a>
+          <a href="heart.html" aria-current="page">What's on Your Heart</a>
+          <a href="assistant.html">Assistant</a>
+          <a href="contact.html">Contact</a>
+          <a href="admin.html" class="admin-link">Admin</a>
+        </div>
+      </nav>
+    </header>
+    <main id="main">
+      <section class="band" id="emotion-board">
+        <div class="section-inner">
+          <p class="section-kicker">What's on your heart</p>
+          <h2>A gentle place to name what is present today.</h2>
+          <p class="lead">
+            Visitors are welcome to share what is on their heart by name or anonymously, and choose whether the host, the community, both, or neither may respond.
+          </p>
+          <form class="emotion-form" id="emotionForm">
+            <div>
+              <label for="emotionName">Name</label>
+              <input id="emotionName" data-speech placeholder="Your name, or leave blank for anonymous">
+            </div>
+            <div>
+              <label for="emotionWord">Emotion or feeling of the day</label>
+              <input id="emotionWord" data-speech required placeholder="Peaceful, heavy, hopeful, uncertain...">
+            </div>
+            <div>
+              <label for="emotionMessage">What would you like to share?</label>
+              <textarea id="emotionMessage" data-speech required></textarea>
+            </div>
+            <div>
+              <label for="hostResponsePreference">Would you like a host response?</label>
+              <select id="hostResponsePreference">
+                <option value="No host response">No, thank you</option>
+                <option value="Host may respond publicly">Yes, publicly on the board</option>
+                <option value="Host may respond privately">Yes, privately by email</option>
+              </select>
+            </div>
+            <div>
+              <label for="communityResponsePreference">Would you like community responses?</label>
+              <select id="communityResponsePreference">
+                <option value="Community may respond">Yes, allow gentle community responses</option>
+                <option value="No community response">No, keep responses closed</option>
+              </select>
+            </div>
+            <div id="emotionEmailWrap" hidden>
+              <label for="emotionEmail">Email for private response</label>
+              <input id="emotionEmail" type="email" placeholder="Only needed for private response">
+            </div>
+            <div class="actions">
+              <button class="button" type="submit">Post What's on Your Heart</button>
+            </div>
+            <p class="form-status" id="heartStatus" role="status" aria-live="polite" hidden></p>
+          </form>
+          <div class="emotion-list" id="emotionList"></div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <div class="footer-inner">
+        <span>Sattva Path Collective LLC</span>
+        <span><a href="contact.html">Contact</a></span>
+      </div>
+    </footer>
+    <script src="assets/main.js"></script>
+  </body>
+</html>

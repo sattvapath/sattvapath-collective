@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Assistant | Sattva Path Collective</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="mask-icon" href="favicon.svg" color="#B8695C" />
+    <meta name="description" content="A gentle on-page assistant to answer basic questions about Sattva Path Collective.">
+    <link rel="canonical" href="https://sattvapathcollective.com/assistant.html" />
+    <meta name="theme-color" content="#B8695C" />
+    <meta name="author" content="Sattva Path Collective" />
+    <meta name="robots" content="index,follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Sattva Path Collective" />
+    <meta property="og:title" content="Assistant | Sattva Path Collective" />
+    <meta property="og:description" content="A gentle on-page assistant to answer basic questions about Sattva Path Collective." />
+    <meta property="og:url" content="https://sattvapathcollective.com/assistant.html" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content="https://sattvapathcollective.com/assets/images/hero-retreat.png" />
+    <meta property="og:image:width" content="1536" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:image:alt" content="A serene retreat setting evoking calm and reflection" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Assistant | Sattva Path Collective" />
+    <meta name="twitter:description" content="A gentle on-page assistant to answer basic questions about Sattva Path Collective." />
+    <meta name="twitter:image" content="https://sattvapathcollective.com/assets/images/hero-retreat.png" />
+
+    <link rel="stylesheet" href="assets/styles.css">
+  </head>
+  <body>
+    <div class="sr-only" id="speechStatus" aria-live="polite"></div>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html">Sattva Path Collective</a>
+        <div class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="guidance.html">Guidance</a>
+          <a href="meditation.html">Meditation</a>
+          <a href="retreat.html">Retreat</a>
+          <a href="events.html">Events</a>
+          <a href="photos.html">Photos</a>
+          <a href="heart.html">What's on Your Heart</a>
+          <a href="assistant.html" aria-current="page">Assistant</a>
+          <a href="contact.html">Contact</a>
+          <a href="admin.html" class="admin-link">Admin</a>
+        </div>
+      </nav>
+    </header>
+    <main id="main">
+      <section class="assistant-section" id="assistant">
+        <div class="section-inner assistant-wrap">
+          <div>
+            <p class="section-kicker" data-content="assistant.kicker">Sattva Path Assistant</p>
+            <h2 data-content="assistant.title">A gentle welcome for every visitor.</h2>
+            <p class="lead" data-content="assistant.body">
+              The assistant can answer basic questions, guide visitors to retreat registration, and invite them to contact you when a question needs a personal response.
+            </p>
+            <div class="body-copy">
+              <p>
+                It is intentionally simple and bounded: warm, helpful, and clear that it does not replace direct spiritual guidance from the organizer.
+              </p>
+            </div>
+          </div>
+          <div class="assistant-panel" aria-label="Sattva Path Assistant demo">
+            <div class="assistant-head">
+              <h3>Sattva Path Assistant</h3>
+            </div>
+            <div class="assistant-messages" id="assistantMessages" aria-live="polite">
+              <div class="message">
+                Welcome to Sattva Path Collective. I can help with guidance, meditation, retreat details, or how to ask a question. You are welcome to begin exactly where you are.
+              </div>
+            </div>
+            <div class="quick-questions" aria-label="Common questions">
+              <button type="button" data-question="What is Sattva Path Collective?">What is this space?</button>
+              <button type="button" data-question="When is the retreat?">Retreat details</button>
+              <button type="button" data-question="Do I need meditation experience?">Meditation experience</button>
+              <button type="button" data-question="How do I register?">Register</button>
+            </div>
+            <form class="assistant-form" id="assistantForm">
+              <input id="assistantInput" name="question" autocomplete="off" data-speech placeholder="Ask a basic question" aria-label="Ask the Sattva Path Assistant">
+              <button type="submit">Ask</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <div class="footer-inner">
+        <span>Sattva Path Collective LLC</span>
+        <span><a href="contact.html">Contact</a></span>
+      </div>
+    </footer>
+    <script src="assets/main.js"></script>
+  </body>
+</html>
