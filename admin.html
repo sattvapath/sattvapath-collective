@@ -603,7 +603,8 @@
                 <label for="eventStatus">Status</label>
                 <select id="eventStatus">
                   <option value="Posted">Posted</option>
-                  <option value="Draft">Draft</option>
+                  <option value="Closed">Closed (visible, registration disabled)</option>
+                  <option value="Draft">Draft (hidden)</option>
                 </select>
               </div>
             </div>
@@ -722,6 +723,7 @@
 
     <script>
       const storageKey = "sattva-events";
+      const featuredRetreatId = "sattva-path-retreat-2026";
       const contentKey = "sattva-site-content";
       const customSectionsKey = "sattva-custom-sections";
       const imageKey = "sattva-images";
@@ -833,6 +835,33 @@
 
       function saveEvents(events) {
         localStorage.setItem(storageKey, JSON.stringify(events));
+      }
+
+      function seedFeaturedRetreatIfMissing() {
+        const events = getEvents();
+        if (events.some((e) => e.id === featuredRetreatId)) return;
+        events.unshift({
+          id: featuredRetreatId,
+          type: "Retreat",
+          status: "Posted",
+          title: "Sattva Path Retreat",
+          date: "September 19-20, 2026",
+          location: "Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558",
+          price: "$449 early bird / $499 regular",
+          age: "18 years or older",
+          description: "A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life.",
+          fields: [
+            "Full name",
+            "Email",
+            "Phone number",
+            "Emergency contact",
+            "Accommodation preference",
+            "Dietary considerations",
+            "Payment acknowledgment",
+            "Liability / cancellation agreement"
+          ]
+        });
+        saveEvents(events);
       }
 
       function getJson(key) {
@@ -1430,6 +1459,7 @@
         }
       });
 
+      seedFeaturedRetreatIfMissing();
       renderFieldChoices();
       renderEvents();
       populateSectionSelector();

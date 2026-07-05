@@ -846,10 +846,22 @@
         }
       }
 
+      const featuredRetreatId = "sattva-path-retreat-2026";
+
       function currentPostedRetreat() {
-        const retreats = getJson("sattva-events")
-          .filter((event) => event.type === "Retreat" && event.status === "Posted");
-        return retreats.length ? retreats[retreats.length - 1] : fallbackRetreat;
+        const events = getJson("sattva-events");
+        const featured = events.find((e) => e.id === featuredRetreatId);
+        if (featured && (featured.status === "Posted" || featured.status === "Closed")) {
+          return featured;
+        }
+        return fallbackRetreat;
+      }
+
+      function applyClosedStatus() {
+        if (currentRetreat.status !== "Closed") return;
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.disabled = true;
+        showError(`Registration for ${currentRetreat.title || fallbackRetreat.title} is closed. Please contact ${contactEmail} with any questions.`);
       }
 
       function retreatLocation(retreat = currentRetreat) {
@@ -1500,6 +1512,7 @@
       renderAdditionalParticipants();
       restoreForm();
       enhanceSpeechFields();
+      applyClosedStatus();
     </script>
   </body>
 </html>

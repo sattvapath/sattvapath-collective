@@ -445,10 +445,40 @@ if (form && input) {
   });
 }
 
+const FEATURED_RETREAT_ID = "sattva-path-retreat-2026";
+
+function renderFeaturedRetreat() {
+  const events = getJson("sattva-events");
+  const featured = events.find((e) => e.id === FEATURED_RETREAT_ID);
+  if (!featured) return;
+  if (featured.status !== "Posted" && featured.status !== "Closed") return;
+
+  const set = (key, value) => {
+    document.querySelectorAll(`[data-featured-retreat="${key}"]`).forEach((el) => {
+      if (value !== undefined && value !== null && value !== "") el.textContent = value;
+    });
+  };
+  set("title", featured.title);
+  set("date", featured.date);
+  set("location", featured.location);
+  set("age", featured.age);
+  set("description", featured.description);
+  set("price", featured.price);
+
+  const isClosed = featured.status === "Closed";
+  document.querySelectorAll('[data-featured-retreat="register-btn"]').forEach((el) => {
+    el.hidden = isClosed;
+  });
+  document.querySelectorAll('[data-featured-retreat="closed-notice"]').forEach((el) => {
+    el.hidden = !isClosed;
+  });
+}
+
 function renderDynamicEvents() {
   if (!dynamicEvents) return;
   const events = getJson("sattva-events")
-    .filter((event) => event.status === "Posted");
+    .filter((event) => event.status === "Posted")
+    .filter((event) => event.id !== FEATURED_RETREAT_ID);
 
   if (!events.length) {
     dynamicEvents.innerHTML = `
@@ -484,6 +514,7 @@ function renderDynamicEvents() {
   `).join("");
 }
 
+renderFeaturedRetreat();
 renderDynamicEvents();
 applySiteContent();
 renderCustomSections();

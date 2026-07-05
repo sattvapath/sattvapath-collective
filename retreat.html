@@ -54,15 +54,18 @@
       <section class="retreat" id="retreat">
         <div class="section-inner">
           <p class="section-kicker" data-content="retreat.kicker">Upcoming retreat</p>
-          <h2 data-content="retreat.title">Sattva Path Retreat</h2>
-          <p class="lead" data-content="retreat.body">
+          <h2 data-content="retreat.title" data-featured-retreat="title">Sattva Path Retreat</h2>
+          <p class="lead" data-content="retreat.body" data-featured-retreat="description">
             A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life.
           </p>
+          <p class="lead" data-featured-retreat="closed-notice" hidden>
+            <strong>Registration is closed for this retreat.</strong> You are welcome to reach out with questions or hear about the next one.
+          </p>
           <div class="retreat-details" aria-label="Retreat details">
-            <div class="detail"><span>Dates</span>September 19-20, 2026</div>
-            <div class="detail"><span>Location</span>Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558</div>
+            <div class="detail"><span>Dates</span><span data-featured-retreat="date">September 19-20, 2026</span></div>
+            <div class="detail"><span>Location</span><span data-featured-retreat="location">Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558</span></div>
             <div class="detail"><span>Organizer</span>Sattva Path Collective LLC</div>
-            <div class="detail"><span>Age</span>18 years or older</div>
+            <div class="detail"><span>Age</span><span data-featured-retreat="age">18 years or older</span></div>
           </div>
           <ul class="retreat-list">
             <li>Feel more peaceful and grounded in your current season of life.</li>
@@ -73,7 +76,7 @@
             <li>Remember that you are in the right place at the right time.</li>
           </ul>
           <div class="actions">
-            <a class="button" href="register.html">Register for the Retreat</a>
+            <a class="button" data-featured-retreat="register-btn" href="register.html">Register for the Retreat</a>
             <a class="button secondary" href="events.html">Back to Events</a>
             <a class="button secondary" href="contact.html">Ask a Question</a>
           </div>

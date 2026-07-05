@@ -54,20 +54,21 @@
       <section id="featured-event">
         <div class="section-inner">
           <p class="section-kicker">Featured upcoming event</p>
-          <h2>Sattva Path Retreat</h2>
+          <h2 data-featured-retreat="title">Sattva Path Retreat</h2>
           <div class="dynamic-events">
             <article class="dynamic-event">
               <div class="event-tags">
                 <span class="event-tag">Retreat</span>
-                <span class="event-tag">September 19-20, 2026</span>
+                <span class="event-tag" data-featured-retreat="date">September 19-20, 2026</span>
               </div>
-              <h3>Sattva Path Retreat</h3>
-              <p>Enchanted Hills Retreat, Napa, CA</p>
-              <p>A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life.</p>
-              <p><strong>Age:</strong> 18 years or older</p>
+              <h3 data-featured-retreat="title">Sattva Path Retreat</h3>
+              <p data-featured-retreat="location">Enchanted Hills Retreat, Napa, CA</p>
+              <p data-featured-retreat="description">A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life.</p>
+              <p><strong>Age:</strong> <span data-featured-retreat="age">18 years or older</span></p>
+              <p data-featured-retreat="closed-notice" hidden><strong>Registration is closed.</strong></p>
               <div class="actions">
                 <a class="button" href="retreat.html">View Retreat Details</a>
-                <a class="button secondary" href="register.html">Register</a>
+                <a class="button secondary" data-featured-retreat="register-btn" href="register.html">Register</a>
               </div>
             </article>
           </div>
