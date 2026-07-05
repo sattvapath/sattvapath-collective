@@ -474,6 +474,41 @@ function renderFeaturedRetreat() {
   });
 }
 
+function wideEventCardHTML(event, options = {}) {
+  const closed = event.status === "Closed";
+  const detailRows = [
+    event.date && `<div><span class="wide-event-label">Date</span><span>${escapeHtml(event.date)}</span></div>`,
+    event.location && `<div><span class="wide-event-label">Location</span><span>${escapeHtml(event.location)}</span></div>`,
+    event.price && `<div><span class="wide-event-label">Fee</span><span>${escapeHtml(event.price)}</span></div>`,
+    event.age && `<div><span class="wide-event-label">Age</span><span>${escapeHtml(event.age)}</span></div>`
+  ].filter(Boolean).join("");
+  const registerBtn = closed ? "" : `<a class="button" href="event-register.html?id=${escapeHtml(event.id)}">Register</a>`;
+  const detailsBtn = options.detailsHref ? `<a class="button secondary" href="${options.detailsHref}">${options.detailsLabel || "View details"}</a>` : "";
+  return `
+    <article class="wide-event${closed ? " is-closed" : ""}">
+      ${closed ? '<span class="closed-badge">Registration closed</span>' : ""}
+      <h3>${escapeHtml(event.title)}</h3>
+      ${event.description ? `<p>${escapeHtml(event.description)}</p>` : ""}
+      ${detailRows ? `<div class="wide-event-meta">${detailRows}</div>` : ""}
+      ${(registerBtn || detailsBtn) ? `<div class="actions">${detailsBtn}${registerBtn}</div>` : ""}
+    </article>
+  `;
+}
+
+function renderEventsByType(type, containerId, emptyMessage, options = {}) {
+  const container = document.querySelector(`#${containerId}`);
+  if (!container) return;
+  const events = getJson("sattva-events")
+    .filter((event) => event.type === type)
+    .filter((event) => event.status === "Posted" || event.status === "Closed")
+    .filter((event) => options.includeFeatured || event.id !== FEATURED_RETREAT_ID);
+  if (!events.length) {
+    container.innerHTML = `<div class="empty-state">${escapeHtml(emptyMessage)}</div>`;
+    return;
+  }
+  container.innerHTML = events.map((event) => wideEventCardHTML(event)).join("");
+}
+
 function renderDynamicEvents() {
   if (!dynamicEvents) return;
   const events = getJson("sattva-events")
@@ -516,6 +551,9 @@ function renderDynamicEvents() {
 
 renderFeaturedRetreat();
 renderDynamicEvents();
+renderEventsByType("Retreat", "retreatEvents", "No additional retreat dates posted yet.");
+renderEventsByType("Meditation", "meditationEvents", "No meditation gatherings posted yet. Check back soon.");
+renderEventsByType("Kirtan/Bhajan", "kirtanEvents", "No kirtan or bhajan gatherings posted yet. Check back soon.");
 applySiteContent();
 renderCustomSections();
 renderGallery();
