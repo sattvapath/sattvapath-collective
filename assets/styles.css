@@ -895,22 +895,42 @@ section {
 }
 
 .speech-field {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  align-items: start;
+  position: relative;
+  display: block;
+}
+
+.speech-field > input,
+.speech-field > textarea {
+  padding-right: 46px;
 }
 
 .speech-field .speech-button {
-  width: 46px;
-  min-height: 46px;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 34px;
+  min-height: 34px;
   padding: 0;
-  border-color: rgba(72, 99, 71, 0.45);
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.speech-field .speech-button:hover:not(:disabled) {
+  background: rgba(72, 99, 71, 0.08);
+  color: var(--leaf);
+}
+
+.speech-field .speech-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .speech-button svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
