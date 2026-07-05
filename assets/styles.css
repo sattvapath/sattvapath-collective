@@ -351,6 +351,28 @@ section {
   display: none;
 }
 
+/* About page: text wraps around a smaller, floated profile photo */
+@media (min-width: 861px) {
+  #host.split {
+    display: block;
+  }
+
+  #host > .profile-card {
+    float: right;
+    margin: 0 0 24px 36px;
+    position: static;
+    width: min(100%, 285px);
+    justify-self: auto;
+    align-self: auto;
+  }
+
+  #host::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+}
+
 .profile-placeholder span {
   display: block;
   font-family: Arial, sans-serif;
