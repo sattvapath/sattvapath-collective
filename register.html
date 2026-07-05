@@ -461,6 +461,7 @@
       .participant-grid > .span-5 { grid-column: span 5; }
       .participant-grid > .span-6 { grid-column: span 6; }
       .participant-grid > .span-12 { grid-column: span 12; }
+      .participant-grid > .pad-top { margin-top: 16px; }
 
       .required {
         color: var(--clay);
@@ -651,12 +652,12 @@
             <li><strong>Organizer</strong>Sattva Path Collective LLC</li>
             <li><strong>Age requirement</strong><span id="summaryAge">18 years or older</span></li>
             <li>
-              <strong>Payment</strong>
+              <strong>Payment <span class="required">*</span></strong>
               Zelle to <a href="mailto:Sattvapathcollective@gmail.com">Sattvapathcollective@gmail.com</a>
             </li>
           </ul>
           <div class="notice">
-            Registration is considered incomplete until Zelle payment is received. Retreat fees are non-refundable after August 15.
+            <span class="required">*</span> Registration is considered incomplete until Zelle payment is received. Retreat fees are non-refundable after August 15.
           </div>
         </aside>
 
@@ -664,9 +665,6 @@
           <div class="form-intro">
             <p class="section-kicker">Participant information</p>
             <h2>Begin where you are.</h2>
-            <p>
-              This form collects the same information as the original Google Form, with a calmer flow and clearer retreat details.
-            </p>
           </div>
 
           <form
@@ -1152,7 +1150,7 @@
                   <label for="participant-${index}-phone">Phone number <span class="required">*</span></label>
                   <input id="participant-${index}-phone" ${isPrimary ? 'name="entry.557662615"' : ""} data-group-field="phone" data-participant-index="${index}" type="tel" autocomplete="tel" data-phone data-speech required>
                 </div>
-                <div class="span-12">
+                <div class="span-12 pad-top">
                   <label for="participant-${index}-accommodation">Accommodation type and fee <span class="required">*</span></label>
                   <select id="participant-${index}-accommodation" ${isPrimary ? 'name="entry.1480115925"' : ""} data-group-field="accommodation" data-participant-index="${index}" required>
                     <option value="">Select accommodation and fee</option>
@@ -1162,7 +1160,7 @@
                     <option value="Single accommodation - Regular fee $599" data-fee="599">Single accommodation - Regular fee $599</option>
                   </select>
                 </div>
-                <div class="span-12">
+                <div class="span-12 pad-top">
                   <label for="participant-${index}-roommate">Preferred roommate, if choosing shared accommodation</label>
                   <input id="participant-${index}-roommate" ${isPrimary ? 'name="entry.1016074176"' : ""} data-group-field="roommate" data-participant-index="${index}" type="text" data-speech>
                 </div>
@@ -1171,9 +1169,16 @@
                 <label for="participant-${index}-notes">Dietary, accessibility, medical, or other notes</label>
                 <textarea id="participant-${index}-notes" ${isPrimary ? 'name="entry.646685657"' : ""} data-group-field="notes" data-participant-index="${index}" data-speech></textarea>
               </div>
-              <div>
-                <label for="participant-${index}-emergency">Emergency contact name and phone number <span class="required">*</span></label>
-                <textarea id="participant-${index}-emergency" ${isPrimary ? 'name="entry.1657829728"' : ""} data-group-field="emergency" data-participant-index="${index}" data-speech required></textarea>
+              <div class="participant-grid pad-top">
+                <div class="span-6">
+                  <label for="participant-${index}-emergencyName">Emergency contact name <span class="required">*</span></label>
+                  <input id="participant-${index}-emergencyName" data-group-field="emergencyName" data-participant-index="${index}" type="text" autocomplete="name" data-speech required>
+                </div>
+                <div class="span-6">
+                  <label for="participant-${index}-emergencyPhone">Emergency contact phone <span class="required">*</span></label>
+                  <input id="participant-${index}-emergencyPhone" data-group-field="emergencyPhone" data-participant-index="${index}" type="tel" autocomplete="tel" data-phone data-speech required>
+                </div>
+                ${isPrimary ? '<input type="hidden" name="entry.1657829728" data-group-field="emergencyHidden" data-participant-index="' + index + '">' : ""}
               </div>
             </div>
           `);
@@ -1203,7 +1208,9 @@
             fee: selectedAccommodationFee(accommodationField),
             roommate: field("roommate"),
             notes: field("notes"),
-            emergency: field("emergency")
+            emergencyName: field("emergencyName"),
+            emergencyPhone: field("emergencyPhone"),
+            emergency: `${field("emergencyName")} — ${field("emergencyPhone")}`.replace(/^ — $/, "").trim()
           });
         }
         return participants;
@@ -1387,6 +1394,12 @@
           const first = (additionalParticipants.querySelector(`[data-participant-index="${idx}"][data-group-field="firstName"]`)?.value || "").trim();
           const last = (additionalParticipants.querySelector(`[data-participant-index="${idx}"][data-group-field="lastName"]`)?.value || "").trim();
           hidden.value = `${first} ${last}`.trim();
+        });
+        additionalParticipants.querySelectorAll('[data-group-field="emergencyHidden"]').forEach((hidden) => {
+          const idx = hidden.dataset.participantIndex;
+          const name = (additionalParticipants.querySelector(`[data-participant-index="${idx}"][data-group-field="emergencyName"]`)?.value || "").trim();
+          const phone = (additionalParticipants.querySelector(`[data-participant-index="${idx}"][data-group-field="emergencyPhone"]`)?.value || "").trim();
+          hidden.value = name && phone ? `${name} — ${phone}` : (name || phone);
         });
       }
 

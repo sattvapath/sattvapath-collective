@@ -260,6 +260,43 @@ a {
   text-align: center;
 }
 
+.napa-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.napa-link {
+  display: grid;
+  gap: 6px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.napa-link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: rgba(184, 132, 66, 0.5);
+}
+
+.napa-link strong {
+  color: var(--leaf);
+  font-family: Arial, sans-serif;
+  font-size: 0.98rem;
+}
+
+.napa-link span {
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.92rem;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -826,7 +863,7 @@ section {
 .retreat-details {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 16px 28px;
   margin-top: 30px;
 }
 
