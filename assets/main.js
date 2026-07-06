@@ -290,52 +290,113 @@ function renderGallery() {
   `).join("");
 }
 
-function renderEmotions() {
-  if (!emotionList) return;
-  const emotions = getJson("sattva-emotions")
-    .filter((emotion) => emotion.status !== "Hidden")
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+const EMOTION_COLORS = [
+  { keys: ["peace","calm","serene","tranquil","quiet","still","content"], bg: "#BDD8EE", pin: "#3A6EA5" },
+  { keys: ["hope","joy","joyful","happy","grateful","blessed","excite","light","glad","alive"], bg: "#FBE79A", pin: "#B8892C" },
+  { keys: ["love","warm","tender","kind","open","soft"], bg: "#F4C2C2", pin: "#B8556A" },
+  { keys: ["heavy","sad","low","tired","weary","grief","griev","exhaust","empty","lonely"], bg: "#D6D0C4", pin: "#6C6558" },
+  { keys: ["uncertain","confused","anxious","worry","worried","scared","nervous","afraid","unsure","stuck"], bg: "#D2C4E1", pin: "#6E4A8F" },
+  { keys: ["angry","frustrat","annoy","upset","tense","irritat"], bg: "#F0B8A0", pin: "#9C5238" },
+  { keys: ["reflect","curious","thoughtful","seeking","learning"], bg: "#B9DAB6", pin: "#4E7A47" }
+];
 
-  emotionList.innerHTML = emotions.length ? emotions.map((emotion) => {
-    const hostPreference = hostPreferenceLabel(emotion);
-    const communityPreference = emotion.communityResponsePreference || "No community response";
-    const communityOpen = communityPreference === "Community may respond";
-    const replies = emotion.communityReplies || [];
-    return `
-      <article class="emotion-card">
-        <div class="event-tags">
-          <span class="event-tag">${escapeHtml(emotion.word)}</span>
+function emotionColor(word) {
+  const key = String(word || "").toLowerCase();
+  for (const c of EMOTION_COLORS) {
+    if (c.keys.some((k) => key.includes(k))) return c;
+  }
+  return { bg: "#F0EAD6", pin: "#8A7748" };
+}
+
+function isCurrentMonth(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+}
+
+function getMyEmotionIds() {
+  return new Set(getJson("sattva-my-emotions", []));
+}
+
+function addMyEmotionId(id) {
+  const list = getJson("sattva-my-emotions", []);
+  if (!list.includes(id)) {
+    list.push(id);
+    setJson("sattva-my-emotions", list);
+  }
+}
+
+function emotionCardHTML(emotion, myIds, indexHint = 0) {
+  const communityPreference = emotion.communityResponsePreference || "No community response";
+  const communityOpen = communityPreference === "Community may respond";
+  const replies = emotion.communityReplies || [];
+  const isMine = myIds.has(emotion.id);
+  const c = emotionColor(emotion.word);
+  const rotations = [-1.6, 1.4, -0.8, 2.1, -2.3, 0.8, -1.2, 1.9];
+  const rot = rotations[indexHint % rotations.length];
+  const style = `--sticky-bg:${c.bg};--sticky-pin:${c.pin};--sticky-rot:${rot}deg;`;
+  return `
+    <article class="emotion-card" style="${style}" data-emotion-id="${escapeHtml(emotion.id)}">
+      <div class="sticky-word">${escapeHtml(emotion.word)}</div>
+      <div class="sticky-name">— ${escapeHtml(emotion.name || "Anonymous")}</div>
+      ${emotion.message ? `<div class="sticky-message">${escapeHtml(emotion.message)}</div>` : ""}
+      ${emotion.publicResponse ? `<div class="host-response"><strong>Host response:</strong><br>${escapeHtml(emotion.publicResponse)}</div>` : ""}
+      ${replies.length ? `
+        <div class="community-replies">
+          <strong>Community responses</strong>
+          ${replies.map((reply) => `
+            <div class="community-reply">
+              <strong>${escapeHtml(reply.name || "Anonymous")}</strong>
+              <p>${escapeHtml(reply.message)}</p>
+            </div>
+          `).join("")}
         </div>
-        <h3>${escapeHtml(emotion.name || "Anonymous")}</h3>
-        <p>${escapeHtml(emotion.message)}</p>
-        ${emotion.publicResponse ? `<div class="host-response"><strong>Host response:</strong><br>${escapeHtml(emotion.publicResponse)}</div>` : ""}
-        ${replies.length ? `
-          <div class="community-replies">
-            <strong>Community responses</strong>
-            ${replies.map((reply) => `
-              <div class="community-reply">
-                <strong>${escapeHtml(reply.name || "Anonymous")}</strong>
-                <p>${escapeHtml(reply.message)}</p>
-              </div>
-            `).join("")}
-          </div>
-        ` : ""}
-        ${communityOpen ? `
-          <form class="reply-form" data-reply-form="${emotion.id}">
-            <input data-speech data-reply-name placeholder="Your name, or leave blank for anonymous">
-            <textarea data-speech data-reply-message required placeholder="Offer a kind response"></textarea>
-            <button class="button secondary" type="submit">Respond</button>
-          </form>
-        ` : ""}
-      </article>
-    `;
-  }).join("") : `
-    <article class="emotion-card">
-      <h3>No emotions shared yet.</h3>
-      <p>This board is open when someone feels ready to name what is present for them.</p>
+      ` : ""}
+      ${isMine ? `
+        <div class="emotion-owner-actions">
+          <button type="button" class="button secondary" data-emotion-edit="${escapeHtml(emotion.id)}">Edit</button>
+          <button type="button" class="button secondary" data-emotion-delete="${escapeHtml(emotion.id)}">Delete</button>
+        </div>
+      ` : ""}
+      ${communityOpen ? `
+        <form class="reply-form" data-reply-form="${emotion.id}">
+          <input data-speech data-reply-name placeholder="Your name, or leave blank for anonymous">
+          <textarea data-speech data-reply-message required placeholder="Offer a kind response"></textarea>
+          <button class="button secondary" type="submit">Respond</button>
+        </form>
+      ` : ""}
     </article>
   `;
+}
+
+function renderEmotions() {
+  if (!emotionList) return;
+  const all = getJson("sattva-emotions")
+    .filter((emotion) => emotion.status !== "Hidden")
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const current = all.filter((e) => isCurrentMonth(e.createdAt));
+  const archived = all.filter((e) => !isCurrentMonth(e.createdAt));
+  const myIds = getMyEmotionIds();
+
+  emotionList.innerHTML = current.length
+    ? current.map((e, i) => emotionCardHTML(e, myIds, i)).join("")
+    : `<article class="emotion-card empty" style="--sticky-bg:#F0EAD6;--sticky-pin:#8A7748;--sticky-rot:-1deg;">
+        <div class="sticky-word">Quiet</div>
+        <div class="sticky-message">No feelings shared yet this month. Be the first to name what is present.</div>
+      </article>`;
   enhanceSpeechFields(emotionList);
+
+  const archiveEl = document.querySelector("#emotionArchive");
+  const archiveListEl = document.querySelector("#emotionArchiveList");
+  if (archiveEl && archiveListEl) {
+    if (archived.length) {
+      archiveEl.hidden = false;
+      archiveListEl.innerHTML = archived.map((e, i) => emotionCardHTML(e, myIds, i)).join("");
+      enhanceSpeechFields(archiveListEl);
+    } else {
+      archiveEl.hidden = true;
+    }
+  }
 }
 
 if (photoFilters) {
@@ -374,25 +435,43 @@ if (emotionForm) {
       return;
     }
     const emotions = getJson("sattva-emotions");
+    const editId = emotionForm.dataset.editId || "";
     try {
-      emotions.push({
-        id: crypto.randomUUID(),
-        status: "Posted",
-        createdAt: new Date().toISOString(),
-        name: document.querySelector("#emotionName").value.trim(),
-        word: document.querySelector("#emotionWord").value.trim(),
-        message: document.querySelector("#emotionMessage").value.trim(),
-        hostResponsePreference: hostPreference,
-        communityResponsePreference: communityResponsePreference.value,
-        email: hostPreference === "Host may respond privately" ? document.querySelector("#emotionEmail").value.trim() : "",
-        publicResponse: "",
-        communityReplies: []
-      });
-      setJson("sattva-emotions", emotions);
+      if (editId) {
+        const idx = emotions.findIndex((e) => e.id === editId);
+        if (idx >= 0) {
+          emotions[idx].name = document.querySelector("#emotionName").value.trim();
+          emotions[idx].word = document.querySelector("#emotionWord").value.trim();
+          emotions[idx].message = document.querySelector("#emotionMessage").value.trim();
+          emotions[idx].hostResponsePreference = hostPreference;
+          emotions[idx].communityResponsePreference = communityResponsePreference.value;
+          emotions[idx].email = hostPreference === "Host may respond privately" ? document.querySelector("#emotionEmail").value.trim() : "";
+        }
+        setJson("sattva-emotions", emotions);
+        emotionForm.dataset.editId = "";
+        showHeartStatus("Your note has been updated.", "success");
+      } else {
+        const newId = crypto.randomUUID();
+        emotions.push({
+          id: newId,
+          status: "Posted",
+          createdAt: new Date().toISOString(),
+          name: document.querySelector("#emotionName").value.trim(),
+          word: document.querySelector("#emotionWord").value.trim(),
+          message: document.querySelector("#emotionMessage").value.trim(),
+          hostResponsePreference: hostPreference,
+          communityResponsePreference: communityResponsePreference.value,
+          email: hostPreference === "Host may respond privately" ? document.querySelector("#emotionEmail").value.trim() : "",
+          publicResponse: "",
+          communityReplies: []
+        });
+        setJson("sattva-emotions", emotions);
+        addMyEmotionId(newId);
+        showHeartStatus("Thank you. Your note has been added to What's on Your Heart.", "success");
+      }
       emotionForm.reset();
       emotionEmailWrap.hidden = true;
       emotionEmail.required = false;
-      showHeartStatus("Thank you. Your note has been added to What's on Your Heart.", "success");
       renderEmotions();
     } catch {
       showHeartStatus("Your note could not be saved in this browser. Please try again or contact the host.", "error");
@@ -400,7 +479,51 @@ if (emotionForm) {
   });
 }
 
+function handleEmotionOwnerClick(event) {
+  const editId = event.target.dataset.emotionEdit;
+  const deleteId = event.target.dataset.emotionDelete;
+  if (!editId && !deleteId) return;
+  const emotions = getJson("sattva-emotions");
+  if (editId) {
+    const e = emotions.find((x) => x.id === editId);
+    if (!e) return;
+    document.querySelector("#emotionName").value = e.name || "";
+    document.querySelector("#emotionWord").value = e.word || "";
+    document.querySelector("#emotionMessage").value = e.message || "";
+    document.querySelector("#hostResponsePreference").value = e.hostResponsePreference || "No host response";
+    document.querySelector("#communityResponsePreference").value = e.communityResponsePreference || "No community response";
+    const needsEmail = e.hostResponsePreference === "Host may respond privately";
+    document.querySelector("#emotionEmailWrap").hidden = !needsEmail;
+    document.querySelector("#emotionEmail").required = needsEmail;
+    document.querySelector("#emotionEmail").value = e.email || "";
+    emotionForm.dataset.editId = editId;
+    const modal = document.querySelector("#emotionModal");
+    const title = document.querySelector("#emotionModalTitle");
+    const submitBtn = emotionForm.querySelector('button[type="submit"]');
+    if (title) title.textContent = "Edit your post";
+    if (submitBtn) submitBtn.textContent = "Save changes";
+    if (modal) {
+      modal.hidden = false;
+      document.body.style.overflow = "hidden";
+      setTimeout(() => document.querySelector("#emotionWord")?.focus(), 40);
+    }
+    return;
+  }
+  if (deleteId) {
+    if (!confirm("Delete this post from the emotion board? This cannot be undone.")) return;
+    const filtered = emotions.filter((x) => x.id !== deleteId);
+    setJson("sattva-emotions", filtered);
+    const mine = getJson("sattva-my-emotions", []).filter((id) => id !== deleteId);
+    setJson("sattva-my-emotions", mine);
+    renderEmotions();
+    showHeartStatus("Your post has been deleted.", "success");
+  }
+}
+
 if (emotionList) {
+  emotionList.addEventListener("click", handleEmotionOwnerClick);
+  const archiveListEl = document.querySelector("#emotionArchiveList");
+  archiveListEl?.addEventListener("click", handleEmotionOwnerClick);
   emotionList.addEventListener("submit", (event) => {
     const replyForm = event.target.closest("[data-reply-form]");
     if (!replyForm) return;

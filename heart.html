@@ -28,6 +28,9 @@
     <meta name="twitter:description" content="A gentle place to share what's on your heart, by name or anonymously." />
     <meta name="twitter:image" content="https://sattvapathcollective.com/assets/images/hero-retreat.png" />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/styles.css">
   </head>
   <body>
@@ -75,7 +78,13 @@
 
           <div class="heart-word-cloud" id="heartWordCloud" hidden aria-label="Recent feelings shared"></div>
 
-          <div class="emotion-list" id="emotionList"></div>
+          <h3 class="board-heading">This month's board</h3>
+          <div class="emotion-list emotion-board" id="emotionList"></div>
+
+          <details class="emotion-archive" id="emotionArchive" hidden>
+            <summary>Archive — older shared feelings</summary>
+            <div class="emotion-list emotion-board emotion-list-archive" id="emotionArchiveList"></div>
+          </details>
         </div>
       </section>
     </main>
@@ -150,6 +159,14 @@
         function closeModal() {
           modal.hidden = true;
           document.body.style.overflow = "";
+          form?.reset();
+          if (form) form.dataset.editId = "";
+          const title = document.querySelector("#emotionModalTitle");
+          if (title) title.textContent = "What's on your heart today?";
+          const submitBtn = form?.querySelector('button[type="submit"]');
+          if (submitBtn) submitBtn.textContent = "Post";
+          const emailWrap = document.querySelector("#emotionEmailWrap");
+          if (emailWrap) emailWrap.hidden = true;
         }
         openBtn?.addEventListener("click", openModal);
         closeBtn?.addEventListener("click", closeModal);
