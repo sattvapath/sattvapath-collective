@@ -563,12 +563,17 @@ a {
   fill: currentColor;
 }
 
-.nav-links .social-icon {
-  margin-left: 2px;
-}
-
 .nav-links .social-icon.social-instagram { color: #c65b8f; }
 .nav-links .social-icon.social-facebook { color: #3a68a5; }
+
+.nav-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-left: auto;
+  padding-left: 12px;
+  padding-right: 4px;
+}
 
 .footer-social {
   display: inline-flex;
