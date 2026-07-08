@@ -724,6 +724,63 @@
     <script>
       const storageKey = "sattva-events";
       const featuredRetreatId = "sattva-path-retreat-2026";
+
+      // ---------- API layer (added when backend moved to Postgres) ----------
+      async function _apiSend(method, path, body) {
+        const opts = { method, credentials: "same-origin", headers: {} };
+        if (body != null) { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
+        const res = await fetch(path, opts);
+        if (!res.ok) {
+          let msg;
+          try { msg = (await res.json()).error; } catch { msg = res.statusText; }
+          const err = new Error(msg || "request_failed"); err.status = res.status; throw err;
+        }
+        return res.status === 204 ? null : res.json();
+      }
+      const apiGet    = (p) => _apiSend("GET",    p);
+      const apiPost   = (p, b) => _apiSend("POST",   p, b);
+      const apiPatch  = (p, b) => _apiSend("PATCH",  p, b);
+      const apiDelete = (p) => _apiSend("DELETE", p);
+
+      // Server-side session check. Returns user object or null.
+      async function apiWhoAmI() {
+        try { return (await apiGet("/api/admin/me")).user; }
+        catch { return null; }
+      }
+
+      // Caches keep the sync-looking admin UI working without rewriting every function.
+      let apiEventsCache = [];
+      let apiEmotionsCache = [];
+      // Normalize server (snake_case) emotion to legacy camelCase used across admin.html.
+      function normalizeEmotion(e) {
+        return {
+          id: e.id,
+          clientId: e.client_id,
+          status: e.status,
+          createdAt: e.created_at,
+          name: e.name,
+          word: e.word,
+          message: e.message,
+          hostResponsePreference: e.host_response_preference,
+          communityResponsePreference: e.community_response_preference,
+          email: e.email || "",
+          publicResponse: e.public_response || "",
+          communityReplies: e.community_replies || []
+        };
+      }
+      async function refreshApiCaches() {
+        try {
+          const [events, emotions] = await Promise.all([
+            apiGet("/api/admin/events").catch(() => []),
+            apiGet("/api/emotions").catch(() => [])
+          ]);
+          apiEventsCache = events;
+          apiEmotionsCache = emotions.map(normalizeEmotion);
+          // Mirror to localStorage so any legacy readers still see fresh data.
+          setJson(emotionKey, apiEmotionsCache);
+          setJson(storageKey, apiEventsCache);
+        } catch (err) { console.warn("API cache refresh failed", err); }
+      }
       const contentKey = "sattva-site-content";
       const customSectionsKey = "sattva-custom-sections";
       const imageKey = "sattva-images";
@@ -830,15 +887,21 @@
       const adminStatus = document.querySelector("#adminStatus");
 
       function getEvents() {
-        return getJson(storageKey);
+        // Prefer API cache when available; otherwise fall back to localStorage.
+        return apiEventsCache.length ? apiEventsCache : getJson(storageKey);
       }
 
+      // Kept for legacy calls in this file; the *actual* server persistence goes
+      // through apiPost/apiPatch/apiDelete in the form submit + delete handlers below.
       function saveEvents(events) {
+        apiEventsCache = events;
         localStorage.setItem(storageKey, JSON.stringify(events));
       }
 
       function seedFeaturedRetreatIfMissing() {
-        const events = getEvents();
+        // The API already seeds the featured retreat at DB creation time. This
+        // shim only fills localStorage for any legacy code path that reads from it.
+        const events = getJson(storageKey);
         if (events.some((e) => e.id === featuredRetreatId)) return;
         events.unshift({
           id: featuredRetreatId,
@@ -1107,21 +1170,33 @@
 
       sectionKey.addEventListener("change", loadSectionEditor);
 
-      loginForm.addEventListener("submit", (event) => {
+      loginForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         const username = document.querySelector("#loginUsername").value.trim();
         const password = document.querySelector("#loginPassword").value;
-        const user = getJson(usersKey).find((item) => item.username === username && item.password === password);
-        if (!user) {
+        try {
+          const result = await apiPost("/api/admin/login", { username, password });
+          // Session cookie is now set by the server. Mirror the local user list
+          // so legacy per-permission UI keeps working.
+          const users = getJson(usersKey);
+          if (!users.find((u) => u.username === username)) {
+            users.push({ username, password: "", role: result.user.role, permissions: allPermissions });
+            setJson(usersKey, users);
+          }
+          sessionStorage.setItem(sessionKey, username);
+          loginForm.reset();
+          loginMessage.hidden = true;
+          await refreshApiCaches();
+          applyAccess();
+          renderEvents();
+          renderEmotionAdmin?.();
+          showAdminStatus("Signed in. You can now manage the site.", "success");
+        } catch (err) {
           loginMessage.hidden = false;
-          loginMessage.textContent = "The username or password did not match.";
-          return;
+          loginMessage.textContent = err.message === "rate_limited"
+            ? "Too many attempts. Please try again in a moment."
+            : "The username or password did not match.";
         }
-        sessionStorage.setItem(sessionKey, user.username);
-        loginForm.reset();
-        loginMessage.hidden = true;
-        applyAccess();
-        showAdminStatus("Signed in. You can now manage the site.", "success");
       });
 
       passwordResetForm.addEventListener("submit", (event) => {
@@ -1153,8 +1228,11 @@
         showResetMessage("Password reset. You can now sign in with the new password.", "success");
       });
 
-      document.querySelector("#logoutButton").addEventListener("click", () => {
+      document.querySelector("#logoutButton").addEventListener("click", async () => {
+        try { await apiPost("/api/admin/logout"); } catch { /* ignore */ }
         sessionStorage.removeItem(sessionKey);
+        apiEventsCache = [];
+        apiEmotionsCache = [];
         adminStatus.hidden = true;
         applyAccess();
       });
@@ -1307,34 +1385,33 @@
         }
       });
 
-      emotionAdminList.addEventListener("click", (event) => {
+      emotionAdminList.addEventListener("click", async (event) => {
         const respondId = event.target.dataset.emotionRespond;
         const hideId = event.target.dataset.emotionHide;
         const deleteId = event.target.dataset.emotionDelete;
-        const emotions = getJson(emotionKey);
 
-        if (respondId) {
-          const emotion = emotions.find((item) => item.id === respondId);
-          if (!emotion) return;
-          emotion.publicResponse = document.querySelector(`[data-response-input="${respondId}"]`).value.trim();
-          setJson(emotionKey, emotions);
-          renderEmotionAdmin();
-          showAdminStatus("Public host response saved.", "success");
-        }
-
-        if (hideId) {
-          const emotion = emotions.find((item) => item.id === hideId);
-          if (!emotion) return;
-          emotion.status = emotion.status === "Hidden" ? "Posted" : "Hidden";
-          setJson(emotionKey, emotions);
-          renderEmotionAdmin();
-          showAdminStatus(`Heart post ${emotion.status === "Hidden" ? "hidden" : "shown"}.`, "success");
-        }
-
-        if (deleteId) {
-          setJson(emotionKey, emotions.filter((emotion) => emotion.id !== deleteId));
-          renderEmotionAdmin();
-          showAdminStatus("Heart post deleted.", "success");
+        try {
+          if (respondId) {
+            const value = document.querySelector(`[data-response-input="${respondId}"]`).value.trim();
+            await apiPost(`/api/admin/emotions/${encodeURIComponent(respondId)}/response`, { response: value });
+            await refreshApiCaches();
+            renderEmotionAdmin();
+            showAdminStatus("Public host response saved.", "success");
+          }
+          if (hideId) {
+            const result = await apiPost(`/api/admin/emotions/${encodeURIComponent(hideId)}/hide`);
+            await refreshApiCaches();
+            renderEmotionAdmin();
+            showAdminStatus(`Heart post ${result?.status === "Hidden" ? "hidden" : "shown"}.`, "success");
+          }
+          if (deleteId) {
+            await apiDelete(`/api/admin/emotions/${encodeURIComponent(deleteId)}`);
+            await refreshApiCaches();
+            renderEmotionAdmin();
+            showAdminStatus("Heart post deleted.", "success");
+          }
+        } catch (err) {
+          showAdminStatus("Could not update: " + (err.message || "error"), "error");
         }
       });
 
@@ -1379,7 +1456,7 @@
         };
       }
 
-      form.addEventListener("submit", (event) => {
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
         if (!form.checkValidity()) {
           form.reportValidity();
@@ -1391,17 +1468,21 @@
           return;
         }
         const next = eventFromForm();
-        const events = getEvents();
-        const existingIndex = events.findIndex((saved) => saved.id === next.id);
-        if (existingIndex >= 0) {
-          events[existingIndex] = next;
-        } else {
-          events.push(next);
+        // Slugify id if a new event
+        if (!document.querySelector("#eventId").value) {
+          next.id = (next.title || "event").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Date.now().toString(36);
         }
-        saveEvents(events);
-        resetForm();
-        renderEvents();
-        showAdminStatus("Event saved. Posted events will appear on the public site.", "success");
+        const existing = apiEventsCache.find((e) => e.id === next.id);
+        try {
+          if (existing) await apiPatch(`/api/admin/events/${encodeURIComponent(next.id)}`, next);
+          else          await apiPost(`/api/admin/events`, next);
+          await refreshApiCaches();
+          resetForm();
+          renderEvents();
+          showAdminStatus("Event saved. Posted events will appear on the public site.", "success");
+        } catch (err) {
+          showAdminStatus("Could not save event: " + (err.message || "error"), "error");
+        }
       });
 
       fieldChoices.addEventListener("change", renderPreview);
@@ -1428,7 +1509,7 @@
         showAdminStatus("Event form cleared.", "success");
       });
 
-      eventList.addEventListener("click", (event) => {
+      eventList.addEventListener("click", async (event) => {
         const editId = event.target.dataset.edit;
         const deleteId = event.target.dataset.delete;
         const events = getEvents();
@@ -1453,15 +1534,33 @@
         }
 
         if (deleteId) {
-          saveEvents(events.filter((item) => item.id !== deleteId));
-          renderEvents();
-          showAdminStatus("Event deleted.", "success");
+          try {
+            await apiDelete(`/api/admin/events/${encodeURIComponent(deleteId)}`);
+            await refreshApiCaches();
+            renderEvents();
+            showAdminStatus("Event deleted.", "success");
+          } catch (err) {
+            showAdminStatus("Could not delete event: " + (err.message || "error"), "error");
+          }
         }
       });
 
       seedFeaturedRetreatIfMissing();
       renderFieldChoices();
       renderEvents();
+
+      // Check if the browser still has a valid server session and, if yes,
+      // silently sign the user in without asking for the password again.
+      (async () => {
+        const user = await apiWhoAmI();
+        if (user) {
+          sessionStorage.setItem(sessionKey, user.username);
+          await refreshApiCaches();
+          applyAccess();
+          renderEvents();
+          renderEmotionAdmin?.();
+        }
+      })();
       populateSectionSelector();
       renderCustomSectionsAdmin();
       renderImagesAdmin();
