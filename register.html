@@ -451,6 +451,133 @@
         margin-top: 18px;
       }
 
+      .fee-summary {
+        padding: 12px 16px;
+        border: 1px solid rgba(184, 132, 66, 0.35);
+        border-radius: var(--radius);
+        background: #fff8ec;
+        color: var(--ink);
+        font-family: Arial, sans-serif;
+        font-size: 0.95rem;
+      }
+      .fee-summary strong { color: var(--leaf); }
+      .fee-summary small { color: var(--muted); }
+
+      .occupancy-choice {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .occ-radio {
+        flex: 1 1 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fffdf8;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-size: 0.95rem;
+      }
+      .occ-radio input { accent-color: var(--leaf); }
+
+      .room-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        background: rgba(37, 48, 39, 0.6);
+        z-index: 100;
+      }
+      .room-modal-backdrop[hidden] { display: none; }
+      .room-modal-card {
+        position: relative;
+        width: min(100%, 940px);
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 28px 28px 24px;
+        border-radius: var(--radius);
+        background: var(--paper);
+        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+      }
+      .room-modal-close {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 26px;
+        cursor: pointer;
+      }
+      .room-modal-close:hover { background: rgba(0,0,0,0.06); color: var(--ink); }
+      .room-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 18px;
+        margin-top: 16px;
+      }
+      .room-card {
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fffdf8;
+        font-family: Arial, sans-serif;
+      }
+      .room-card h4 {
+        margin: 0 0 4px 0;
+        color: var(--leaf);
+        font-size: 1.1rem;
+      }
+      .room-card .room-village {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 0.86rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .room-card ul {
+        margin: 0 0 14px 20px;
+        padding: 0;
+        color: var(--ink);
+        font-size: 0.94rem;
+      }
+      .room-card li { margin-bottom: 3px; }
+      .room-card .bath-note {
+        margin: 0 0 14px 0;
+        padding: 10px 12px;
+        border-left: 3px solid var(--gold);
+        background: rgba(184, 132, 66, 0.08);
+        color: var(--ink);
+        font-size: 0.9rem;
+        border-radius: 4px;
+      }
+      .room-card dl.pricing {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 4px 12px;
+        margin: 12px 0 0;
+        padding-top: 10px;
+        border-top: 1px dashed var(--line);
+        font-size: 0.92rem;
+      }
+      .room-card dl.pricing dt {
+        color: var(--muted);
+        font-weight: 400;
+      }
+      .room-card dl.pricing dd {
+        margin: 0;
+        color: var(--ink);
+      }
+      .room-card dl.pricing dd.total { font-weight: 700; color: var(--leaf); }
+
       .participant-grid {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -622,6 +749,29 @@
         .participant-grid > * {
           grid-column: 1 / -1;
         }
+
+        .room-modal-card {
+          padding: 20px 16px 18px;
+          max-height: 94vh;
+        }
+
+        .room-cards {
+          grid-template-columns: 1fr;
+          gap: 14px;
+        }
+
+        .room-card {
+          padding: 16px;
+        }
+
+        .room-card dl.pricing {
+          grid-template-columns: 1fr;
+          gap: 2px 8px;
+        }
+
+        .room-card dl.pricing dt {
+          margin-top: 8px;
+        }
       }
     </style>
   </head>
@@ -648,9 +798,17 @@
           <h2>Before you register</h2>
           <ul class="summary-list">
             <li><strong>Dates</strong><span id="summaryDates">September 19-20, 2026</span></li>
+            <li><strong>Schedule</strong>Saturday 10 am to Sunday noon (1 night)</li>
             <li><strong>Location</strong><span id="summaryLocation">Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558</span></li>
             <li><strong>Organizer</strong>Sattva Path Collective LLC</li>
             <li><strong>Age requirement</strong><span id="summaryAge">18 years or older</span></li>
+            <li>
+              <strong>Retreat Experience fee*</strong>
+              $249 early bird (before Aug 15) / $299 regular. Includes all sessions and 3 meals.
+            </li>
+            <li style="color:var(--muted); font-size:0.9rem; padding-bottom:4px;">
+              * Lodging is not included.
+            </li>
             <li>
               <strong>Payment <span class="required">*</span></strong>
               Zelle to <a href="mailto:Sattvapathcollective@gmail.com">Sattvapathcollective@gmail.com</a>
@@ -794,6 +952,101 @@
           </form>
 
           <iframe name="hidden_google_submit" title="Hidden Google Form submission target"></iframe>
+
+          <div class="room-modal-backdrop" id="roomDetailsModal" role="dialog" aria-modal="true" aria-labelledby="roomDetailsTitle" hidden>
+            <div class="room-modal-card">
+              <button type="button" class="room-modal-close" id="roomDetailsClose" aria-label="Close">×</button>
+              <h2 id="roomDetailsTitle" style="margin-bottom:8px; color:var(--leaf);">Room details &amp; pricing</h2>
+
+              <p style="margin:12px 0; padding:12px 14px; border-left:3px solid var(--gold); background:#fff8ec; color:var(--ink); font-family:Arial, sans-serif; font-size:0.95rem;">
+                <strong>Tip:</strong> Choose <strong>2 spots</strong> if you don't want to share the bed. Each spot is priced individually — 1 spot = you share; more spots = extra beds/privacy.
+              </p>
+
+              <p style="margin:12px 0; padding:12px 14px; border-left:3px solid var(--gold); background:#fff8ec; color:var(--ink); font-family:Arial, sans-serif; font-size:0.95rem;">
+                <strong>Need a bigger room or a special arrangement?</strong>
+                Please <a href="mailto:Sattvapathcollective@gmail.com">contact the organizers</a> — we're happy to help find something that works for your group.
+              </p>
+
+              <p style="color:var(--muted); font-size:0.92rem; margin-top:8px;">
+                Early bird and Regular totals assume <strong>1 spot (shared)</strong> per person for 1 night. If you take extra spots, multiply the per-spot price accordingly.
+              </p>
+
+              <div class="room-cards">
+                <article class="room-card">
+                  <h4>Lakeside 1</h4>
+                  <p class="room-village">Lakeside Village · heating &amp; A/C · 1 cabin</p>
+                  <ul>
+                    <li>1 queen bed</li>
+                    <li>Private bathroom and shower</li>
+                  </ul>
+                  <dl class="pricing">
+                    <dt>Beds</dt><dd>1</dd>
+                    <dt>Max occupancy</dt><dd>2 spots</dd>
+                    <dt>Price per spot / night</dt><dd>$132.50</dd>
+                    <dt>Whole room (2 spots)</dt><dd>$265.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$381.50</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$431.50</dd>
+                  </dl>
+                </article>
+
+                <article class="room-card">
+                  <h4>Lakeside 2–9</h4>
+                  <p class="room-village">Lakeside Village · heating &amp; A/C · 8 cabins</p>
+                  <ul>
+                    <li>Either 2 twin beds (forest view) or 1 king bed (two twins pushed together)</li>
+                    <li>1 queen sofa bed (lake view side)</li>
+                    <li>Shared bathroom within each cabin (shared among guests staying in that cabin)</li>
+                  </ul>
+                  <dl class="pricing">
+                    <dt>Beds</dt><dd>2</dd>
+                    <dt>Max occupancy</dt><dd>4 spots</dd>
+                    <dt>Price per spot / night</dt><dd>$98.50</dd>
+                    <dt>Whole room (4 spots)</dt><dd>$394.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$347.50</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$397.50</dd>
+                  </dl>
+                </article>
+
+                <article class="room-card">
+                  <h4>Lodge 1–6</h4>
+                  <p class="room-village">Lodge Village · heating only, no A/C · 6 rooms</p>
+                  <ul>
+                    <li>2 twin beds per room</li>
+                  </ul>
+                  <div class="bath-note">
+                    <strong>Shared Lodge Bathrooms:</strong> two separate bathroom areas — each includes 2 toilets and 2 showers.
+                  </div>
+                  <dl class="pricing">
+                    <dt>Beds</dt><dd>2</dd>
+                    <dt>Max occupancy</dt><dd>2 spots</dd>
+                    <dt>Price per spot / night</dt><dd>$65.00</dd>
+                    <dt>Whole room (2 spots)</dt><dd>$130.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$314.00</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$364.00</dd>
+                  </dl>
+                </article>
+
+                <article class="room-card">
+                  <h4>Lodge 7–8</h4>
+                  <p class="room-village">Lodge Village · heating only, no A/C · 2 rooms</p>
+                  <ul>
+                    <li>3 twin beds per room</li>
+                  </ul>
+                  <div class="bath-note">
+                    <strong>Shared Lodge Bathrooms:</strong> two separate bathroom areas — each includes 2 toilets and 2 showers.
+                  </div>
+                  <dl class="pricing">
+                    <dt>Beds</dt><dd>3</dd>
+                    <dt>Max occupancy</dt><dd>2 spots</dd>
+                    <dt>Price per spot / night</dt><dd>$65.00</dd>
+                    <dt>Whole room (2 spots)</dt><dd>$130.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$314.00</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$364.00</dd>
+                  </dl>
+                </article>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     </main>
@@ -835,6 +1088,69 @@
       let currentRetreat = fallbackRetreat;
       let duplicateKey = `sattva-retreat-registration-signatures-${fallbackRetreat.id}`;
       let activeRecognition = null;
+
+      // ---- Retreat Experience Fee ----
+      const RETREAT_FEE_EARLY_BIRD = 249;
+      const RETREAT_FEE_REGULAR    = 299;
+      const EARLY_BIRD_CUTOFF      = "2026-08-15"; // strictly before this date = early bird
+      const NIGHTS                 = 1;             // Sat night stay only
+
+      function currentRetreatFee() {
+        return new Date().toISOString().slice(0, 10) < EARLY_BIRD_CUTOFF
+          ? RETREAT_FEE_EARLY_BIRD
+          : RETREAT_FEE_REGULAR;
+      }
+      function currentRetreatFeeLabel() {
+        return new Date().toISOString().slice(0, 10) < EARLY_BIRD_CUTOFF
+          ? `$${RETREAT_FEE_EARLY_BIRD} early bird (through Aug 14)`
+          : `$${RETREAT_FEE_REGULAR} regular`;
+      }
+
+      // ---- Room catalog: beds, max occupancy, single/shared prices per night ----
+      // maxOccupancy accounts for bed-sharing / sofa beds (may exceed bed count).
+      const ROOMS = [
+        // Lakeside Village: heating + A/C
+        { id: "lakeside-1", label: "Lakeside 1",  village: "Lakeside", beds: 1, maxOccupancy: 2, single: 265, shared: 132.5 },
+        { id: "lakeside-2", label: "Lakeside 2",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-3", label: "Lakeside 3",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-4", label: "Lakeside 4",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-5", label: "Lakeside 5",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-6", label: "Lakeside 6",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-7", label: "Lakeside 7",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-8", label: "Lakeside 8",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-9", label: "Lakeside 9",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        // Lodge Village: heating only, no A/C
+        { id: "lodge-1", label: "Lodge 1", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-2", label: "Lodge 2", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-3", label: "Lodge 3", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-4", label: "Lodge 4", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-5", label: "Lodge 5", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-6", label: "Lodge 6", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-7", label: "Lodge 7", village: "Lodge", beds: 3, maxOccupancy: 2, single: 195, shared: 65 },
+        { id: "lodge-8", label: "Lodge 8", village: "Lodge", beds: 3, maxOccupancy: 2, single: 195, shared: 65 },
+      ];
+      const ROOM_BY_ID = Object.fromEntries(ROOMS.map((r) => [r.id, r]));
+
+      // Returns total spots taken per room by all participants except the excluded one.
+      function computeRoomAvailability(excludingParticipantIndex = null) {
+        const usage = {};
+        ROOMS.forEach((r) => { usage[r.id] = { room: r, spotsTaken: 0 }; });
+        additionalParticipants.querySelectorAll("[data-group-field='roomId']").forEach((sel) => {
+          const idx = sel.dataset.participantIndex;
+          if (excludingParticipantIndex != null && String(idx) === String(excludingParticipantIndex)) return;
+          const roomId = sel.value;
+          if (!roomId || !usage[roomId]) return;
+          const spotsFld = additionalParticipants.querySelector(`[data-participant-index="${idx}"][data-group-field="spots"]`);
+          const n = Number(spotsFld?.value || 0);
+          if (n > 0) usage[roomId].spotsTaken += n;
+        });
+        return usage;
+      }
+      function availableRoomsFor(currentIndex) {
+        const usage = computeRoomAvailability(currentIndex);
+        return ROOMS.filter((r) => usage[r.id].spotsTaken < r.maxOccupancy)
+          .map((r) => ({ room: r, spotsLeft: r.maxOccupancy - usage[r.id].spotsTaken }));
+      }
 
       function getJson(key, fallback = []) {
         try {
@@ -1044,49 +1360,143 @@
         return new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
-          maximumFractionDigits: 0
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
         }).format(amount || 0);
       }
 
+      function selectedRoom(index) {
+        const roomIdField = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="roomId"]`);
+        return roomIdField?.value ? ROOM_BY_ID[roomIdField.value] : null;
+      }
+      function selectedSpots(index) {
+        const spotsFld = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="spots"]`);
+        return Number(spotsFld?.value || 0);
+      }
+      function participantRoomFee(index) {
+        const room = selectedRoom(index);
+        const spots = selectedSpots(index);
+        if (!room || !spots) return 0;
+        return NIGHTS * spots * room.shared;
+      }
+      function participantTotalFee(index) {
+        return currentRetreatFee() + participantRoomFee(index);
+      }
+      // Legacy hooks used by other code paths:
       function selectedAccommodationFee(field) {
-        const option = field?.selectedOptions?.[0];
-        return Number(option?.dataset.fee || 0);
+        const idx = field?.dataset.participantIndex;
+        return idx ? participantRoomFee(idx) : 0;
       }
-
       function selectedParticipantFees() {
-        return [...additionalParticipants.querySelectorAll("[data-group-field='accommodation']")]
-          .map((field) => selectedAccommodationFee(field));
+        const count = Number(participantCount.value);
+        const fees = [];
+        for (let i = 1; i <= count; i += 1) fees.push(participantTotalFee(i));
+        return fees;
       }
-
       function totalPaymentDue(participants = null) {
-        const fees = participants
-          ? participants.map((participant) => Number(participant.fee || 0))
-          : selectedParticipantFees();
-        return fees.reduce((total, fee) => total + fee, 0);
+        if (participants) return participants.reduce((t, p) => t + Number(p.fee || 0), 0);
+        return selectedParticipantFees().reduce((t, f) => t + f, 0);
       }
-
       function updatePaymentTotal() {
-        const fees = selectedParticipantFees();
-        const selectedCount = fees.filter((fee) => fee > 0).length;
-        const totalCount = Number(participantCount.value);
-        paymentTotalAmount.textContent = formatCurrency(fees.reduce((total, fee) => total + fee, 0));
-        paymentTotalHelp.textContent = selectedCount === totalCount
+        const count = Number(participantCount.value);
+        let total = 0, complete = 0;
+        for (let i = 1; i <= count; i += 1) {
+          const room = selectedRoom(i);
+          const spots = selectedSpots(i);
+          if (room && spots) complete += 1;
+          total += participantTotalFee(i);
+          // Sync hidden fields for form submission compatibility
+          const setHidden = (name, value) => {
+            const f = additionalParticipants.querySelector(`[data-participant-index="${i}"][data-group-field="${name}"]`);
+            if (f) f.value = value;
+          };
+          setHidden("retreatFee", currentRetreatFee());
+          setHidden("roomFee", participantRoomFee(i));
+          setHidden("fee", participantTotalFee(i));
+          setHidden("accommodation", room && spots
+            ? `${room.label} — ${spots} spot${spots === 1 ? "" : "s"} — $${room.shared} × ${spots} × ${NIGHTS} night`
+            : "");
+          // Update the per-participant note
+          const note = additionalParticipants.querySelector(`.spots-note[data-participant-index="${i}"]`);
+          if (note) {
+            if (!room)        note.textContent = "Choose 2 spots if you don't want to share the bed.";
+            else if (!spots)  note.textContent = `Pick number of spots. Each spot: $${room.shared} × 1 night.`;
+            else              note.innerHTML   = `<strong>Room: $${(spots * room.shared).toFixed(2)} for 1 night (${spots} spot${spots === 1 ? "" : "s"})</strong> · Retreat fee $${currentRetreatFee()} · <strong>Participant total: $${participantTotalFee(i).toFixed(2)}</strong>`;
+          }
+        }
+        paymentTotalAmount.textContent = formatCurrency(total);
+        paymentTotalHelp.textContent = complete === count
           ? "This is the total amount to send by Zelle for this registration."
-          : `Accommodation fee selected for ${selectedCount} of ${totalCount} participant${totalCount === 1 ? "" : "s"}.`;
+          : `Room + spots chosen for ${complete} of ${count} participant${count === 1 ? "" : "s"}.`;
       }
 
-      function updateRoommateRequirements() {
-        [...additionalParticipants.querySelectorAll("[data-group-field='accommodation']")].forEach((field) => {
-          const index = field.dataset.participantIndex;
-          const roommate = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="roommate"]`);
-          const label = additionalParticipants.querySelector(`label[for="participant-${index}-roommate"]`);
-          if (!roommate) return;
-          const required = isSharedAccommodation(field.value);
-          roommate.required = required;
-          if (label) label.innerHTML = required
-            ? 'Preferred roommate, if choosing shared accommodation <span class="required">*</span>'
-            : "Preferred roommate, if choosing shared accommodation";
-        });
+      function populateRoomDropdowns() {
+        const count = Number(participantCount.value);
+        for (let i = 1; i <= count; i += 1) {
+          const sel = additionalParticipants.querySelector(`[data-participant-index="${i}"][data-group-field="roomId"]`);
+          if (!sel) continue;
+          const currentValue = sel.value;
+          const available = availableRoomsFor(i);
+          const rows = [`<option value="">Select a cabin or room</option>`];
+          available.forEach(({ room, spotsLeft }) => {
+            const label = `${room.label} (${room.village}) — ${spotsLeft} spot${spotsLeft === 1 ? "" : "s"} available`;
+            rows.push(`<option value="${room.id}">${label}</option>`);
+          });
+          sel.innerHTML = rows.join("");
+          if (available.some((a) => a.room.id === currentValue)) sel.value = currentValue;
+        }
+      }
+
+      function populateSpotsDropdowns() {
+        const count = Number(participantCount.value);
+        for (let i = 1; i <= count; i += 1) {
+          const sel = additionalParticipants.querySelector(`[data-participant-index="${i}"][data-group-field="spots"]`);
+          if (!sel) continue;
+          const room = selectedRoom(i);
+          const currentValue = sel.value;
+          if (!room) {
+            sel.innerHTML = `<option value="">First pick a room</option>`;
+            return;
+          }
+          const usage = computeRoomAvailability(i);
+          const spotsLeft = room.maxOccupancy - usage[room.id].spotsTaken;
+          const rows = [`<option value="">Select number of spots</option>`];
+          for (let n = 1; n <= spotsLeft; n += 1) {
+            const price = (n * room.shared * NIGHTS).toFixed(2);
+            const suffix = (n === room.maxOccupancy) ? " (whole room)" : "";
+            const label = `${n} spot${n === 1 ? "" : "s"} — $${price}${suffix}`;
+            rows.push(`<option value="${n}">${label}</option>`);
+          }
+          sel.innerHTML = rows.join("");
+          const n = Number(currentValue);
+          if (n && n <= spotsLeft) sel.value = String(n);
+        }
+      }
+
+      function updateRoommateVisibility() { /* no-op — roommate now always visible */ }
+
+      // Keep legacy name so old callers still work:
+      function updateRoommateRequirements() { updateRoommateVisibility(); }
+      function isSharedAccommodation(_v) { return false; }  // legacy no-op
+
+      function populatePriceTable() {
+        const tbody = document.querySelector("#priceTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = ROOMS.map((r) => {
+          const eb = RETREAT_FEE_EARLY_BIRD + r.shared;
+          const rg = RETREAT_FEE_REGULAR    + r.shared;
+          return `
+            <tr>
+              <td>${r.label} <span style="color:var(--muted);">(${r.village})</span></td>
+              <td>${r.beds}</td>
+              <td>${r.maxOccupancy}</td>
+              <td>$${r.single.toFixed(2)}</td>
+              <td>$${r.shared.toFixed(2)}</td>
+              <td><strong>$${eb.toFixed(2)}</strong></td>
+              <td>$${rg.toFixed(2)}</td>
+            </tr>
+          `;
+        }).join("");
       }
 
       function getStoredSignatures() {
@@ -1151,19 +1561,38 @@
                   <input id="participant-${index}-phone" ${isPrimary ? 'name="entry.557662615"' : ""} data-group-field="phone" data-participant-index="${index}" type="tel" autocomplete="tel" data-phone data-speech required>
                 </div>
                 <div class="span-12 pad-top">
-                  <label for="participant-${index}-accommodation">Accommodation type and fee <span class="required">*</span></label>
-                  <select id="participant-${index}-accommodation" ${isPrimary ? 'name="entry.1480115925"' : ""} data-group-field="accommodation" data-participant-index="${index}" required>
-                    <option value="">Select accommodation and fee</option>
-                    <option value="Shared accommodation - Early bird fee $449 (if registering before July 31,2026)" data-fee="449">Shared accommodation - Early bird fee $449 if registering before July 31, 2026</option>
-                    <option value="Shared accommodation - Regular fee $499" data-fee="499">Shared accommodation - Regular fee $499</option>
-                    <option value="Single accommodation - Early bird fee $549 (if registering before July 31,2026)" data-fee="549">Single accommodation - Early bird fee $549 if registering before July 31, 2026</option>
-                    <option value="Single accommodation - Regular fee $599" data-fee="599">Single accommodation - Regular fee $599</option>
+                  <div class="fee-summary">
+                    <strong>Retreat Experience Fee:</strong>
+                    <span>${currentRetreatFeeLabel()}</span>
+                    <br><small>Includes all sessions and 3 meals for this participant.</small>
+                  </div>
+                </div>
+                <div class="span-6 pad-top" style="padding-right:14px;">
+                  <label for="participant-${index}-roomId">Accommodation — cabin or room <span class="required">*</span></label>
+                  <select id="participant-${index}-roomId" data-group-field="roomId" data-participant-index="${index}" required>
+                    <option value="">Select a cabin or room</option>
                   </select>
+                  <p class="help" style="margin-top:6px; padding-left:12px;">
+                    <a href="#" data-open-room-details>View room details</a>
+                  </p>
+                </div>
+                <div class="span-6 pad-top" style="padding-left:14px;">
+                  <label for="participant-${index}-spots">Number of spots <span class="required">*</span></label>
+                  <select id="participant-${index}-spots" data-group-field="spots" data-participant-index="${index}" required>
+                    <option value="">First pick a room</option>
+                  </select>
+                  <p class="help spots-note" data-participant-index="${index}" style="margin-top:6px; padding-left:12px;">
+                    Choose 2 spots if you don't want to share the bed.
+                  </p>
                 </div>
                 <div class="span-12 pad-top">
-                  <label for="participant-${index}-roommate">Preferred roommate, if choosing shared accommodation</label>
-                  <input id="participant-${index}-roommate" ${isPrimary ? 'name="entry.1016074176"' : ""} data-group-field="roommate" data-participant-index="${index}" type="text" data-speech>
+                  <label for="participant-${index}-roommate">Preferred roommate name (optional — leave blank if none)</label>
+                  <input id="participant-${index}-roommate" ${isPrimary ? 'name="entry.1016074176"' : ""} data-group-field="roommate" data-participant-index="${index}" type="text" data-speech placeholder="If you have someone in mind to share the room with">
                 </div>
+                <input type="hidden" ${isPrimary ? 'name="entry.1480115925"' : ""} data-group-field="accommodation" data-participant-index="${index}">
+                <input type="hidden" data-group-field="fee" data-participant-index="${index}" value="0">
+                <input type="hidden" data-group-field="retreatFee" data-participant-index="${index}" value="0">
+                <input type="hidden" data-group-field="roomFee" data-participant-index="${index}" value="0">
               </div>
               <div>
                 <label for="participant-${index}-notes">Dietary, accessibility, medical, or other notes</label>
@@ -1185,6 +1614,8 @@
         }
 
         enhanceSpeechFields(additionalParticipants);
+        populateRoomDropdowns();
+        populateSpotsDropdowns();
         updateRoommateRequirements();
         updatePaymentTotal();
       }
@@ -1196,6 +1627,8 @@
           const field = (name) => additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="${name}"]`)?.value || "";
           const accommodationField = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="accommodation"]`);
           const fullName = `${field("firstName")} ${field("lastName")}`.trim();
+          const room = selectedRoom(index);
+          const spots = selectedSpots(index);
           participants.push({
             role: `Participant ${index}`,
             name: fullName,
@@ -1204,8 +1637,13 @@
             age: field("age"),
             email: field("email"),
             phone: field("phone"),
+            room: room ? room.label : "",
+            roomVillage: room ? room.village : "",
+            spots: spots,
             accommodation: field("accommodation"),
-            fee: selectedAccommodationFee(accommodationField),
+            retreatFee: currentRetreatFee(),
+            roomFee: participantRoomFee(index),
+            fee: participantTotalFee(index),
             roommate: field("roommate"),
             notes: field("notes"),
             emergencyName: field("emergencyName"),
@@ -1382,6 +1820,12 @@
           updateRoommateRequirements();
           updatePaymentTotal();
         }
+        if (event.target.matches("[data-group-field='roomId']")
+            || event.target.matches("[data-group-field='spots']")) {
+          populateRoomDropdowns();
+          populateSpotsDropdowns();
+          updatePaymentTotal();
+        }
         if (event.target.matches("input, select, textarea")) {
           const message = customValidationMessage(event.target);
           if (!message) clearFieldError(event.target);
@@ -1526,6 +1970,32 @@
       restoreForm();
       enhanceSpeechFields();
       applyClosedStatus();
+      populatePriceTable();
+
+      // Room details modal (opens on "View room details" click)
+      (function () {
+        const modal = document.querySelector("#roomDetailsModal");
+        if (!modal) return;
+        function openModal() {
+          modal.hidden = false;
+          document.body.style.overflow = "hidden";
+        }
+        function closeModal() {
+          modal.hidden = true;
+          document.body.style.overflow = "";
+        }
+        document.addEventListener("click", (e) => {
+          if (e.target.closest("[data-open-room-details]")) {
+            e.preventDefault();
+            openModal();
+          } else if (e.target === modal || e.target.closest("#roomDetailsClose")) {
+            closeModal();
+          }
+        });
+        document.addEventListener("keydown", (e) => {
+          if (!modal.hidden && e.key === "Escape") closeModal();
+        });
+      })();
     </script>
   </body>
 </html>
