@@ -490,23 +490,66 @@
         border-radius: var(--radius);
         background: var(--white);
       }
-      #roomDetails h3 { color: var(--leaf); margin-bottom: 12px; font-family: Arial, sans-serif; }
-      #roomDetails h4 { margin-top: 16px; color: var(--ink); font-family: Arial, sans-serif; }
-      #roomDetails ul { margin: 6px 0 12px 20px; padding: 0; color: var(--muted); }
-      #roomDetails li { margin-bottom: 4px; }
-      .price-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 12px;
+      #roomDetails > summary { margin-bottom: 16px; }
+      .room-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 18px;
+        margin-top: 16px;
+      }
+      .room-card {
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fffdf8;
         font-family: Arial, sans-serif;
+      }
+      .room-card h4 {
+        margin: 0 0 4px 0;
+        color: var(--leaf);
+        font-size: 1.1rem;
+      }
+      .room-card .room-village {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 0.86rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .room-card ul {
+        margin: 0 0 14px 20px;
+        padding: 0;
+        color: var(--ink);
+        font-size: 0.94rem;
+      }
+      .room-card li { margin-bottom: 3px; }
+      .room-card .bath-note {
+        margin: 0 0 14px 0;
+        padding: 10px 12px;
+        border-left: 3px solid var(--gold);
+        background: rgba(184, 132, 66, 0.08);
+        color: var(--ink);
+        font-size: 0.9rem;
+        border-radius: 4px;
+      }
+      .room-card dl.pricing {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 4px 12px;
+        margin: 12px 0 0;
+        padding-top: 10px;
+        border-top: 1px dashed var(--line);
         font-size: 0.92rem;
       }
-      .price-table th, .price-table td {
-        padding: 8px 10px;
-        border-bottom: 1px solid var(--line);
-        text-align: left;
+      .room-card dl.pricing dt {
+        color: var(--muted);
+        font-weight: 400;
       }
-      .price-table th { color: var(--gold); font-weight: 700; }
+      .room-card dl.pricing dd {
+        margin: 0;
+        color: var(--ink);
+      }
+      .room-card dl.pricing dd.total { font-weight: 700; color: var(--leaf); }
 
       .participant-grid {
         display: grid;
@@ -712,11 +755,7 @@
             <li>
               <strong>Retreat Experience fee</strong>
               $249 early bird (before Aug 15) / $299 regular. Includes all sessions and 3 meals.
-            </li>
-            <li>
-              <strong>Starting at $314 per person</strong>
-              (early bird) — includes retreat experience, 3 meals, and shared lodging (Lodge, 1 night).
-              <br><small>Regular pricing after Aug 15: from $364 per person.</small>
+              <br><small>Lodging is billed separately — pricing shown in the accommodation section of the form.</small>
             </li>
             <li>
               <strong>Payment <span class="required">*</span></strong>
@@ -870,54 +909,84 @@
               Please <a href="mailto:Sattvapathcollective@gmail.com">contact the organizers</a> — we're happy to help find something that works for your group.
             </p>
 
-            <h3>Lakeside Village</h3>
-            <p style="color:var(--muted);">All cabins include heating and air conditioning.</p>
-            <h4>Lakeside 1</h4>
-            <ul>
-              <li>1 queen bed</li>
-              <li>Private bathroom and shower</li>
-            </ul>
-            <h4>Lakeside 2–9</h4>
-            <ul>
-              <li>Either 2 twin beds (forest view) or 1 king bed (two twins pushed together)</li>
-              <li>1 queen sofa bed (lake view side)</li>
-              <li>Shared bathroom within each cabin (shared among guests staying in that cabin)</li>
-            </ul>
-
-            <h3 style="margin-top:24px;">Lodge Village</h3>
-            <p style="color:var(--muted);">Heating only, no air conditioning.</p>
-            <h4>Lodge Rooms 1–6</h4>
-            <ul>
-              <li>2 twin beds per room</li>
-            </ul>
-            <h4>Lodge Rooms 7–8</h4>
-            <ul>
-              <li>3 twin beds per room</li>
-            </ul>
-            <h4>Shared Lodge Bathrooms</h4>
-            <ul>
-              <li>Two separate bathroom areas</li>
-              <li>Each includes 2 toilets and 2 showers</li>
-            </ul>
-
-            <h3 style="margin-top:24px;">Pricing (1 night, per person)</h3>
-            <p style="color:var(--muted); font-size:0.92rem;">
-              "Early bird total" and "Regular total" columns assume <strong>shared occupancy</strong>. If you take a room by yourself (single occupancy), the room price replaces the shared price.
+            <p style="color:var(--muted); font-size:0.92rem; margin-top:8px;">
+              "Early bird total" and "Regular total" assume <strong>shared occupancy</strong> and are per person for 1 night. Single occupancy replaces the shared price with the whole-room price.
             </p>
-            <table class="price-table">
-              <thead>
-                <tr>
-                  <th>Room</th>
-                  <th>Beds</th>
-                  <th>Max<br>occupancy</th>
-                  <th>Single occupancy<br><small style="font-weight:400; color:var(--muted);">room / night</small></th>
-                  <th>Shared / person<br><small style="font-weight:400; color:var(--muted);">/ night</small></th>
-                  <th>Early bird total<br><small style="font-weight:400; color:var(--muted);">per person</small></th>
-                  <th>Regular total<br><small style="font-weight:400; color:var(--muted);">per person</small></th>
-                </tr>
-              </thead>
-              <tbody id="priceTableBody"></tbody>
-            </table>
+
+            <div class="room-cards">
+              <article class="room-card">
+                <h4>Lakeside 1</h4>
+                <p class="room-village">Lakeside Village · heating &amp; A/C · 1 cabin</p>
+                <ul>
+                  <li>1 queen bed</li>
+                  <li>Private bathroom and shower</li>
+                </ul>
+                <dl class="pricing">
+                  <dt>Beds</dt><dd>1</dd>
+                  <dt>Max occupancy</dt><dd>2</dd>
+                  <dt>Single (whole room / night)</dt><dd>$265.00</dd>
+                  <dt>Shared (per person / night)</dt><dd>$132.50</dd>
+                  <dt>Early bird total (per person)</dt><dd class="total">$381.50</dd>
+                  <dt>Regular total (per person)</dt><dd>$431.50</dd>
+                </dl>
+              </article>
+
+              <article class="room-card">
+                <h4>Lakeside 2–9</h4>
+                <p class="room-village">Lakeside Village · heating &amp; A/C · 8 cabins</p>
+                <ul>
+                  <li>Either 2 twin beds (forest view) or 1 king bed (two twins pushed together)</li>
+                  <li>1 queen sofa bed (lake view side)</li>
+                  <li>Shared bathroom within each cabin (shared among guests staying in that cabin)</li>
+                </ul>
+                <dl class="pricing">
+                  <dt>Beds</dt><dd>2</dd>
+                  <dt>Max occupancy</dt><dd>4</dd>
+                  <dt>Single (whole room / night)</dt><dd>$394.00</dd>
+                  <dt>Shared (per person / night)</dt><dd>$98.50</dd>
+                  <dt>Early bird total (per person)</dt><dd class="total">$347.50</dd>
+                  <dt>Regular total (per person)</dt><dd>$397.50</dd>
+                </dl>
+              </article>
+
+              <article class="room-card">
+                <h4>Lodge 1–6</h4>
+                <p class="room-village">Lodge Village · heating only, no A/C · 6 rooms</p>
+                <ul>
+                  <li>2 twin beds per room</li>
+                </ul>
+                <div class="bath-note">
+                  <strong>Shared Lodge Bathrooms:</strong> two separate bathroom areas — each includes 2 toilets and 2 showers.
+                </div>
+                <dl class="pricing">
+                  <dt>Beds</dt><dd>2</dd>
+                  <dt>Max occupancy</dt><dd>2</dd>
+                  <dt>Single (whole room / night)</dt><dd>$130.00</dd>
+                  <dt>Shared (per person / night)</dt><dd>$65.00</dd>
+                  <dt>Early bird total (per person)</dt><dd class="total">$314.00</dd>
+                  <dt>Regular total (per person)</dt><dd>$364.00</dd>
+                </dl>
+              </article>
+
+              <article class="room-card">
+                <h4>Lodge 7–8</h4>
+                <p class="room-village">Lodge Village · heating only, no A/C · 2 rooms</p>
+                <ul>
+                  <li>3 twin beds per room</li>
+                </ul>
+                <div class="bath-note">
+                  <strong>Shared Lodge Bathrooms:</strong> two separate bathroom areas — each includes 2 toilets and 2 showers.
+                </div>
+                <dl class="pricing">
+                  <dt>Beds</dt><dd>3</dd>
+                  <dt>Max occupancy</dt><dd>2</dd>
+                  <dt>Single (whole room / night)</dt><dd>$195.00</dd>
+                  <dt>Shared (per person / night)</dt><dd>$65.00</dd>
+                  <dt>Early bird total (per person)</dt><dd class="total">$314.00</dd>
+                  <dt>Regular total (per person)</dt><dd>$364.00</dd>
+                </dl>
+              </article>
+            </div>
           </details>
         </section>
       </div>
@@ -1433,7 +1502,9 @@
                   </select>
                   <p class="help" style="margin-top:6px;">
                     <a href="#roomDetails" data-scroll-target="roomDetails">View room details ↓</a>
-                    &nbsp;·&nbsp; Need a bigger room? <a href="mailto:Sattvapathcollective@gmail.com">Contact the organizers</a>
+                  </p>
+                  <p class="help" style="margin-top:2px;">
+                    Need a bigger room? <a href="mailto:Sattvapathcollective@gmail.com">Contact the organizers</a>
                   </p>
                 </div>
                 <div class="span-6 pad-top">
