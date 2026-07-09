@@ -612,3 +612,30 @@ renderCustomSections();
 renderGallery();
 renderEmotions();
 enhanceSpeechFields();
+initMobileSubmenu();
+
+function initMobileSubmenu() {
+  const items = document.querySelectorAll(".nav-links .has-submenu");
+  if (!items.length) return;
+  items.forEach((item) => {
+    const trigger = item.querySelector(":scope > a");
+    if (!trigger) return;
+    trigger.addEventListener("click", (e) => {
+      if (window.innerWidth >= 861) return;
+      if (item.classList.contains("open")) return;
+      e.preventDefault();
+      items.forEach((other) => { if (other !== item) other.classList.remove("open"); });
+      item.classList.add("open");
+      trigger.setAttribute("aria-expanded", "true");
+    });
+  });
+  document.addEventListener("click", (e) => {
+    if (window.innerWidth >= 861) return;
+    if (e.target.closest(".has-submenu")) return;
+    items.forEach((item) => {
+      item.classList.remove("open");
+      const t = item.querySelector(":scope > a");
+      if (t) t.setAttribute("aria-expanded", "false");
+    });
+  });
+}
