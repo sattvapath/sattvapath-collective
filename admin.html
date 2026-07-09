@@ -711,6 +711,48 @@
         <div class="mini-list" id="userList"></div>
       </section>
 
+      <section class="wrap panel" aria-label="Retreat registrations" data-permission="events">
+        <p class="eyebrow">Registrations</p>
+        <h2>Retreat registrations</h2>
+        <p class="permission-note">
+          Every registration submitted through the website appears here. Toggle payment status once you've received the Zelle payment. Use the filter to focus on pending payments, and export CSV any time.
+        </p>
+        <div class="reg-toolbar" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:12px 0;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.9rem;">
+            <span>Filter status:</span>
+            <select id="regFilterStatus">
+              <option value="">All</option>
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+              <option value="refunded">Refunded</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </label>
+          <span id="regSummary" style="font-size:0.9rem; color:var(--muted);"></span>
+          <div style="margin-left:auto; display:flex; gap:8px;">
+            <button type="button" class="button secondary" id="regRefreshBtn">Refresh</button>
+            <a class="button secondary" id="regExportBtn" href="/api/admin/registrations.csv" download>Export CSV</a>
+          </div>
+        </div>
+        <div id="regEmpty" class="permission-note" hidden>No registrations yet.</div>
+        <div style="overflow-x:auto;">
+          <table id="regTable" style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+              <tr style="text-align:left; border-bottom:1px solid var(--line);">
+                <th style="padding:8px;">Received</th>
+                <th style="padding:8px;">Name / Email</th>
+                <th style="padding:8px;">Phone</th>
+                <th style="padding:8px;">People</th>
+                <th style="padding:8px;">Total</th>
+                <th style="padding:8px;">Status</th>
+                <th style="padding:8px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="regTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="wrap panel" aria-label="What's on Your Heart moderation" data-permission="emotions">
         <p class="eyebrow">What's on Your Heart</p>
         <h2>Review and respond</h2>
@@ -770,15 +812,18 @@
       }
       async function refreshApiCaches() {
         try {
-          const [events, emotions] = await Promise.all([
+          const [events, emotions, registrations] = await Promise.all([
             apiGet("/api/admin/events").catch(() => []),
-            apiGet("/api/emotions").catch(() => [])
+            apiGet("/api/emotions").catch(() => []),
+            apiGet("/api/admin/registrations").catch(() => [])
           ]);
           apiEventsCache = events;
           apiEmotionsCache = emotions.map(normalizeEmotion);
+          regCache = registrations;
           // Mirror to localStorage so any legacy readers still see fresh data.
           setJson(emotionKey, apiEmotionsCache);
           setJson(storageKey, apiEventsCache);
+          renderRegistrations();
         } catch (err) { console.warn("API cache refresh failed", err); }
       }
       const contentKey = "sattva-site-content";
@@ -1542,6 +1587,139 @@
           } catch (err) {
             showAdminStatus("Could not delete event: " + (err.message || "error"), "error");
           }
+        }
+      });
+
+      // ---------- Registrations dashboard ----------
+      let regCache = [];
+      const regFilterStatus = document.getElementById("regFilterStatus");
+      const regTableBody = document.getElementById("regTableBody");
+      const regEmpty = document.getElementById("regEmpty");
+      const regSummary = document.getElementById("regSummary");
+      const regTable = document.getElementById("regTable");
+      const regRefreshBtn = document.getElementById("regRefreshBtn");
+
+      function formatMoney(n) { const v = Number(n || 0); return "$" + v.toFixed(2); }
+      function formatDateTime(iso) {
+        try { return new Date(iso).toLocaleString(); } catch { return iso || ""; }
+      }
+      function escapeHtmlAdmin(s) {
+        return String(s || "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+      }
+
+      async function fetchRegistrations() {
+        try {
+          regCache = await apiGet("/api/admin/registrations");
+        } catch (err) {
+          regCache = [];
+          showAdminStatus?.("Could not load registrations: " + (err.message || "error"), "error");
+        }
+        renderRegistrations();
+      }
+
+      function renderRegistrations() {
+        if (!regTableBody) return;
+        const filter = regFilterStatus?.value || "";
+        const list = filter ? regCache.filter((r) => r.payment_status === filter) : regCache;
+        regEmpty.hidden = list.length > 0;
+        regTable.hidden = list.length === 0;
+        const totalDue = regCache.filter((r) => r.payment_status === "pending").reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
+        const totalPaid = regCache.filter((r) => r.payment_status === "paid").reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
+        regSummary.textContent = `${regCache.length} total · ${formatMoney(totalPaid)} paid · ${formatMoney(totalDue)} pending`;
+        regTableBody.innerHTML = list.map((r) => {
+          const participants = Array.isArray(r.participants) ? r.participants : [];
+          const names = participants.map((p) => p.name || `${p.first_name || ""} ${p.last_name || ""}`.trim()).filter(Boolean);
+          const primary = participants[0] || {};
+          return `
+            <tr data-reg-id="${escapeHtmlAdmin(r.id)}" style="border-bottom:1px solid var(--line);">
+              <td style="padding:8px; vertical-align:top; white-space:nowrap;">${escapeHtmlAdmin(formatDateTime(r.created_at))}</td>
+              <td style="padding:8px; vertical-align:top;">
+                <strong>${escapeHtmlAdmin(r.contact_name)}</strong><br>
+                <a href="mailto:${escapeHtmlAdmin(r.contact_email)}">${escapeHtmlAdmin(r.contact_email)}</a>
+                ${names.length > 1 ? `<br><small style="color:var(--muted);">+ ${escapeHtmlAdmin(names.slice(1).join(", "))}</small>` : ""}
+              </td>
+              <td style="padding:8px; vertical-align:top; white-space:nowrap;">${escapeHtmlAdmin(r.contact_phone)}</td>
+              <td style="padding:8px; vertical-align:top;">${r.participant_count}</td>
+              <td style="padding:8px; vertical-align:top; white-space:nowrap;">${formatMoney(r.total_amount)}</td>
+              <td style="padding:8px; vertical-align:top;">
+                <select data-reg-status style="font-size:0.85rem;">
+                  <option value="pending"   ${r.payment_status === "pending"   ? "selected" : ""}>Pending</option>
+                  <option value="paid"      ${r.payment_status === "paid"      ? "selected" : ""}>Paid</option>
+                  <option value="refunded"  ${r.payment_status === "refunded"  ? "selected" : ""}>Refunded</option>
+                  <option value="cancelled" ${r.payment_status === "cancelled" ? "selected" : ""}>Cancelled</option>
+                </select>
+              </td>
+              <td style="padding:8px; vertical-align:top; white-space:nowrap;">
+                <button type="button" class="button secondary" data-reg-view>Details</button>
+                <button type="button" class="button secondary" data-reg-delete style="color:var(--clay);">Delete</button>
+              </td>
+            </tr>
+            <tr data-reg-details="${escapeHtmlAdmin(r.id)}" hidden><td colspan="7" style="padding:8px 16px; background:rgba(72,99,71,0.04);">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.85rem;">
+                <div><strong>Accommodation:</strong><br>${escapeHtmlAdmin(r.accommodation || "—")}</div>
+                <div><strong>Emergency:</strong><br>${escapeHtmlAdmin(r.emergency_name || "—")} — ${escapeHtmlAdmin(r.emergency_phone || "—")}</div>
+                <div><strong>Fee:</strong> ${escapeHtmlAdmin(r.fee_type)} @ ${formatMoney(r.fee_per_person)}/person · Retreat ${formatMoney(r.retreat_fee_total)} + Lodging ${formatMoney(r.lodging_total)}</div>
+                <div><strong>Liability accepted:</strong> ${r.liability_accepted ? "Yes" : "No"}</div>
+                <div style="grid-column:1/-1;"><strong>Dietary/notes:</strong><br>${escapeHtmlAdmin(r.dietary_notes || "—")}</div>
+                <div style="grid-column:1/-1;">
+                  <strong>Participants:</strong>
+                  <ol style="margin:4px 0 0 20px;">${participants.map((p) => `<li>${escapeHtmlAdmin(p.name)} (age ${escapeHtmlAdmin(p.age)}) — ${escapeHtmlAdmin(p.email)} · ${escapeHtmlAdmin(p.phone)} · Room: ${escapeHtmlAdmin(p.room)} × ${escapeHtmlAdmin(p.spots)} spots · Fee ${formatMoney(p.fee)}</li>`).join("")}</ol>
+                </div>
+                <div style="grid-column:1/-1;">
+                  <label style="display:block; font-weight:600;">Admin notes</label>
+                  <textarea data-reg-admin-notes style="width:100%; min-height:60px;">${escapeHtmlAdmin(r.admin_notes)}</textarea>
+                  <button type="button" class="button secondary" data-reg-save-notes style="margin-top:4px;">Save notes</button>
+                </div>
+              </div>
+            </td></tr>
+          `;
+        }).join("");
+      }
+
+      regFilterStatus?.addEventListener("change", renderRegistrations);
+      regRefreshBtn?.addEventListener("click", fetchRegistrations);
+
+      document.getElementById("regTableBody")?.addEventListener("click", async (e) => {
+        const row = e.target.closest("tr[data-reg-id]");
+        if (!row) return;
+        const id = row.dataset.regId;
+        if (e.target.matches("[data-reg-view]")) {
+          const details = document.querySelector(`tr[data-reg-details="${id}"]`);
+          if (details) details.hidden = !details.hidden;
+        } else if (e.target.matches("[data-reg-delete]")) {
+          if (!confirm("Delete this registration? This cannot be undone.")) return;
+          try {
+            await apiDelete(`/api/admin/registrations/${id}`);
+            regCache = regCache.filter((r) => r.id !== id);
+            renderRegistrations();
+          } catch (err) {
+            showAdminStatus?.("Delete failed: " + (err.message || "error"), "error");
+          }
+        } else if (e.target.matches("[data-reg-save-notes]")) {
+          const ta = document.querySelector(`tr[data-reg-details="${id}"] [data-reg-admin-notes]`);
+          if (!ta) return;
+          try {
+            const updated = await apiPatch(`/api/admin/registrations/${id}`, { admin_notes: ta.value });
+            const idx = regCache.findIndex((r) => r.id === id);
+            if (idx >= 0) regCache[idx] = updated;
+            showAdminStatus?.("Notes saved.", "success");
+          } catch (err) {
+            showAdminStatus?.("Save failed: " + (err.message || "error"), "error");
+          }
+        }
+      });
+
+      document.getElementById("regTableBody")?.addEventListener("change", async (e) => {
+        if (!e.target.matches("[data-reg-status]")) return;
+        const row = e.target.closest("tr[data-reg-id]");
+        const id = row.dataset.regId;
+        try {
+          const updated = await apiPatch(`/api/admin/registrations/${id}`, { payment_status: e.target.value });
+          const idx = regCache.findIndex((r) => r.id === id);
+          if (idx >= 0) regCache[idx] = updated;
+          renderRegistrations();
+        } catch (err) {
+          showAdminStatus?.("Update failed: " + (err.message || "error"), "error");
         }
       });
 

@@ -828,9 +828,6 @@
 
           <form
             id="registrationForm"
-            action="https://docs.google.com/forms/d/e/1FAIpQLSccohngFMJl8f-lPkmaM-zz7CHFISht3Np3JdqiWz4MerKtbA/formResponse"
-            method="post"
-            target="hidden_google_submit"
             novalidate
           >
             <div class="fields">
@@ -951,8 +948,6 @@
               <a class="button secondary" id="emailDraftLink" href="#">Open email draft</a>
             </div>
           </form>
-
-          <iframe name="hidden_google_submit" title="Hidden Google Form submission target"></iframe>
 
           <div class="room-modal-backdrop" id="roomDetailsModal" role="dialog" aria-modal="true" aria-labelledby="roomDetailsTitle" hidden>
             <div class="room-modal-card">
@@ -1847,16 +1842,15 @@
         });
       }
 
-      form.addEventListener("submit", (event) => {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
         emailPreview.classList.remove("is-visible");
         updateRoommateRequirements();
         updatePaymentTotal();
         syncFullNameHiddenFields();
         validatePhones();
-        if (!validateFormInline()) {
-          event.preventDefault();
-          return;
-        }
+        if (!validateFormInline()) return;
+
         const participants = collectParticipants();
         const signatures = participants.map(participantSignature);
         const savedSignatures = getStoredSignatures();
@@ -1866,7 +1860,6 @@
         ];
 
         if (duplicates.length) {
-          event.preventDefault();
           duplicates.forEach((participant) => {
             const index = Number(participant.role.replace("Participant ", ""));
             const field = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="firstName"]`);
@@ -1876,18 +1869,65 @@
           return;
         }
 
-        const originalNotes = questions.dataset.originalValue ?? questions.value.trim();
-        questions.dataset.originalValue = originalNotes;
-        const groupSummary = buildRegistrationSummary(participants);
-        questions.value = [originalNotes, groupSummary].filter(Boolean).join("\n\n");
-        saveStoredSignatures([...savedSignatures, ...signatures]);
-        clearFormState();
-        successMessage.classList.add("is-visible");
-        showConfirmationEmailPreview(participants);
-        setTimeout(() => {
-          questions.value = originalNotes;
-          delete questions.dataset.originalValue;
-        }, 500);
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) { submitButton.disabled = true; submitButton.textContent = "Sending..."; }
+
+        const primary = participants[0] || {};
+        const totalDue = totalPaymentDue(participants);
+        const retreatFeeTotal = participants.reduce((sum, p) => sum + Number(p.retreatFee || 0), 0);
+        const lodgingTotal = participants.reduce((sum, p) => sum + Number(p.roomFee || 0), 0);
+        const feeType = new Date().toISOString().slice(0, 10) < EARLY_BIRD_CUTOFF ? "early_bird" : "regular";
+
+        const payload = {
+          event_id: currentRetreat.id || fallbackRetreat.id,
+          contact_name: primary.name || `${primary.firstName || ""} ${primary.lastName || ""}`.trim(),
+          contact_email: primary.email || "",
+          contact_phone: primary.phone || "",
+          participant_count: participants.length,
+          participants: participants.map((p) => ({
+            role: p.role, name: p.name, first_name: p.firstName, last_name: p.lastName,
+            age: p.age, email: p.email, phone: p.phone,
+            accommodation: p.accommodation, room: p.room, room_village: p.roomVillage,
+            spots: p.spots, retreat_fee: p.retreatFee, room_fee: p.roomFee, fee: p.fee,
+            roommate: p.roommate, notes: p.notes,
+            emergency_name: p.emergencyName, emergency_phone: p.emergencyPhone,
+          })),
+          accommodation: primary.accommodation || "",
+          accommodation_details: {
+            rooms: participants.map((p) => ({ role: p.role, room: p.room, spots: p.spots, roommate: p.roommate })),
+          },
+          dietary_notes: participants.map((p) => p.notes).filter(Boolean).join(" | "),
+          emergency_name: primary.emergencyName || "",
+          emergency_phone: primary.emergencyPhone || "",
+          fee_type: feeType,
+          fee_per_person: currentRetreatFee(),
+          retreat_fee_total: retreatFeeTotal,
+          lodging_total: lodgingTotal,
+          total_amount: totalDue,
+          liability_accepted: !!document.querySelector("#liabilityConfirm")?.checked,
+          source: "website",
+        };
+
+        try {
+          const res = await fetch("/api/registrations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) {
+            let errMsg = "We could not submit your registration.";
+            try { const e = await res.json(); if (e.error) errMsg += ` (${e.error})`; } catch {}
+            throw new Error(errMsg);
+          }
+          saveStoredSignatures([...savedSignatures, ...signatures]);
+          clearFormState();
+          successMessage.classList.add("is-visible");
+          showConfirmationEmailPreview(participants);
+        } catch (err) {
+          showError(err.message || "We could not submit your registration. Please try again or email us.");
+        } finally {
+          if (submitButton) { submitButton.disabled = false; submitButton.textContent = "Submit Registration"; }
+        }
       });
 
       participantCount.addEventListener("change", () => {

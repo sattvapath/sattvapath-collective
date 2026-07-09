@@ -269,6 +269,105 @@ app.delete('/api/admin/emotions/:id', requireAdmin, async (req, res) => {
   res.json({ deleted: r.rowCount });
 });
 
+// ---------------- registrations (public) ----------------
+
+app.post('/api/registrations', async (req, res) => {
+  const ip = req.ip || 'unknown';
+  if (!rateLimit(`reg:${ip}`, 5)) return res.status(429).json({ error: 'rate_limited' });
+  const r = req.body || {};
+  if (!r.contact_name || !r.contact_email || !r.contact_phone) {
+    return res.status(400).json({ error: 'missing_fields' });
+  }
+  const eventId = r.event_id || null;
+  const participants = Array.isArray(r.participants) ? r.participants : [];
+  const accommodationDetails = r.accommodation_details && typeof r.accommodation_details === 'object'
+    ? r.accommodation_details : {};
+  const inserted = await pool.query(
+    `INSERT INTO registrations (
+        event_id, contact_name, contact_email, contact_phone,
+        participant_count, participants, accommodation, accommodation_details,
+        dietary_notes, emergency_name, emergency_phone,
+        fee_type, fee_per_person, retreat_fee_total, lodging_total, total_amount,
+        liability_accepted, source)
+     VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8::jsonb,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+     RETURNING id, created_at`,
+    [
+      eventId,
+      String(r.contact_name).slice(0, 200),
+      String(r.contact_email).slice(0, 200),
+      String(r.contact_phone).slice(0, 60),
+      Number(r.participant_count || participants.length || 1),
+      JSON.stringify(participants),
+      String(r.accommodation || '').slice(0, 200),
+      JSON.stringify(accommodationDetails),
+      String(r.dietary_notes || '').slice(0, 2000),
+      String(r.emergency_name || '').slice(0, 200),
+      String(r.emergency_phone || '').slice(0, 60),
+      String(r.fee_type || '').slice(0, 40),
+      Number(r.fee_per_person || 0),
+      Number(r.retreat_fee_total || 0),
+      Number(r.lodging_total || 0),
+      Number(r.total_amount || 0),
+      Boolean(r.liability_accepted),
+      String(r.source || 'website').slice(0, 40),
+    ]
+  );
+  res.status(201).json({ id: inserted.rows[0].id, created_at: inserted.rows[0].created_at });
+});
+
+// ---------------- registrations (admin) ----------------
+
+app.get('/api/admin/registrations', requireAdmin, async (req, res) => {
+  const params = [];
+  const conditions = [];
+  if (req.query.event_id) { params.push(req.query.event_id); conditions.push(`event_id = $${params.length}`); }
+  if (req.query.status)   { params.push(req.query.status);   conditions.push(`payment_status = $${params.length}`); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const r = await pool.query(
+    `SELECT * FROM registrations ${where} ORDER BY created_at DESC`,
+    params
+  );
+  res.json(r.rows);
+});
+
+app.get('/api/admin/registrations.csv', requireAdmin, async (req, res) => {
+  const r = await pool.query(`SELECT * FROM registrations ORDER BY created_at DESC`);
+  const cols = ['id','event_id','created_at','payment_status','contact_name','contact_email','contact_phone',
+                'participant_count','accommodation','fee_type','fee_per_person','retreat_fee_total',
+                'lodging_total','total_amount','emergency_name','emergency_phone','dietary_notes',
+                'admin_notes','payment_notes','participants','accommodation_details'];
+  const esc = (v) => {
+    if (v == null) return '';
+    const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
+    return `"${s.replace(/"/g, '""')}"`;
+  };
+  const lines = [cols.join(',')];
+  for (const row of r.rows) lines.push(cols.map((c) => esc(row[c])).join(','));
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="registrations-${new Date().toISOString().slice(0,10)}.csv"`);
+  res.send(lines.join('\n'));
+});
+
+app.patch('/api/admin/registrations/:id', requireAdmin, async (req, res) => {
+  const b = req.body || {};
+  const r = await pool.query(
+    `UPDATE registrations SET
+        payment_status = COALESCE($2, payment_status),
+        payment_notes  = COALESCE($3, payment_notes),
+        admin_notes    = COALESCE($4, admin_notes)
+      WHERE id = $1
+      RETURNING *`,
+    [req.params.id, b.payment_status, b.payment_notes, b.admin_notes]
+  );
+  if (!r.rows[0]) return res.status(404).json({ error: 'not_found' });
+  res.json(r.rows[0]);
+});
+
+app.delete('/api/admin/registrations/:id', requireAdmin, async (req, res) => {
+  const r = await pool.query(`DELETE FROM registrations WHERE id = $1`, [req.params.id]);
+  res.json({ deleted: r.rowCount });
+});
+
 // ---------------- admin auth ----------------
 
 app.post('/api/admin/login', async (req, res) => {

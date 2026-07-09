@@ -61,6 +61,41 @@ CREATE INDEX IF NOT EXISTS emotions_status_idx     ON emotions(status);
 CREATE INDEX IF NOT EXISTS emotions_created_at_idx ON emotions(created_at DESC);
 CREATE INDEX IF NOT EXISTS emotions_client_id_idx  ON emotions(client_id);
 
+-- Retreat / event registrations. Payment_status:
+-- 'pending'   default on POST
+-- 'paid'      admin toggles when Zelle received
+-- 'refunded'  admin toggles after refund
+-- 'cancelled' admin marks
+CREATE TABLE IF NOT EXISTS registrations (
+    id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id              TEXT REFERENCES events(id) ON DELETE SET NULL,
+    contact_name          TEXT NOT NULL,
+    contact_email         TEXT NOT NULL,
+    contact_phone         TEXT NOT NULL,
+    participant_count     INTEGER NOT NULL DEFAULT 1,
+    participants          JSONB NOT NULL DEFAULT '[]'::jsonb,
+    accommodation         TEXT DEFAULT '',
+    accommodation_details JSONB NOT NULL DEFAULT '{}'::jsonb,
+    dietary_notes         TEXT DEFAULT '',
+    emergency_name        TEXT DEFAULT '',
+    emergency_phone       TEXT DEFAULT '',
+    fee_type              TEXT DEFAULT '',
+    fee_per_person        NUMERIC(10,2) DEFAULT 0,
+    retreat_fee_total     NUMERIC(10,2) DEFAULT 0,
+    lodging_total         NUMERIC(10,2) DEFAULT 0,
+    total_amount          NUMERIC(10,2) DEFAULT 0,
+    payment_status        TEXT NOT NULL DEFAULT 'pending',
+    payment_notes         TEXT DEFAULT '',
+    liability_accepted    BOOLEAN NOT NULL DEFAULT FALSE,
+    admin_notes           TEXT DEFAULT '',
+    source                TEXT DEFAULT 'website',
+    created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS registrations_event_idx    ON registrations(event_id);
+CREATE INDEX IF NOT EXISTS registrations_status_idx   ON registrations(payment_status);
+CREATE INDEX IF NOT EXISTS registrations_created_idx  ON registrations(created_at DESC);
+
 -- Auto-update updated_at on any UPDATE.
 CREATE OR REPLACE FUNCTION touch_updated_at() RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
@@ -70,8 +105,9 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS events_updated_at   ON events;
-DROP TRIGGER IF EXISTS emotions_updated_at ON emotions;
+DROP TRIGGER IF EXISTS events_updated_at        ON events;
+DROP TRIGGER IF EXISTS emotions_updated_at      ON emotions;
+DROP TRIGGER IF EXISTS registrations_updated_at ON registrations;
 
 CREATE TRIGGER events_updated_at
     BEFORE UPDATE ON events
@@ -79,6 +115,10 @@ CREATE TRIGGER events_updated_at
 
 CREATE TRIGGER emotions_updated_at
     BEFORE UPDATE ON emotions
+    FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
+
+CREATE TRIGGER registrations_updated_at
+    BEFORE UPDATE ON registrations
     FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 
 -- Seed the featured Sattva Path Retreat if not present.
