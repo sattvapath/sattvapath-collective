@@ -865,6 +865,11 @@
           <details id="roomDetails" open>
             <summary style="cursor:pointer; font-family:Arial, sans-serif; font-weight:700; color:var(--leaf);">Room details &amp; pricing (click to expand)</summary>
 
+            <p style="margin:12px 0; padding:12px 14px; border-left:3px solid var(--gold); background:#fff8ec; color:var(--ink); font-family:Arial, sans-serif; font-size:0.95rem;">
+              <strong>Need a bigger room or a special arrangement?</strong>
+              Please <a href="mailto:Sattvapathcollective@gmail.com">contact the organizers</a> — we're happy to help find something that works for your group.
+            </p>
+
             <h3>Lakeside Village</h3>
             <p style="color:var(--muted);">All cabins include heating and air conditioning.</p>
             <h4>Lakeside 1</h4>
@@ -904,6 +909,7 @@
                 <tr>
                   <th>Room</th>
                   <th>Beds</th>
+                  <th>Max<br>occupancy</th>
                   <th>Single occupancy<br><small style="font-weight:400; color:var(--muted);">room / night</small></th>
                   <th>Shared / person<br><small style="font-weight:400; color:var(--muted);">/ night</small></th>
                   <th>Early bird total<br><small style="font-weight:400; color:var(--muted);">per person</small></th>
@@ -972,27 +978,28 @@
           : `$${RETREAT_FEE_REGULAR} regular`;
       }
 
-      // ---- Room catalog: single price, per-person shared price, bed count ----
+      // ---- Room catalog: beds, max occupancy, single/shared prices per night ----
+      // maxOccupancy accounts for bed-sharing / sofa beds (may exceed bed count).
       const ROOMS = [
         // Lakeside Village: heating + A/C
-        { id: "lakeside-1", label: "Lakeside 1",  village: "Lakeside", beds: 1, single: 265, shared: 132.5 },
-        { id: "lakeside-2", label: "Lakeside 2",  village: "Lakeside", beds: 2, single: 394, shared: 197 },
-        { id: "lakeside-3", label: "Lakeside 3",  village: "Lakeside", beds: 2, single: 394, shared: 197 },
-        { id: "lakeside-4", label: "Lakeside 4",  village: "Lakeside", beds: 2, single: 394, shared: 197 },
-        { id: "lakeside-5", label: "Lakeside 5",  village: "Lakeside", beds: 2, single: 394, shared: 197 },
-        { id: "lakeside-6", label: "Lakeside 6",  village: "Lakeside", beds: 2, single: 394, shared: 197 },
-        { id: "lakeside-7", label: "Lakeside 7",  village: "Lakeside", beds: 2, single: 394, shared: 197 },
-        { id: "lakeside-8", label: "Lakeside 8",  village: "Lakeside", beds: 2, single: 394, shared: 197 },
-        { id: "lakeside-9", label: "Lakeside 9",  village: "Lakeside", beds: 2, single: 394, shared: 197 },
+        { id: "lakeside-1", label: "Lakeside 1",  village: "Lakeside", beds: 1, maxOccupancy: 2, single: 265, shared: 132.5 },
+        { id: "lakeside-2", label: "Lakeside 2",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-3", label: "Lakeside 3",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-4", label: "Lakeside 4",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-5", label: "Lakeside 5",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-6", label: "Lakeside 6",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-7", label: "Lakeside 7",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-8", label: "Lakeside 8",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
+        { id: "lakeside-9", label: "Lakeside 9",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
         // Lodge Village: heating only, no A/C
-        { id: "lodge-1", label: "Lodge 1", village: "Lodge", beds: 2, single: 130, shared: 65 },
-        { id: "lodge-2", label: "Lodge 2", village: "Lodge", beds: 2, single: 130, shared: 65 },
-        { id: "lodge-3", label: "Lodge 3", village: "Lodge", beds: 2, single: 130, shared: 65 },
-        { id: "lodge-4", label: "Lodge 4", village: "Lodge", beds: 2, single: 130, shared: 65 },
-        { id: "lodge-5", label: "Lodge 5", village: "Lodge", beds: 2, single: 130, shared: 65 },
-        { id: "lodge-6", label: "Lodge 6", village: "Lodge", beds: 2, single: 130, shared: 65 },
-        { id: "lodge-7", label: "Lodge 7", village: "Lodge", beds: 3, single: 195, shared: 65 },
-        { id: "lodge-8", label: "Lodge 8", village: "Lodge", beds: 3, single: 195, shared: 65 },
+        { id: "lodge-1", label: "Lodge 1", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-2", label: "Lodge 2", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-3", label: "Lodge 3", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-4", label: "Lodge 4", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-5", label: "Lodge 5", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-6", label: "Lodge 6", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
+        { id: "lodge-7", label: "Lodge 7", village: "Lodge", beds: 3, maxOccupancy: 2, single: 195, shared: 65 },
+        { id: "lodge-8", label: "Lodge 8", village: "Lodge", beds: 3, maxOccupancy: 2, single: 195, shared: 65 },
       ];
       const ROOM_BY_ID = Object.fromEntries(ROOMS.map((r) => [r.id, r]));
 
@@ -1017,10 +1024,10 @@
         const usage = computeRoomAvailability(currentIndex);
         return ROOMS.filter((r) => {
           const u = usage[r.id];
-          if (u.singleTakenBy) return false;   // whole room taken as single
-          if (u.sharedTaken >= r.beds) return false; // all beds filled by shared
+          if (u.singleTakenBy) return false;                    // whole room taken as single
+          if (u.sharedTaken >= r.maxOccupancy) return false;    // all spots filled
           return true;
-        }).map((r) => ({ room: r, bedsLeft: r.beds - usage[r.id].sharedTaken }));
+        }).map((r) => ({ room: r, spotsLeft: r.maxOccupancy - usage[r.id].sharedTaken }));
       }
 
       function getJson(key, fallback = []) {
@@ -1308,8 +1315,8 @@
           const currentValue = sel.value;
           const available = availableRoomsFor(i);
           const rows = [`<option value="">Select a cabin or room</option>`];
-          available.forEach(({ room, bedsLeft }) => {
-            const label = `${room.label} (${room.village}) — ${bedsLeft} bed${bedsLeft === 1 ? "" : "s"} available`;
+          available.forEach(({ room, spotsLeft }) => {
+            const label = `${room.label} (${room.village}) — ${spotsLeft} spot${spotsLeft === 1 ? "" : "s"} available`;
             rows.push(`<option value="${room.id}">${label}</option>`);
           });
           // Preserve prior selection if still available
@@ -1341,6 +1348,7 @@
             <tr>
               <td>${r.label} <span style="color:var(--muted);">(${r.village})</span></td>
               <td>${r.beds}</td>
+              <td>${r.maxOccupancy}</td>
               <td>$${r.single.toFixed(2)}</td>
               <td>$${r.shared.toFixed(2)}</td>
               <td><strong>$${eb.toFixed(2)}</strong></td>
@@ -1425,6 +1433,7 @@
                   </select>
                   <p class="help" style="margin-top:6px;">
                     <a href="#roomDetails" data-scroll-target="roomDetails">View room details ↓</a>
+                    &nbsp;·&nbsp; Need a bigger room? <a href="mailto:Sattvapathcollective@gmail.com">Contact the organizers</a>
                   </p>
                 </div>
                 <div class="span-6 pad-top">
