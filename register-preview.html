@@ -483,14 +483,41 @@
       }
       .occ-radio input { accent-color: var(--leaf); }
 
-      #roomDetails {
-        margin-top: 32px;
-        padding: 24px;
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        background: var(--white);
+      .room-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        background: rgba(37, 48, 39, 0.6);
+        z-index: 100;
       }
-      #roomDetails > summary { margin-bottom: 16px; }
+      .room-modal-backdrop[hidden] { display: none; }
+      .room-modal-card {
+        position: relative;
+        width: min(100%, 940px);
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 28px 28px 24px;
+        border-radius: var(--radius);
+        background: var(--paper);
+        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+      }
+      .room-modal-close {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 26px;
+        cursor: pointer;
+      }
+      .room-modal-close:hover { background: rgba(0,0,0,0.06); color: var(--ink); }
       .room-cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -753,9 +780,11 @@
             <li><strong>Organizer</strong>Sattva Path Collective LLC</li>
             <li><strong>Age requirement</strong><span id="summaryAge">18 years or older</span></li>
             <li>
-              <strong>Retreat Experience fee</strong>
+              <strong>Retreat Experience fee*</strong>
               $249 early bird (before Aug 15) / $299 regular. Includes all sessions and 3 meals.
-              <br><small>Lodging is billed separately — pricing shown in the accommodation section of the form.</small>
+            </li>
+            <li style="color:var(--muted); font-size:0.9rem;">
+              * Lodging is not included.
             </li>
             <li>
               <strong>Payment <span class="required">*</span></strong>
@@ -901,93 +930,100 @@
 
           <iframe name="hidden_google_submit" title="Hidden Google Form submission target"></iframe>
 
-          <details id="roomDetails" open>
-            <summary style="cursor:pointer; font-family:Arial, sans-serif; font-weight:700; color:var(--leaf);">Room details &amp; pricing (click to expand)</summary>
+          <div class="room-modal-backdrop" id="roomDetailsModal" role="dialog" aria-modal="true" aria-labelledby="roomDetailsTitle" hidden>
+            <div class="room-modal-card">
+              <button type="button" class="room-modal-close" id="roomDetailsClose" aria-label="Close">×</button>
+              <h2 id="roomDetailsTitle" style="margin-bottom:8px; color:var(--leaf);">Room details &amp; pricing</h2>
 
-            <p style="margin:12px 0; padding:12px 14px; border-left:3px solid var(--gold); background:#fff8ec; color:var(--ink); font-family:Arial, sans-serif; font-size:0.95rem;">
-              <strong>Need a bigger room or a special arrangement?</strong>
-              Please <a href="mailto:Sattvapathcollective@gmail.com">contact the organizers</a> — we're happy to help find something that works for your group.
-            </p>
+              <p style="margin:12px 0; padding:12px 14px; border-left:3px solid var(--gold); background:#fff8ec; color:var(--ink); font-family:Arial, sans-serif; font-size:0.95rem;">
+                <strong>Tip:</strong> Choose <strong>2 spots</strong> if you don't want to share the bed. Each spot is priced individually — 1 spot = you share; more spots = extra beds/privacy.
+              </p>
 
-            <p style="color:var(--muted); font-size:0.92rem; margin-top:8px;">
-              "Early bird total" and "Regular total" assume <strong>shared occupancy</strong> and are per person for 1 night. Single occupancy replaces the shared price with the whole-room price.
-            </p>
+              <p style="margin:12px 0; padding:12px 14px; border-left:3px solid var(--gold); background:#fff8ec; color:var(--ink); font-family:Arial, sans-serif; font-size:0.95rem;">
+                <strong>Need a bigger room or a special arrangement?</strong>
+                Please <a href="mailto:Sattvapathcollective@gmail.com">contact the organizers</a> — we're happy to help find something that works for your group.
+              </p>
 
-            <div class="room-cards">
-              <article class="room-card">
-                <h4>Lakeside 1</h4>
-                <p class="room-village">Lakeside Village · heating &amp; A/C · 1 cabin</p>
-                <ul>
-                  <li>1 queen bed</li>
-                  <li>Private bathroom and shower</li>
-                </ul>
-                <dl class="pricing">
-                  <dt>Beds</dt><dd>1</dd>
-                  <dt>Max occupancy</dt><dd>2</dd>
-                  <dt>Single (whole room / night)</dt><dd>$265.00</dd>
-                  <dt>Shared (per person / night)</dt><dd>$132.50</dd>
-                  <dt>Early bird total (per person)</dt><dd class="total">$381.50</dd>
-                  <dt>Regular total (per person)</dt><dd>$431.50</dd>
-                </dl>
-              </article>
+              <p style="color:var(--muted); font-size:0.92rem; margin-top:8px;">
+                Early bird and Regular totals assume <strong>1 spot (shared)</strong> per person for 1 night. If you take extra spots, multiply the per-spot price accordingly.
+              </p>
 
-              <article class="room-card">
-                <h4>Lakeside 2–9</h4>
-                <p class="room-village">Lakeside Village · heating &amp; A/C · 8 cabins</p>
-                <ul>
-                  <li>Either 2 twin beds (forest view) or 1 king bed (two twins pushed together)</li>
-                  <li>1 queen sofa bed (lake view side)</li>
-                  <li>Shared bathroom within each cabin (shared among guests staying in that cabin)</li>
-                </ul>
-                <dl class="pricing">
-                  <dt>Beds</dt><dd>2</dd>
-                  <dt>Max occupancy</dt><dd>4</dd>
-                  <dt>Single (whole room / night)</dt><dd>$394.00</dd>
-                  <dt>Shared (per person / night)</dt><dd>$98.50</dd>
-                  <dt>Early bird total (per person)</dt><dd class="total">$347.50</dd>
-                  <dt>Regular total (per person)</dt><dd>$397.50</dd>
-                </dl>
-              </article>
+              <div class="room-cards">
+                <article class="room-card">
+                  <h4>Lakeside 1</h4>
+                  <p class="room-village">Lakeside Village · heating &amp; A/C · 1 cabin</p>
+                  <ul>
+                    <li>1 queen bed</li>
+                    <li>Private bathroom and shower</li>
+                  </ul>
+                  <dl class="pricing">
+                    <dt>Beds</dt><dd>1</dd>
+                    <dt>Max occupancy</dt><dd>2 spots</dd>
+                    <dt>Price per spot / night</dt><dd>$132.50</dd>
+                    <dt>Whole room (2 spots)</dt><dd>$265.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$381.50</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$431.50</dd>
+                  </dl>
+                </article>
 
-              <article class="room-card">
-                <h4>Lodge 1–6</h4>
-                <p class="room-village">Lodge Village · heating only, no A/C · 6 rooms</p>
-                <ul>
-                  <li>2 twin beds per room</li>
-                </ul>
-                <div class="bath-note">
-                  <strong>Shared Lodge Bathrooms:</strong> two separate bathroom areas — each includes 2 toilets and 2 showers.
-                </div>
-                <dl class="pricing">
-                  <dt>Beds</dt><dd>2</dd>
-                  <dt>Max occupancy</dt><dd>2</dd>
-                  <dt>Single (whole room / night)</dt><dd>$130.00</dd>
-                  <dt>Shared (per person / night)</dt><dd>$65.00</dd>
-                  <dt>Early bird total (per person)</dt><dd class="total">$314.00</dd>
-                  <dt>Regular total (per person)</dt><dd>$364.00</dd>
-                </dl>
-              </article>
+                <article class="room-card">
+                  <h4>Lakeside 2–9</h4>
+                  <p class="room-village">Lakeside Village · heating &amp; A/C · 8 cabins</p>
+                  <ul>
+                    <li>Either 2 twin beds (forest view) or 1 king bed (two twins pushed together)</li>
+                    <li>1 queen sofa bed (lake view side)</li>
+                    <li>Shared bathroom within each cabin (shared among guests staying in that cabin)</li>
+                  </ul>
+                  <dl class="pricing">
+                    <dt>Beds</dt><dd>2</dd>
+                    <dt>Max occupancy</dt><dd>4 spots</dd>
+                    <dt>Price per spot / night</dt><dd>$98.50</dd>
+                    <dt>Whole room (4 spots)</dt><dd>$394.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$347.50</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$397.50</dd>
+                  </dl>
+                </article>
 
-              <article class="room-card">
-                <h4>Lodge 7–8</h4>
-                <p class="room-village">Lodge Village · heating only, no A/C · 2 rooms</p>
-                <ul>
-                  <li>3 twin beds per room</li>
-                </ul>
-                <div class="bath-note">
-                  <strong>Shared Lodge Bathrooms:</strong> two separate bathroom areas — each includes 2 toilets and 2 showers.
-                </div>
-                <dl class="pricing">
-                  <dt>Beds</dt><dd>3</dd>
-                  <dt>Max occupancy</dt><dd>2</dd>
-                  <dt>Single (whole room / night)</dt><dd>$195.00</dd>
-                  <dt>Shared (per person / night)</dt><dd>$65.00</dd>
-                  <dt>Early bird total (per person)</dt><dd class="total">$314.00</dd>
-                  <dt>Regular total (per person)</dt><dd>$364.00</dd>
-                </dl>
-              </article>
+                <article class="room-card">
+                  <h4>Lodge 1–6</h4>
+                  <p class="room-village">Lodge Village · heating only, no A/C · 6 rooms</p>
+                  <ul>
+                    <li>2 twin beds per room</li>
+                  </ul>
+                  <div class="bath-note">
+                    <strong>Shared Lodge Bathrooms:</strong> two separate bathroom areas — each includes 2 toilets and 2 showers.
+                  </div>
+                  <dl class="pricing">
+                    <dt>Beds</dt><dd>2</dd>
+                    <dt>Max occupancy</dt><dd>2 spots</dd>
+                    <dt>Price per spot / night</dt><dd>$65.00</dd>
+                    <dt>Whole room (2 spots)</dt><dd>$130.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$314.00</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$364.00</dd>
+                  </dl>
+                </article>
+
+                <article class="room-card">
+                  <h4>Lodge 7–8</h4>
+                  <p class="room-village">Lodge Village · heating only, no A/C · 2 rooms</p>
+                  <ul>
+                    <li>3 twin beds per room</li>
+                  </ul>
+                  <div class="bath-note">
+                    <strong>Shared Lodge Bathrooms:</strong> two separate bathroom areas — each includes 2 toilets and 2 showers.
+                  </div>
+                  <dl class="pricing">
+                    <dt>Beds</dt><dd>3</dd>
+                    <dt>Max occupancy</dt><dd>2 spots</dd>
+                    <dt>Price per spot / night</dt><dd>$65.00</dd>
+                    <dt>Whole room (2 spots)</dt><dd>$130.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$314.00</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$364.00</dd>
+                  </dl>
+                </article>
+              </div>
             </div>
-          </details>
+          </div>
         </section>
       </div>
     </main>
@@ -1072,31 +1108,25 @@
       ];
       const ROOM_BY_ID = Object.fromEntries(ROOMS.map((r) => [r.id, r]));
 
-      // Returns bed usage for each room based on current form state.
-      // rooms with `taken >= beds` (or any single-occupancy pick) drop out.
+      // Returns total spots taken per room by all participants except the excluded one.
       function computeRoomAvailability(excludingParticipantIndex = null) {
         const usage = {};
-        ROOMS.forEach((r) => { usage[r.id] = { room: r, singleTakenBy: null, sharedTaken: 0 }; });
+        ROOMS.forEach((r) => { usage[r.id] = { room: r, spotsTaken: 0 }; });
         additionalParticipants.querySelectorAll("[data-group-field='roomId']").forEach((sel) => {
           const idx = sel.dataset.participantIndex;
           if (excludingParticipantIndex != null && String(idx) === String(excludingParticipantIndex)) return;
           const roomId = sel.value;
           if (!roomId || !usage[roomId]) return;
-          const occFld = additionalParticipants.querySelector(`[data-participant-index="${idx}"][data-group-field="occupancy"]`);
-          const occ = occFld ? occFld.value : "";
-          if (occ === "Single") usage[roomId].singleTakenBy = idx;
-          else if (occ === "Shared") usage[roomId].sharedTaken += 1;
+          const spotsFld = additionalParticipants.querySelector(`[data-participant-index="${idx}"][data-group-field="spots"]`);
+          const n = Number(spotsFld?.value || 0);
+          if (n > 0) usage[roomId].spotsTaken += n;
         });
         return usage;
       }
       function availableRoomsFor(currentIndex) {
         const usage = computeRoomAvailability(currentIndex);
-        return ROOMS.filter((r) => {
-          const u = usage[r.id];
-          if (u.singleTakenBy) return false;                    // whole room taken as single
-          if (u.sharedTaken >= r.maxOccupancy) return false;    // all spots filled
-          return true;
-        }).map((r) => ({ room: r, spotsLeft: r.maxOccupancy - usage[r.id].sharedTaken }));
+        return ROOMS.filter((r) => usage[r.id].spotsTaken < r.maxOccupancy)
+          .map((r) => ({ room: r, spotsLeft: r.maxOccupancy - usage[r.id].spotsTaken }));
       }
 
       function getJson(key, fallback = []) {
@@ -1315,15 +1345,15 @@
         const roomIdField = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="roomId"]`);
         return roomIdField?.value ? ROOM_BY_ID[roomIdField.value] : null;
       }
-      function selectedOccupancy(index) {
-        const occ = additionalParticipants.querySelector(`[data-participant-index="${index}"] input[data-group-field="occupancy"]:checked`);
-        return occ?.value || "";
+      function selectedSpots(index) {
+        const spotsFld = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="spots"]`);
+        return Number(spotsFld?.value || 0);
       }
       function participantRoomFee(index) {
         const room = selectedRoom(index);
-        const occ  = selectedOccupancy(index);
-        if (!room || !occ) return 0;
-        return NIGHTS * (occ === "Single" ? room.single : room.shared);
+        const spots = selectedSpots(index);
+        if (!room || !spots) return 0;
+        return NIGHTS * spots * room.shared;
       }
       function participantTotalFee(index) {
         return currentRetreatFee() + participantRoomFee(index);
@@ -1348,8 +1378,8 @@
         let total = 0, complete = 0;
         for (let i = 1; i <= count; i += 1) {
           const room = selectedRoom(i);
-          const occ  = selectedOccupancy(i);
-          if (room && occ) complete += 1;
+          const spots = selectedSpots(i);
+          if (room && spots) complete += 1;
           total += participantTotalFee(i);
           // Sync hidden fields for form submission compatibility
           const setHidden = (name, value) => {
@@ -1359,21 +1389,21 @@
           setHidden("retreatFee", currentRetreatFee());
           setHidden("roomFee", participantRoomFee(i));
           setHidden("fee", participantTotalFee(i));
-          setHidden("accommodation", room && occ
-            ? `${room.label} — ${occ} occupancy — $${occ === "Single" ? room.single : room.shared}/night × ${NIGHTS} night`
+          setHidden("accommodation", room && spots
+            ? `${room.label} — ${spots} spot${spots === 1 ? "" : "s"} — $${room.shared} × ${spots} × ${NIGHTS} night`
             : "");
-          // Update the per-participant occupancy note
-          const note = additionalParticipants.querySelector(`.occupancy-note[data-participant-index="${i}"]`);
+          // Update the per-participant note
+          const note = additionalParticipants.querySelector(`.spots-note[data-participant-index="${i}"]`);
           if (note) {
-            if (!room)      note.textContent = "Select a room and occupancy to see the price.";
-            else if (!occ)  note.textContent = `Pick single or shared. Single: $${room.single} / Shared per person: $${room.shared} / night.`;
-            else            note.innerHTML   = `<strong>Room: $${occ === "Single" ? room.single : room.shared} for 1 night</strong> · Retreat fee $${currentRetreatFee()} · <strong>Participant total: $${participantTotalFee(i)}</strong>`;
+            if (!room)        note.textContent = "Choose 2 spots if you don't want to share the bed.";
+            else if (!spots)  note.textContent = `Pick number of spots. Each spot: $${room.shared} × 1 night.`;
+            else              note.innerHTML   = `<strong>Room: $${(spots * room.shared).toFixed(2)} for 1 night (${spots} spot${spots === 1 ? "" : "s"})</strong> · Retreat fee $${currentRetreatFee()} · <strong>Participant total: $${participantTotalFee(i).toFixed(2)}</strong>`;
           }
         }
         paymentTotalAmount.textContent = formatCurrency(total);
         paymentTotalHelp.textContent = complete === count
           ? "This is the total amount to send by Zelle for this registration."
-          : `Room + occupancy chosen for ${complete} of ${count} participant${count === 1 ? "" : "s"}.`;
+          : `Room + spots chosen for ${complete} of ${count} participant${count === 1 ? "" : "s"}.`;
       }
 
       function populateRoomDropdowns() {
@@ -1388,20 +1418,38 @@
             const label = `${room.label} (${room.village}) — ${spotsLeft} spot${spotsLeft === 1 ? "" : "s"} available`;
             rows.push(`<option value="${room.id}">${label}</option>`);
           });
-          // Preserve prior selection if still available
           sel.innerHTML = rows.join("");
           if (available.some((a) => a.room.id === currentValue)) sel.value = currentValue;
         }
       }
 
-      function updateRoommateVisibility() {
+      function populateSpotsDropdowns() {
         const count = Number(participantCount.value);
         for (let i = 1; i <= count; i += 1) {
-          const wrap = additionalParticipants.querySelector(`[data-shared-roommate-wrap="${i}"]`);
-          if (!wrap) continue;
-          wrap.hidden = selectedOccupancy(i) !== "Shared";
+          const sel = additionalParticipants.querySelector(`[data-participant-index="${i}"][data-group-field="spots"]`);
+          if (!sel) continue;
+          const room = selectedRoom(i);
+          const currentValue = sel.value;
+          if (!room) {
+            sel.innerHTML = `<option value="">First pick a room</option>`;
+            return;
+          }
+          const usage = computeRoomAvailability(i);
+          const spotsLeft = room.maxOccupancy - usage[room.id].spotsTaken;
+          const rows = [`<option value="">Select number of spots</option>`];
+          for (let n = 1; n <= spotsLeft; n += 1) {
+            const price = (n * room.shared * NIGHTS).toFixed(2);
+            const suffix = (n === room.maxOccupancy) ? " (whole room)" : "";
+            const label = `${n} spot${n === 1 ? "" : "s"} — $${price}${suffix}`;
+            rows.push(`<option value="${n}">${label}</option>`);
+          }
+          sel.innerHTML = rows.join("");
+          const n = Number(currentValue);
+          if (n && n <= spotsLeft) sel.value = String(n);
         }
       }
+
+      function updateRoommateVisibility() { /* no-op — roommate now always visible */ }
 
       // Keep legacy name so old callers still work:
       function updateRoommateRequirements() { updateRoommateVisibility(); }
@@ -1501,21 +1549,22 @@
                     <option value="">Select a cabin or room</option>
                   </select>
                   <p class="help" style="margin-top:6px;">
-                    <a href="#roomDetails" data-scroll-target="roomDetails">View room details ↓</a>
+                    <a href="#" data-open-room-details>View room details</a>
                   </p>
                   <p class="help" style="margin-top:2px;">
                     Need a bigger room? <a href="mailto:Sattvapathcollective@gmail.com">Contact the organizers</a>
                   </p>
                 </div>
                 <div class="span-6 pad-top">
-                  <label>Occupancy <span class="required">*</span></label>
-                  <div class="occupancy-choice">
-                    <label class="occ-radio"><input type="radio" name="participant-${index}-occupancy" data-group-field="occupancy" data-participant-index="${index}" value="Single" required> Single (whole room)</label>
-                    <label class="occ-radio"><input type="radio" name="participant-${index}-occupancy" data-group-field="occupancy" data-participant-index="${index}" value="Shared" required> Shared (per person)</label>
-                  </div>
-                  <p class="help occupancy-note" data-participant-index="${index}" style="margin-top:6px;">Select a room and occupancy to see the price.</p>
+                  <label for="participant-${index}-spots">Number of spots <span class="required">*</span></label>
+                  <select id="participant-${index}-spots" data-group-field="spots" data-participant-index="${index}" required>
+                    <option value="">First pick a room</option>
+                  </select>
+                  <p class="help spots-note" data-participant-index="${index}" style="margin-top:6px;">
+                    Choose 2 spots if you don't want to share the bed.
+                  </p>
                 </div>
-                <div class="span-12 pad-top" data-shared-roommate-wrap="${index}" hidden>
+                <div class="span-12 pad-top">
                   <label for="participant-${index}-roommate">Preferred roommate name (optional — leave blank if none)</label>
                   <input id="participant-${index}-roommate" ${isPrimary ? 'name="entry.1016074176"' : ""} data-group-field="roommate" data-participant-index="${index}" type="text" data-speech placeholder="If you have someone in mind to share the room with">
                 </div>
@@ -1545,7 +1594,7 @@
 
         enhanceSpeechFields(additionalParticipants);
         populateRoomDropdowns();
-        updateRoommateVisibility();
+        populateSpotsDropdowns();
         updateRoommateRequirements();
         updatePaymentTotal();
       }
@@ -1558,7 +1607,7 @@
           const accommodationField = additionalParticipants.querySelector(`[data-participant-index="${index}"][data-group-field="accommodation"]`);
           const fullName = `${field("firstName")} ${field("lastName")}`.trim();
           const room = selectedRoom(index);
-          const occ  = selectedOccupancy(index);
+          const spots = selectedSpots(index);
           participants.push({
             role: `Participant ${index}`,
             name: fullName,
@@ -1569,7 +1618,7 @@
             phone: field("phone"),
             room: room ? room.label : "",
             roomVillage: room ? room.village : "",
-            occupancy: occ,
+            spots: spots,
             accommodation: field("accommodation"),
             retreatFee: currentRetreatFee(),
             roomFee: participantRoomFee(index),
@@ -1751,9 +1800,9 @@
           updatePaymentTotal();
         }
         if (event.target.matches("[data-group-field='roomId']")
-            || event.target.matches("[data-group-field='occupancy']")) {
+            || event.target.matches("[data-group-field='spots']")) {
           populateRoomDropdowns();
-          updateRoommateVisibility();
+          populateSpotsDropdowns();
           updatePaymentTotal();
         }
         if (event.target.matches("input, select, textarea")) {
@@ -1902,17 +1951,30 @@
       applyClosedStatus();
       populatePriceTable();
 
-      // Smooth-scroll "View room details" link
-      document.addEventListener("click", (e) => {
-        const t = e.target.closest("[data-scroll-target]");
-        if (!t) return;
-        e.preventDefault();
-        const el = document.querySelector("#" + t.dataset.scrollTarget);
-        if (el) {
-          if (el.tagName === "DETAILS") el.open = true;
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Room details modal (opens on "View room details" click)
+      (function () {
+        const modal = document.querySelector("#roomDetailsModal");
+        if (!modal) return;
+        function openModal() {
+          modal.hidden = false;
+          document.body.style.overflow = "hidden";
         }
-      });
+        function closeModal() {
+          modal.hidden = true;
+          document.body.style.overflow = "";
+        }
+        document.addEventListener("click", (e) => {
+          if (e.target.closest("[data-open-room-details]")) {
+            e.preventDefault();
+            openModal();
+          } else if (e.target === modal || e.target.closest("#roomDetailsClose")) {
+            closeModal();
+          }
+        });
+        document.addEventListener("keydown", (e) => {
+          if (!modal.hidden && e.key === "Escape") closeModal();
+        });
+      })();
     </script>
   </body>
 </html>
