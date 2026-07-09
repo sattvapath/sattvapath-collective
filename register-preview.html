@@ -714,8 +714,9 @@
               $249 early bird (before Aug 15) / $299 regular. Includes all sessions and 3 meals.
             </li>
             <li>
-              <strong>Starting at $474</strong>
-              (early bird) — includes retreat experience, meals, and shared lodging (Lodge, 1 night).
+              <strong>Starting at $314 per person</strong>
+              (early bird) — includes retreat experience, 3 meals, and shared lodging (Lodge, 1 night).
+              <br><small>Regular pricing after Aug 15: from $364 per person.</small>
             </li>
             <li>
               <strong>Payment <span class="required">*</span></strong>
@@ -894,14 +895,19 @@
               <li>Each includes 2 toilets and 2 showers</li>
             </ul>
 
-            <h3 style="margin-top:24px;">Per-night pricing</h3>
+            <h3 style="margin-top:24px;">Pricing (1 night, per person)</h3>
+            <p style="color:var(--muted); font-size:0.92rem;">
+              "Early bird total" and "Regular total" columns assume <strong>shared occupancy</strong>. If you take a room by yourself (single occupancy), the room price replaces the shared price.
+            </p>
             <table class="price-table">
               <thead>
                 <tr>
                   <th>Room</th>
                   <th>Beds</th>
-                  <th>Single occupancy</th>
-                  <th>Shared / person</th>
+                  <th>Single occupancy<br><small style="font-weight:400; color:var(--muted);">room / night</small></th>
+                  <th>Shared / person<br><small style="font-weight:400; color:var(--muted);">/ night</small></th>
+                  <th>Early bird total<br><small style="font-weight:400; color:var(--muted);">per person</small></th>
+                  <th>Regular total<br><small style="font-weight:400; color:var(--muted);">per person</small></th>
                 </tr>
               </thead>
               <tbody id="priceTableBody"></tbody>
@@ -1328,14 +1334,20 @@
       function populatePriceTable() {
         const tbody = document.querySelector("#priceTableBody");
         if (!tbody) return;
-        tbody.innerHTML = ROOMS.map((r) => `
-          <tr>
-            <td>${r.label} <span style="color:var(--muted);">(${r.village})</span></td>
-            <td>${r.beds}</td>
-            <td>$${r.single.toFixed(2)}</td>
-            <td>$${r.shared.toFixed(2)}</td>
-          </tr>
-        `).join("");
+        tbody.innerHTML = ROOMS.map((r) => {
+          const eb = RETREAT_FEE_EARLY_BIRD + r.shared;
+          const rg = RETREAT_FEE_REGULAR    + r.shared;
+          return `
+            <tr>
+              <td>${r.label} <span style="color:var(--muted);">(${r.village})</span></td>
+              <td>${r.beds}</td>
+              <td>$${r.single.toFixed(2)}</td>
+              <td>$${r.shared.toFixed(2)}</td>
+              <td><strong>$${eb.toFixed(2)}</strong></td>
+              <td>$${rg.toFixed(2)}</td>
+            </tr>
+          `;
+        }).join("");
       }
 
       function getStoredSignatures() {
