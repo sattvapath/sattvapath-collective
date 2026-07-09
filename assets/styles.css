@@ -1276,6 +1276,18 @@ section {
   color: #f1d5a1;
 }
 
+/* Secondary buttons on dark retreat background need light text/border */
+.retreat .button.secondary {
+  border-color: rgba(255, 253, 248, 0.55);
+  color: var(--white);
+}
+
+.retreat .button.secondary:hover {
+  background: rgba(255, 253, 248, 0.12);
+  border-color: var(--white);
+  color: var(--white);
+}
+
 .retreat-details {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1292,7 +1304,7 @@ section {
   font-family: Arial, sans-serif;
 }
 
-.detail span {
+.detail > span:first-child {
   display: block;
   margin-bottom: 6px;
   color: #f1d5a1;
@@ -1300,6 +1312,14 @@ section {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.detail > span:not(:first-child) {
+  color: var(--white);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .retreat-list {

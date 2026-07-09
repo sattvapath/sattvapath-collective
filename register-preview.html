@@ -749,6 +749,29 @@
         .participant-grid > * {
           grid-column: 1 / -1;
         }
+
+        .room-modal-card {
+          padding: 20px 16px 18px;
+          max-height: 94vh;
+        }
+
+        .room-cards {
+          grid-template-columns: 1fr;
+          gap: 14px;
+        }
+
+        .room-card {
+          padding: 16px;
+        }
+
+        .room-card dl.pricing {
+          grid-template-columns: 1fr;
+          gap: 2px 8px;
+        }
+
+        .room-card dl.pricing dt {
+          margin-top: 8px;
+        }
       }
     </style>
   </head>
@@ -783,7 +806,7 @@
               <strong>Retreat Experience fee*</strong>
               $249 early bird (before Aug 15) / $299 regular. Includes all sessions and 3 meals.
             </li>
-            <li style="color:var(--muted); font-size:0.9rem;">
+            <li style="color:var(--muted); font-size:0.9rem; padding-bottom:12px; border-bottom:1px solid var(--line);">
               * Lodging is not included.
             </li>
             <li>
@@ -1337,7 +1360,8 @@
         return new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
-          maximumFractionDigits: 0
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
         }).format(amount || 0);
       }
 
@@ -1550,9 +1574,6 @@
                   </select>
                   <p class="help" style="margin-top:6px;">
                     <a href="#" data-open-room-details>View room details</a>
-                  </p>
-                  <p class="help" style="margin-top:2px;">
-                    Need a bigger room? <a href="mailto:Sattvapathcollective@gmail.com">Contact the organizers</a>
                   </p>
                 </div>
                 <div class="span-6 pad-top">
