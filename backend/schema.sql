@@ -61,6 +61,15 @@ CREATE INDEX IF NOT EXISTS emotions_status_idx     ON emotions(status);
 CREATE INDEX IF NOT EXISTS emotions_created_at_idx ON emotions(created_at DESC);
 CREATE INDEX IF NOT EXISTS emotions_client_id_idx  ON emotions(client_id);
 
+-- Site content sections. Each 'key' maps to a data-content="key" element
+-- on the site (hero.title, welcome.body, etc). Value is the text; store
+-- plain text — the frontend inserts it as textContent, not HTML.
+CREATE TABLE IF NOT EXISTS site_content (
+    key         TEXT PRIMARY KEY,
+    value       TEXT NOT NULL DEFAULT '',
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Retreat / event registrations. Payment_status:
 -- 'pending'   default on POST
 -- 'paid'      admin toggles when Zelle received
@@ -108,6 +117,11 @@ $$;
 DROP TRIGGER IF EXISTS events_updated_at        ON events;
 DROP TRIGGER IF EXISTS emotions_updated_at      ON emotions;
 DROP TRIGGER IF EXISTS registrations_updated_at ON registrations;
+DROP TRIGGER IF EXISTS site_content_updated_at  ON site_content;
+
+CREATE TRIGGER site_content_updated_at
+    BEFORE UPDATE ON site_content
+    FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 
 CREATE TRIGGER events_updated_at
     BEFORE UPDATE ON events

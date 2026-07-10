@@ -1657,6 +1657,119 @@ footer {
   letter-spacing: 0.01em;
 }
 
+/* ---------- Inline edit (admin only) ---------- */
+
+body.is-admin { padding-bottom: 56px; }
+
+body.is-admin [data-content].ce-editable {
+  outline: 2px dashed transparent;
+  outline-offset: 4px;
+  cursor: text;
+  border-radius: 6px;
+  transition: outline-color 120ms ease, background-color 120ms ease;
+}
+
+body.is-admin [data-content].ce-editable:hover {
+  outline-color: var(--gold);
+  background-color: rgba(241, 213, 161, 0.10);
+}
+
+body.is-admin [data-content].ce-editable::after {
+  content: " ✎";
+  color: var(--gold);
+  opacity: 0;
+  font-size: 0.85em;
+  margin-left: 6px;
+  transition: opacity 120ms ease;
+  vertical-align: middle;
+}
+
+body.is-admin [data-content].ce-editable:hover::after {
+  opacity: 1;
+}
+
+.ce-editor {
+  display: block;
+  margin: 6px 0 18px;
+  padding: 12px;
+  border: 2px solid var(--gold);
+  border-radius: var(--radius);
+  background: rgba(255, 250, 240, 0.98);
+  box-shadow: var(--shadow);
+  max-width: 100%;
+}
+
+.ce-textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.ce-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.ce-controls .button {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+}
+
+.ce-msg {
+  font-size: 0.9rem;
+  color: var(--leaf);
+  font-weight: 600;
+}
+
+.ce-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--ink);
+  color: #fff;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.ce-toolbar strong { color: var(--gold); }
+.ce-toolbar-label { flex-shrink: 0; }
+.ce-toolbar-hint { color: rgba(255, 255, 255, 0.75); font-size: 0.85rem; }
+
+.ce-toolbar-link {
+  margin-left: auto;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.ce-toolbar-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ce-toolbar-link + .ce-toolbar-link { margin-left: 8px; }
+
 .summary-list li.limited-seats {
   background: rgba(241, 213, 161, 0.14);
   border-left: 3px solid var(--gold);

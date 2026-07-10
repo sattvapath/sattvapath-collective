@@ -269,6 +269,57 @@ app.delete('/api/admin/emotions/:id', requireAdmin, async (req, res) => {
   res.json({ deleted: r.rowCount });
 });
 
+// ---------------- site content (public read) ----------------
+
+app.get('/api/content', async (req, res) => {
+  const r = await pool.query(`SELECT key, value FROM site_content`);
+  const map = {};
+  for (const row of r.rows) map[row.key] = row.value;
+  res.json(map);
+});
+
+// ---------------- site content (admin write) ----------------
+
+app.patch('/api/admin/content', requireAdmin, async (req, res) => {
+  const { key, value } = req.body || {};
+  if (!key || typeof key !== 'string' || key.length > 200) return res.status(400).json({ error: 'invalid_key' });
+  if (typeof value !== 'string') return res.status(400).json({ error: 'invalid_value' });
+  if (value.length > 20000) return res.status(400).json({ error: 'value_too_long' });
+  const r = await pool.query(
+    `INSERT INTO site_content (key, value) VALUES ($1, $2)
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
+     RETURNING key, value, updated_at`,
+    [key, value]
+  );
+  res.json(r.rows[0]);
+});
+
+app.post('/api/admin/content/bulk-import', requireAdmin, async (req, res) => {
+  const map = req.body?.content;
+  if (!map || typeof map !== 'object') return res.status(400).json({ error: 'invalid_body' });
+  const entries = Object.entries(map).filter(([k, v]) => typeof k === 'string' && typeof v === 'string');
+  if (!entries.length) return res.json({ imported: 0 });
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (const [key, value] of entries) {
+      if (key.length > 200 || value.length > 20000) continue;
+      await client.query(
+        `INSERT INTO site_content (key, value) VALUES ($1, $2)
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+        [key, value]
+      );
+    }
+    await client.query('COMMIT');
+    res.json({ imported: entries.length });
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
+});
+
 // ---------------- registrations (public) ----------------
 
 app.post('/api/registrations', async (req, res) => {

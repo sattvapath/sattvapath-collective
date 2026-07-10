@@ -215,17 +215,141 @@ function paragraphsFromText(text) {
   return String(text || "").split(/\n{2,}/).map((p) => p.trim()).filter(Boolean).map((p) => `<p>${p}</p>`).join("");
 }
 
-function applySiteContent() {
-  const content = getJson("sattva-site-content", {});
+// Cache of merged { localStorage, server } site content, updated in place by inline edit.
+let contentMap = {};
+
+function applyContentToDom() {
   document.querySelectorAll("[data-content]").forEach((el) => {
-    const v = content[el.dataset.content];
+    const v = contentMap[el.dataset.content];
     if (!v) return;
     if (el.classList.contains("body-copy")) el.innerHTML = paragraphsFromText(v);
     else el.textContent = v;
   });
   document.querySelectorAll("[data-image]").forEach((image) => {
-    const v = content[image.dataset.image];
+    const v = contentMap[image.dataset.image];
     if (v) image.src = v;
+  });
+}
+
+async function applySiteContent() {
+  contentMap = { ...getJson("sattva-site-content", {}) };
+  try {
+    const server = await apiGet("/api/content");
+    if (server && typeof server === "object") {
+      Object.assign(contentMap, server); // server wins
+    }
+  } catch { /* offline / API down — keep localStorage-only */ }
+  applyContentToDom();
+  initInlineEdit();
+}
+
+// ---------------- Inline edit (admin only) ----------------
+
+async function initInlineEdit() {
+  if (document.body.classList.contains("ce-inited")) return;
+  document.body.classList.add("ce-inited");
+  // Only run on regular content pages, not admin.html itself.
+  if (document.getElementById("adminApp") || document.getElementById("loginScreen")) return;
+
+  let user = null;
+  try { user = (await apiGet("/api/admin/me")).user; } catch { return; }
+  if (!user) return;
+
+  document.body.classList.add("is-admin");
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "ce-toolbar";
+  toolbar.innerHTML = `
+    <span class="ce-toolbar-label">Signed in as <strong>${user.username}</strong></span>
+    <span class="ce-toolbar-hint">Click any text with a dotted outline to edit</span>
+    <a class="ce-toolbar-link" href="admin.html">Admin panel</a>
+    <button type="button" class="ce-toolbar-link" id="ceLogout">Sign out</button>
+  `;
+  document.body.appendChild(toolbar);
+  toolbar.querySelector("#ceLogout")?.addEventListener("click", async () => {
+    try { await apiPost("/api/admin/logout"); } catch {}
+    location.reload();
+  });
+
+  document.querySelectorAll("[data-content]").forEach((el) => {
+    el.classList.add("ce-editable");
+    el.addEventListener("click", (e) => {
+      if (el.classList.contains("ce-editing")) return;
+      if (e.target.closest("a, button")) return; // don't hijack link/button clicks
+      e.preventDefault();
+      openInlineEditor(el);
+    });
+  });
+}
+
+function openInlineEditor(el) {
+  const key = el.dataset.content;
+  const currentValue = contentMap[key] || (el.classList.contains("body-copy") ? el.innerText : el.textContent) || "";
+  el.classList.add("ce-editing");
+
+  const editor = document.createElement("div");
+  editor.className = "ce-editor";
+  const textarea = document.createElement("textarea");
+  textarea.className = "ce-textarea";
+  textarea.value = currentValue.trim();
+  textarea.rows = Math.max(2, Math.min(14, currentValue.split("\n").length + 1));
+
+  const controls = document.createElement("div");
+  controls.className = "ce-controls";
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "button";
+  saveBtn.textContent = "Save";
+  saveBtn.className = "button ce-save";
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.className = "button secondary ce-cancel";
+  const msg = document.createElement("span");
+  msg.className = "ce-msg";
+
+  controls.append(saveBtn, cancelBtn, msg);
+  editor.append(textarea, controls);
+
+  el.style.display = "none";
+  el.parentNode.insertBefore(editor, el.nextSibling);
+  textarea.focus();
+  textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+  function closeEditor() {
+    editor.remove();
+    el.style.display = "";
+    el.classList.remove("ce-editing");
+  }
+
+  cancelBtn.addEventListener("click", closeEditor);
+  textarea.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeEditor();
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) saveBtn.click();
+  });
+
+  saveBtn.addEventListener("click", async () => {
+    const newValue = textarea.value;
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+    msg.textContent = "";
+    try {
+      await apiPatch("/api/admin/content", { key, value: newValue });
+      contentMap[key] = newValue;
+      // Mirror to localStorage so cached rendering still shows the update.
+      try {
+        const local = getJson("sattva-site-content", {});
+        local[key] = newValue;
+        localStorage.setItem("sattva-site-content", JSON.stringify(local));
+      } catch { /* ignore quota */ }
+      if (el.classList.contains("body-copy")) el.innerHTML = paragraphsFromText(newValue);
+      else el.textContent = newValue;
+      msg.textContent = "Saved ✓";
+      setTimeout(closeEditor, 500);
+    } catch (err) {
+      msg.textContent = "Save failed: " + (err.message || "error");
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save";
+    }
   });
 }
 
