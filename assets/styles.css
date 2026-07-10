@@ -1637,6 +1637,26 @@ footer {
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
 }
 
+.featured-retreat-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+
+.featured-retreat-heading h3 {
+  margin: 0;
+}
+
+.limited-seats-inline {
+  color: #b7311a;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
 .summary-list li.limited-seats {
   background: rgba(241, 213, 161, 0.14);
   border-left: 3px solid var(--gold);
