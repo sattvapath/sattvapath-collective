@@ -405,6 +405,23 @@ app.get('/api/admin/me', requireAdmin, async (req, res) => {
   res.json({ user: { username: req.admin.username, role: req.admin.role } });
 });
 
+app.post('/api/admin/change-password', requireAdmin, async (req, res) => {
+  const { current_password, new_password } = req.body || {};
+  if (!current_password || !new_password) return res.status(400).json({ error: 'missing_fields' });
+  if (String(new_password).length < 8) return res.status(400).json({ error: 'password_too_short' });
+  const r = await pool.query(`SELECT password_hash FROM admin_users WHERE id = $1`, [req.admin.id]);
+  const row = r.rows[0];
+  if (!row || !(await bcrypt.compare(current_password, row.password_hash))) {
+    return res.status(401).json({ error: 'invalid_current_password' });
+  }
+  const hash = await bcrypt.hash(new_password, 12);
+  await pool.query(`UPDATE admin_users SET password_hash = $2 WHERE id = $1`, [req.admin.id, hash]);
+  // Invalidate every other session so a stolen cookie is neutralized.
+  const currentToken = req.cookies?.[SESSION_COOKIE];
+  await pool.query(`DELETE FROM admin_sessions WHERE admin_id = $1 AND token <> $2`, [req.admin.id, currentToken]);
+  res.json({ ok: true });
+});
+
 // ---------------- 404 catchall ----------------
 
 app.use((req, res) => res.status(404).json({ error: 'not_found' }));

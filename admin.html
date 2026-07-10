@@ -677,6 +677,30 @@
         <div class="event-list" id="eventList"></div>
       </section>
 
+      <section class="wrap panel" aria-label="Change your password" data-owner-only>
+        <p class="eyebrow">Your account</p>
+        <h2>Change your password</h2>
+        <p class="permission-note">
+          Rotate your admin password. Changing it here signs out every other browser session for you (this browser stays logged in).
+        </p>
+        <form id="changePwForm" class="form-grid" autocomplete="off">
+          <div class="two">
+            <div>
+              <label for="currentPw">Current password</label>
+              <input id="currentPw" type="password" autocomplete="current-password" required>
+            </div>
+            <div>
+              <label for="newPw">New password (min 8 characters)</label>
+              <input id="newPw" type="password" autocomplete="new-password" minlength="8" required>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit">Update password</button>
+          </div>
+          <p class="note" id="changePwMessage" role="alert" hidden></p>
+        </form>
+      </section>
+
       <section class="wrap panel" aria-label="Access management" data-owner-only>
         <p class="eyebrow">Access management</p>
         <h2>Give limited edit access</h2>
@@ -1679,10 +1703,30 @@
       regFilterStatus?.addEventListener("change", renderRegistrations);
       regRefreshBtn?.addEventListener("click", fetchRegistrations);
 
+      function regIdFromEvent(e) {
+        const trMain = e.target.closest("tr[data-reg-id]");
+        if (trMain) return trMain.dataset.regId;
+        const trDetails = e.target.closest("tr[data-reg-details]");
+        if (trDetails) return trDetails.dataset.regDetails;
+        return null;
+      }
+
+      function flashSaved(el, label = "Saved") {
+        if (!el) return;
+        const badge = document.createElement("span");
+        badge.textContent = " ✓ " + label;
+        badge.style.cssText = "color:var(--leaf); font-size:0.85rem; margin-left:8px; font-weight:600; opacity:0; transition:opacity 200ms ease;";
+        el.insertAdjacentElement("afterend", badge);
+        requestAnimationFrame(() => { badge.style.opacity = "1"; });
+        setTimeout(() => {
+          badge.style.opacity = "0";
+          setTimeout(() => badge.remove(), 300);
+        }, 1600);
+      }
+
       document.getElementById("regTableBody")?.addEventListener("click", async (e) => {
-        const row = e.target.closest("tr[data-reg-id]");
-        if (!row) return;
-        const id = row.dataset.regId;
+        const id = regIdFromEvent(e);
+        if (!id) return;
         if (e.target.matches("[data-reg-view]")) {
           const details = document.querySelector(`tr[data-reg-details="${id}"]`);
           if (details) details.hidden = !details.hidden;
@@ -1698,28 +1742,72 @@
         } else if (e.target.matches("[data-reg-save-notes]")) {
           const ta = document.querySelector(`tr[data-reg-details="${id}"] [data-reg-admin-notes]`);
           if (!ta) return;
+          const btn = e.target;
+          const originalLabel = btn.textContent;
+          btn.disabled = true; btn.textContent = "Saving...";
           try {
             const updated = await apiPatch(`/api/admin/registrations/${id}`, { admin_notes: ta.value });
             const idx = regCache.findIndex((r) => r.id === id);
             if (idx >= 0) regCache[idx] = updated;
+            flashSaved(btn, "Notes saved");
             showAdminStatus?.("Notes saved.", "success");
           } catch (err) {
             showAdminStatus?.("Save failed: " + (err.message || "error"), "error");
+          } finally {
+            btn.disabled = false; btn.textContent = originalLabel;
           }
         }
       });
 
       document.getElementById("regTableBody")?.addEventListener("change", async (e) => {
         if (!e.target.matches("[data-reg-status]")) return;
-        const row = e.target.closest("tr[data-reg-id]");
-        const id = row.dataset.regId;
+        const id = regIdFromEvent(e);
+        if (!id) return;
+        const select = e.target;
+        select.disabled = true;
         try {
-          const updated = await apiPatch(`/api/admin/registrations/${id}`, { payment_status: e.target.value });
+          const updated = await apiPatch(`/api/admin/registrations/${id}`, { payment_status: select.value });
           const idx = regCache.findIndex((r) => r.id === id);
           if (idx >= 0) regCache[idx] = updated;
-          renderRegistrations();
+          flashSaved(select, "Saved");
+          // Re-render only the summary line so counts stay accurate; keep row & details expanded state.
+          const totalDue = regCache.filter((r) => r.payment_status === "pending").reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
+          const totalPaid = regCache.filter((r) => r.payment_status === "paid").reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
+          regSummary.textContent = `${regCache.length} total · ${formatMoney(totalPaid)} paid · ${formatMoney(totalDue)} pending`;
         } catch (err) {
           showAdminStatus?.("Update failed: " + (err.message || "error"), "error");
+        } finally {
+          select.disabled = false;
+        }
+      });
+
+      // ---------- Change password (owner) ----------
+      const changePwForm = document.getElementById("changePwForm");
+      const changePwMessage = document.getElementById("changePwMessage");
+      function showChangePwMsg(text, type) {
+        if (!changePwMessage) return;
+        changePwMessage.textContent = text;
+        changePwMessage.hidden = false;
+        changePwMessage.style.color = type === "error" ? "var(--clay)" : "var(--leaf)";
+      }
+      changePwForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const current_password = document.getElementById("currentPw").value;
+        const new_password = document.getElementById("newPw").value;
+        if (new_password.length < 8) return showChangePwMsg("New password must be at least 8 characters.", "error");
+        const btn = changePwForm.querySelector("button[type=submit]");
+        btn.disabled = true; btn.textContent = "Updating...";
+        try {
+          await apiPost("/api/admin/change-password", { current_password, new_password });
+          changePwForm.reset();
+          showChangePwMsg("Password updated. Other sessions signed out.", "success");
+        } catch (err) {
+          const msg = err.message === "invalid_current_password" ? "The current password is incorrect."
+                    : err.message === "password_too_short"       ? "New password must be at least 8 characters."
+                    : "Could not update password: " + (err.message || "error");
+          showChangePwMsg(msg, "error");
+        } finally {
+          btn.disabled = false; btn.textContent = "Update password";
         }
       });
 
