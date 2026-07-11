@@ -69,13 +69,34 @@
               <p class="section-kicker" data-content="contact.kicker">Contact and inquiry</p>
               <h2 data-content="contact.title">Begin with a simple question.</h2>
               <p class="lead" data-content="contact.body">
-                If you are curious about spiritual guidance, meditation, or the upcoming retreat, you are welcome to reach out. Email <a href="mailto:Sattvapathcollective@gmail.com">Sattvapathcollective@gmail.com</a>, or begin a conversation through the registration form.
+                If you are curious about spiritual guidance, meditation, or the upcoming retreat, you are welcome to reach out. Send a note below, or email <a href="mailto:Sattvapathcollective@gmail.com">Sattvapathcollective@gmail.com</a> directly.
               </p>
             </div>
-            <div class="actions">
-              <a class="button" href="register.html">Begin a Conversation</a>
-              <a class="button secondary" href="register.html">Register</a>
-            </div>
+            <form id="contactForm" class="contact-form" novalidate>
+              <div class="two">
+                <div>
+                  <label for="contactName">Your name <span class="required">*</span></label>
+                  <input id="contactName" name="name" type="text" autocomplete="name" required>
+                </div>
+                <div>
+                  <label for="contactEmail">Your email <span class="required">*</span></label>
+                  <input id="contactEmail" name="email" type="email" autocomplete="email" required>
+                </div>
+              </div>
+              <div>
+                <label for="contactSubject">Subject (optional)</label>
+                <input id="contactSubject" name="subject" type="text" maxlength="200">
+              </div>
+              <div>
+                <label for="contactMessage">Your message <span class="required">*</span></label>
+                <textarea id="contactMessage" name="message" rows="6" required data-speech></textarea>
+              </div>
+              <div class="actions">
+                <button type="submit" class="button" id="contactSubmit">Send Message</button>
+                <a class="button secondary" href="register.html">Or Register for the Retreat</a>
+              </div>
+              <p class="contact-status" id="contactStatus" role="status" hidden></p>
+            </form>
           </div>
 
           <div class="contact-social-section">
@@ -104,5 +125,56 @@
       </div>
     </footer>
     <script src="assets/main.js"></script>
+    <script>
+      (function () {
+        const form = document.getElementById("contactForm");
+        if (!form) return;
+        const status = document.getElementById("contactStatus");
+        const btn = document.getElementById("contactSubmit");
+        function showStatus(msg, kind) {
+          status.hidden = false;
+          status.textContent = msg;
+          status.className = "contact-status contact-status-" + kind;
+        }
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("contactName").value.trim();
+          const email = document.getElementById("contactEmail").value.trim();
+          const subject = document.getElementById("contactSubject").value.trim();
+          const message = document.getElementById("contactMessage").value.trim();
+          if (!name || !email || !message) {
+            showStatus("Please fill in your name, email, and message.", "error");
+            return;
+          }
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showStatus("Please enter a valid email address.", "error");
+            return;
+          }
+          btn.disabled = true;
+          const originalLabel = btn.textContent;
+          btn.textContent = "Sending...";
+          status.hidden = true;
+          try {
+            const res = await fetch("/api/contact", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, email, subject, message, source_page: "contact" }),
+            });
+            if (!res.ok) {
+              let msg = "Could not send your message.";
+              try { const e = await res.json(); if (e.error === "rate_limited") msg = "Too many messages just now. Please try again in a minute."; else if (e.error) msg += " (" + e.error + ")"; } catch {}
+              throw new Error(msg);
+            }
+            form.reset();
+            showStatus("Thank you — your message was received. We'll reply as soon as we can.", "success");
+          } catch (err) {
+            showStatus(err.message || "Could not send your message.", "error");
+          } finally {
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+          }
+        });
+      })();
+    </script>
   </body>
 </html>

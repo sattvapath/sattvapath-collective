@@ -269,6 +269,75 @@ app.delete('/api/admin/emotions/:id', requireAdmin, async (req, res) => {
   res.json({ deleted: r.rowCount });
 });
 
+// ---------------- contact inquiries (public post) ----------------
+
+app.post('/api/contact', async (req, res) => {
+  const ip = req.ip || 'unknown';
+  if (!rateLimit(`contact:${ip}`, 3)) return res.status(429).json({ error: 'rate_limited' });
+  const b = req.body || {};
+  const name = String(b.name || '').trim().slice(0, 200);
+  const email = String(b.email || '').trim().slice(0, 200);
+  const subject = String(b.subject || '').trim().slice(0, 200);
+  const message = String(b.message || '').trim().slice(0, 8000);
+  const sourcePage = String(b.source_page || 'contact').trim().slice(0, 60);
+  if (!name || !email || !message) return res.status(400).json({ error: 'missing_fields' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'invalid_email' });
+  const ipHash = crypto.createHash('sha256').update(ip).digest('hex').slice(0, 32);
+  const r = await pool.query(
+    `INSERT INTO contact_inquiries (name, email, subject, message, source_page, ip_hash)
+     VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, created_at`,
+    [name, email, subject, message, sourcePage, ipHash]
+  );
+  res.status(201).json({ id: r.rows[0].id, created_at: r.rows[0].created_at });
+});
+
+// ---------------- contact inquiries (admin) ----------------
+
+app.get('/api/admin/inquiries', requireAdmin, async (req, res) => {
+  const params = [];
+  const conditions = [];
+  if (req.query.status) { params.push(req.query.status); conditions.push(`status = $${params.length}`); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const r = await pool.query(
+    `SELECT * FROM contact_inquiries ${where} ORDER BY created_at DESC`,
+    params
+  );
+  res.json(r.rows);
+});
+
+app.get('/api/admin/inquiries.csv', requireAdmin, async (req, res) => {
+  const r = await pool.query(`SELECT * FROM contact_inquiries ORDER BY created_at DESC`);
+  const cols = ['id','created_at','status','name','email','subject','message','source_page','admin_notes'];
+  const esc = (v) => {
+    if (v == null) return '';
+    const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
+    return `"${s.replace(/"/g, '""')}"`;
+  };
+  const lines = [cols.join(',')];
+  for (const row of r.rows) lines.push(cols.map((c) => esc(row[c])).join(','));
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="inquiries-${new Date().toISOString().slice(0,10)}.csv"`);
+  res.send(lines.join('\n'));
+});
+
+app.patch('/api/admin/inquiries/:id', requireAdmin, async (req, res) => {
+  const b = req.body || {};
+  const r = await pool.query(
+    `UPDATE contact_inquiries SET
+        status      = COALESCE($2, status),
+        admin_notes = COALESCE($3, admin_notes)
+      WHERE id = $1 RETURNING *`,
+    [req.params.id, b.status, b.admin_notes]
+  );
+  if (!r.rows[0]) return res.status(404).json({ error: 'not_found' });
+  res.json(r.rows[0]);
+});
+
+app.delete('/api/admin/inquiries/:id', requireAdmin, async (req, res) => {
+  const r = await pool.query(`DELETE FROM contact_inquiries WHERE id = $1`, [req.params.id]);
+  res.json({ deleted: r.rowCount });
+});
+
 // ---------------- site content (public read) ----------------
 
 app.get('/api/content', async (req, res) => {

@@ -777,6 +777,46 @@
         </div>
       </section>
 
+      <section class="wrap panel" aria-label="Contact inquiries" data-permission="events">
+        <p class="eyebrow">Inbox</p>
+        <h2>Contact inquiries</h2>
+        <p class="permission-note">
+          Messages submitted through the contact form show up here. Change status as you handle them: New → Read → Replied → Archived. Delete permanently if unwanted.
+        </p>
+        <div class="reg-toolbar" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:12px 0;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.9rem;">
+            <span>Filter status:</span>
+            <select id="inqFilterStatus">
+              <option value="">All</option>
+              <option value="new">New</option>
+              <option value="read">Read</option>
+              <option value="replied">Replied</option>
+              <option value="archived">Archived</option>
+            </select>
+          </label>
+          <span id="inqSummary" style="font-size:0.9rem; color:var(--muted);"></span>
+          <div style="margin-left:auto; display:flex; gap:8px;">
+            <button type="button" class="button secondary" id="inqRefreshBtn">Refresh</button>
+            <a class="button secondary" id="inqExportBtn" href="/api/admin/inquiries.csv" download>Export CSV</a>
+          </div>
+        </div>
+        <div id="inqEmpty" class="permission-note" hidden>No inquiries yet.</div>
+        <div style="overflow-x:auto;">
+          <table id="inqTable" style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+              <tr style="text-align:left; border-bottom:1px solid var(--line);">
+                <th style="padding:8px;">Received</th>
+                <th style="padding:8px;">From</th>
+                <th style="padding:8px;">Subject</th>
+                <th style="padding:8px;">Status</th>
+                <th style="padding:8px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inqTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="wrap panel" aria-label="What's on Your Heart moderation" data-permission="emotions">
         <p class="eyebrow">What's on Your Heart</p>
         <h2>Review and respond</h2>
@@ -836,18 +876,21 @@
       }
       async function refreshApiCaches() {
         try {
-          const [events, emotions, registrations] = await Promise.all([
+          const [events, emotions, registrations, inquiries] = await Promise.all([
             apiGet("/api/admin/events").catch(() => []),
             apiGet("/api/emotions").catch(() => []),
-            apiGet("/api/admin/registrations").catch(() => [])
+            apiGet("/api/admin/registrations").catch(() => []),
+            apiGet("/api/admin/inquiries").catch(() => [])
           ]);
           apiEventsCache = events;
           apiEmotionsCache = emotions.map(normalizeEmotion);
           regCache = registrations;
+          inqCache = inquiries;
           // Mirror to localStorage so any legacy readers still see fresh data.
           setJson(emotionKey, apiEmotionsCache);
           setJson(storageKey, apiEventsCache);
           renderRegistrations();
+          renderInquiries();
         } catch (err) { console.warn("API cache refresh failed", err); }
       }
       const contentKey = "sattva-site-content";
@@ -1774,6 +1817,137 @@
           const totalDue = regCache.filter((r) => r.payment_status === "pending").reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
           const totalPaid = regCache.filter((r) => r.payment_status === "paid").reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
           regSummary.textContent = `${regCache.length} total · ${formatMoney(totalPaid)} paid · ${formatMoney(totalDue)} pending`;
+        } catch (err) {
+          showAdminStatus?.("Update failed: " + (err.message || "error"), "error");
+        } finally {
+          select.disabled = false;
+        }
+      });
+
+      // ---------- Contact inquiries dashboard ----------
+      let inqCache = [];
+      const inqFilterStatus = document.getElementById("inqFilterStatus");
+      const inqTableBody = document.getElementById("inqTableBody");
+      const inqEmpty = document.getElementById("inqEmpty");
+      const inqSummary = document.getElementById("inqSummary");
+      const inqTable = document.getElementById("inqTable");
+      const inqRefreshBtn = document.getElementById("inqRefreshBtn");
+
+      async function fetchInquiries() {
+        try { inqCache = await apiGet("/api/admin/inquiries"); }
+        catch (err) { inqCache = []; showAdminStatus?.("Could not load inquiries: " + (err.message || "error"), "error"); }
+        renderInquiries();
+      }
+
+      function renderInquiries() {
+        if (!inqTableBody) return;
+        const filter = inqFilterStatus?.value || "";
+        const list = filter ? inqCache.filter((r) => r.status === filter) : inqCache;
+        inqEmpty.hidden = list.length > 0;
+        inqTable.hidden = list.length === 0;
+        const counts = inqCache.reduce((m, r) => { m[r.status] = (m[r.status] || 0) + 1; return m; }, {});
+        inqSummary.textContent = `${inqCache.length} total · ${counts.new || 0} new · ${counts.read || 0} read · ${counts.replied || 0} replied · ${counts.archived || 0} archived`;
+        inqTableBody.innerHTML = list.map((r) => `
+          <tr data-inq-id="${escapeHtmlAdmin(r.id)}" style="border-bottom:1px solid var(--line); ${r.status === "new" ? "font-weight:600;" : ""}">
+            <td style="padding:8px; vertical-align:top; white-space:nowrap;">${escapeHtmlAdmin(formatDateTime(r.created_at))}</td>
+            <td style="padding:8px; vertical-align:top;">
+              <strong>${escapeHtmlAdmin(r.name)}</strong><br>
+              <a href="mailto:${escapeHtmlAdmin(r.email)}?subject=Re:%20${encodeURIComponent(r.subject || "your message")}">${escapeHtmlAdmin(r.email)}</a>
+            </td>
+            <td style="padding:8px; vertical-align:top;">${escapeHtmlAdmin(r.subject || "(no subject)")}</td>
+            <td style="padding:8px; vertical-align:top;">
+              <select data-inq-status style="font-size:0.85rem;">
+                <option value="new"      ${r.status === "new"      ? "selected" : ""}>New</option>
+                <option value="read"     ${r.status === "read"     ? "selected" : ""}>Read</option>
+                <option value="replied"  ${r.status === "replied"  ? "selected" : ""}>Replied</option>
+                <option value="archived" ${r.status === "archived" ? "selected" : ""}>Archived</option>
+              </select>
+            </td>
+            <td style="padding:8px; vertical-align:top; white-space:nowrap;">
+              <button type="button" class="button secondary" data-inq-view>Message</button>
+              <button type="button" class="button secondary" data-inq-delete style="color:var(--clay);">Delete</button>
+            </td>
+          </tr>
+          <tr data-inq-details="${escapeHtmlAdmin(r.id)}" hidden><td colspan="5" style="padding:12px 16px; background:rgba(72,99,71,0.04);">
+            <div style="max-width:820px;">
+              <pre style="white-space:pre-wrap; font-family:inherit; font-size:0.95rem; margin:0 0 12px;">${escapeHtmlAdmin(r.message)}</pre>
+              <label style="display:block; font-weight:600;">Admin notes</label>
+              <textarea data-inq-admin-notes style="width:100%; min-height:60px;">${escapeHtmlAdmin(r.admin_notes)}</textarea>
+              <button type="button" class="button secondary" data-inq-save-notes style="margin-top:4px;">Save notes</button>
+            </div>
+          </td></tr>
+        `).join("");
+      }
+
+      function inqIdFromEvent(e) {
+        const main = e.target.closest("tr[data-inq-id]");
+        if (main) return main.dataset.inqId;
+        const details = e.target.closest("tr[data-inq-details]");
+        if (details) return details.dataset.inqDetails;
+        return null;
+      }
+
+      inqFilterStatus?.addEventListener("change", renderInquiries);
+      inqRefreshBtn?.addEventListener("click", fetchInquiries);
+
+      inqTableBody?.addEventListener("click", async (e) => {
+        const id = inqIdFromEvent(e);
+        if (!id) return;
+        if (e.target.matches("[data-inq-view]")) {
+          const details = document.querySelector(`tr[data-inq-details="${id}"]`);
+          if (details) details.hidden = !details.hidden;
+          // Auto-mark New → Read when opened.
+          const row = inqCache.find((r) => r.id === id);
+          if (row && row.status === "new") {
+            try {
+              const updated = await apiPatch(`/api/admin/inquiries/${id}`, { status: "read" });
+              const idx = inqCache.findIndex((r) => r.id === id);
+              if (idx >= 0) inqCache[idx] = updated;
+              renderInquiries();
+              if (details) details.hidden = false; // re-open after render
+            } catch { /* ignore */ }
+          }
+        } else if (e.target.matches("[data-inq-delete]")) {
+          if (!confirm("Delete this inquiry? This cannot be undone.")) return;
+          try {
+            await apiDelete(`/api/admin/inquiries/${id}`);
+            inqCache = inqCache.filter((r) => r.id !== id);
+            renderInquiries();
+          } catch (err) {
+            showAdminStatus?.("Delete failed: " + (err.message || "error"), "error");
+          }
+        } else if (e.target.matches("[data-inq-save-notes]")) {
+          const ta = document.querySelector(`tr[data-inq-details="${id}"] [data-inq-admin-notes]`);
+          if (!ta) return;
+          const btn = e.target;
+          const original = btn.textContent;
+          btn.disabled = true; btn.textContent = "Saving...";
+          try {
+            const updated = await apiPatch(`/api/admin/inquiries/${id}`, { admin_notes: ta.value });
+            const idx = inqCache.findIndex((r) => r.id === id);
+            if (idx >= 0) inqCache[idx] = updated;
+            flashSaved(btn, "Notes saved");
+          } catch (err) {
+            showAdminStatus?.("Save failed: " + (err.message || "error"), "error");
+          } finally {
+            btn.disabled = false; btn.textContent = original;
+          }
+        }
+      });
+
+      inqTableBody?.addEventListener("change", async (e) => {
+        if (!e.target.matches("[data-inq-status]")) return;
+        const id = inqIdFromEvent(e);
+        if (!id) return;
+        const select = e.target;
+        select.disabled = true;
+        try {
+          const updated = await apiPatch(`/api/admin/inquiries/${id}`, { status: select.value });
+          const idx = inqCache.findIndex((r) => r.id === id);
+          if (idx >= 0) inqCache[idx] = updated;
+          flashSaved(select, "Saved");
+          const counts = inqCache.reduce((m, r) => { m[r.status] = (m[r.status] || 0) + 1; return m; }, {});
+          inqSummary.textContent = `${inqCache.length} total · ${counts.new || 0} new · ${counts.read || 0} read · ${counts.replied || 0} replied · ${counts.archived || 0} archived`;
         } catch (err) {
           showAdminStatus?.("Update failed: " + (err.message || "error"), "error");
         } finally {

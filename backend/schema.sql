@@ -70,6 +70,27 @@ CREATE TABLE IF NOT EXISTS site_content (
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Contact form inquiries. Status:
+--   'new'      default on POST
+--   'read'     admin viewed the details
+--   'replied'  admin responded via email
+--   'archived' hidden from default view
+CREATE TABLE IF NOT EXISTS contact_inquiries (
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name           TEXT NOT NULL,
+    email          TEXT NOT NULL,
+    subject        TEXT DEFAULT '',
+    message        TEXT NOT NULL,
+    status         TEXT NOT NULL DEFAULT 'new',
+    admin_notes    TEXT DEFAULT '',
+    source_page    TEXT DEFAULT 'contact',
+    ip_hash        TEXT DEFAULT '',
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS contact_inquiries_status_idx  ON contact_inquiries(status);
+CREATE INDEX IF NOT EXISTS contact_inquiries_created_idx ON contact_inquiries(created_at DESC);
+
 -- Retreat / event registrations. Payment_status:
 -- 'pending'   default on POST
 -- 'paid'      admin toggles when Zelle received
@@ -117,10 +138,15 @@ $$;
 DROP TRIGGER IF EXISTS events_updated_at        ON events;
 DROP TRIGGER IF EXISTS emotions_updated_at      ON emotions;
 DROP TRIGGER IF EXISTS registrations_updated_at ON registrations;
-DROP TRIGGER IF EXISTS site_content_updated_at  ON site_content;
+DROP TRIGGER IF EXISTS site_content_updated_at     ON site_content;
+DROP TRIGGER IF EXISTS contact_inquiries_updated_at ON contact_inquiries;
 
 CREATE TRIGGER site_content_updated_at
     BEFORE UPDATE ON site_content
+    FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
+
+CREATE TRIGGER contact_inquiries_updated_at
+    BEFORE UPDATE ON contact_inquiries
     FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 
 CREATE TRIGGER events_updated_at
