@@ -974,8 +974,8 @@ section {
   margin-top: 34px;
 }
 
-.bodymind-disclaimer {
-  margin-top: 20px;
+.paths-disclaimer {
+  margin-top: 28px;
   padding: 14px 18px;
   border-left: 3px solid var(--gold);
   background: rgba(241, 213, 161, 0.10);
@@ -984,6 +984,11 @@ section {
   font-style: italic;
   line-height: 1.55;
   border-radius: 4px;
+}
+
+.paths-disclaimer strong {
+  color: var(--ink);
+  font-style: normal;
 }
 
 .path-card,
