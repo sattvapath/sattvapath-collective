@@ -805,7 +805,7 @@
             <li><strong>Age requirement</strong><span id="summaryAge">18 years or older</span></li>
             <li>
               <strong>Retreat Experience fee*</strong>
-              $249 early bird (before Aug 15) / $299 regular. Includes all sessions and 3 meals.
+              $259 early bird (before Aug 15) / $310 regular. Includes all sessions and 3 meals. Pay by Zelle and save $10.
             </li>
             <li style="color:var(--muted); font-size:0.9rem; padding-bottom:4px;">
               * Lodging is priced separately &mdash; you'll choose your accommodation during registration.
@@ -937,15 +937,35 @@
               Please fix the highlighted fields before submitting registration.
             </div>
             <div class="email-preview" id="emailPreview" aria-live="polite">
-              <h3>Your registration summary</h3>
+              <h3>Thank you &mdash; almost done!</h3>
               <p>
-                Thank you for registering. Here's a copy of your details for your records. Please open this in your email app and send it to yourself so you have a written record, then follow the Zelle payment instructions below to confirm your seat.
+                Your registration details have been received. Choose how you'd like to pay to confirm your seat:
               </p>
-              <p><strong>To:</strong> <span id="emailRecipients"></span></p>
-              <p><strong>Cc:</strong> <span id="emailCc"></span></p>
-              <p><strong>Subject:</strong> <span id="emailSubject"></span></p>
-              <pre id="emailBody"></pre>
-              <a class="button secondary" id="emailDraftLink" href="#">Open email draft</a>
+              <div class="payment-choice">
+                <div class="payment-option payment-option-card">
+                  <h4>Pay by Card</h4>
+                  <p class="payment-amount"><strong>$<span id="payCardAmount">0</span></strong> &mdash; secure Stripe checkout</p>
+                  <p class="payment-note">Instant confirmation. Card payment processing fee is included.</p>
+                  <button type="button" class="button" id="payCardBtn">Pay with Card</button>
+                  <p class="payment-msg" id="payCardMsg" hidden></p>
+                </div>
+                <div class="payment-option payment-option-zelle">
+                  <h4>Pay by Zelle &mdash; save $10 per person</h4>
+                  <p class="payment-amount"><strong>$<span id="payZelleAmount">0</span></strong> &mdash; direct bank transfer</p>
+                  <p class="payment-note">
+                    Send Zelle to <a href="mailto:Sattvapathcollective@gmail.com">Sattvapathcollective@gmail.com</a>.
+                    Include participant name(s) in the payment note. Your seat is confirmed once payment is received.
+                  </p>
+                  <a class="button secondary" id="emailDraftLink" href="#">Open confirmation email draft</a>
+                </div>
+              </div>
+              <details class="email-details">
+                <summary>See the confirmation email that will go to your inbox</summary>
+                <p><strong>To:</strong> <span id="emailRecipients"></span></p>
+                <p><strong>Cc:</strong> <span id="emailCc"></span></p>
+                <p><strong>Subject:</strong> <span id="emailSubject"></span></p>
+                <pre id="emailBody"></pre>
+              </details>
             </div>
           </form>
 
@@ -1086,8 +1106,9 @@
       let activeRecognition = null;
 
       // ---- Retreat Experience Fee ----
-      const RETREAT_FEE_EARLY_BIRD = 249;
-      const RETREAT_FEE_REGULAR    = 299;
+      const RETREAT_FEE_EARLY_BIRD = 259;
+      const RETREAT_FEE_REGULAR    = 310;
+      const ZELLE_DISCOUNT         = 10;
       const EARLY_BIRD_CUTOFF      = "2026-08-15"; // strictly before this date = early bird
       const NIGHTS                 = 1;             // Sat night stay only
 
@@ -1720,6 +1741,47 @@
         };
       }
 
+      function setupPaymentButtons(registrationId, cardAmount, participantCount) {
+        const zelleAmount = Math.max(0, cardAmount - (ZELLE_DISCOUNT * participantCount));
+        const cardAmtEl = document.getElementById("payCardAmount");
+        const zelleAmtEl = document.getElementById("payZelleAmount");
+        const cardBtn = document.getElementById("payCardBtn");
+        const cardMsg = document.getElementById("payCardMsg");
+        if (cardAmtEl) cardAmtEl.textContent = cardAmount.toFixed(2);
+        if (zelleAmtEl) zelleAmtEl.textContent = zelleAmount.toFixed(2);
+        if (!cardBtn) return;
+        cardBtn.dataset.registrationId = registrationId;
+        cardBtn.disabled = false;
+        cardBtn.textContent = "Pay with Card";
+        cardBtn.onclick = async () => {
+          cardBtn.disabled = true;
+          cardBtn.textContent = "Opening secure checkout...";
+          if (cardMsg) cardMsg.hidden = true;
+          try {
+            const res = await fetch("/api/checkout-session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ registration_id: registrationId }),
+            });
+            if (!res.ok) {
+              let msg = "Could not start checkout. Please use Zelle or contact us.";
+              try { const e = await res.json();
+                if (e.error === "stripe_not_configured") msg = "Card checkout is not yet available. Please use Zelle for now.";
+                else if (e.error === "already_paid") msg = "This registration is already marked as paid.";
+                else if (e.error) msg += " (" + e.error + ")";
+              } catch {}
+              throw new Error(msg);
+            }
+            const { url } = await res.json();
+            if (url) { window.location.href = url; } else { throw new Error("No checkout URL returned"); }
+          } catch (err) {
+            cardBtn.disabled = false;
+            cardBtn.textContent = "Pay with Card";
+            if (cardMsg) { cardMsg.hidden = false; cardMsg.textContent = err.message; }
+          }
+        };
+      }
+
       function showConfirmationEmailPreview(participants) {
         const email = buildConfirmationEmail(participants);
         emailRecipients.textContent = email.recipients.join(", ");
@@ -1919,10 +1981,12 @@
             try { const e = await res.json(); if (e.error) errMsg += ` (${e.error})`; } catch {}
             throw new Error(errMsg);
           }
+          const created = await res.json();
           saveStoredSignatures([...savedSignatures, ...signatures]);
           clearFormState();
           successMessage.classList.add("is-visible");
           showConfirmationEmailPreview(participants);
+          setupPaymentButtons(created.id, totalDue, participants.length);
         } catch (err) {
           showError(err.message || "We could not submit your registration. Please try again or email us.");
         } finally {

@@ -1552,6 +1552,77 @@ section {
   border: 1px solid rgba(183, 49, 26, 0.35);
 }
 
+/* Payment choice on register.html */
+
+.payment-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.payment-option {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--white);
+}
+
+.payment-option h4 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  color: var(--leaf);
+}
+
+.payment-option-card {
+  border-color: var(--leaf);
+  background: rgba(72, 99, 71, 0.04);
+}
+
+.payment-amount {
+  font-size: 1.15rem;
+  margin: 6px 0 4px;
+}
+
+.payment-amount strong {
+  color: var(--ink);
+  font-size: 1.4rem;
+}
+
+.payment-note {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 4px 0 12px;
+  line-height: 1.5;
+}
+
+.payment-msg {
+  margin-top: 8px;
+  padding: 8px 10px;
+  color: var(--clay);
+  background: rgba(183, 49, 26, 0.06);
+  border-radius: 6px;
+  font-size: 0.88rem;
+}
+
+.email-details {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+
+.email-details summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .payment-choice {
+    grid-template-columns: 1fr;
+  }
+}
+
 footer {
   padding: 34px 0;
   color: var(--muted);

@@ -11,8 +11,62 @@ const crypto = require('crypto');
 const PORT = Number(process.env.PORT || 3000);
 const pool = new Pool();
 
+// Stripe is optional — if STRIPE_SECRET_KEY is not set, checkout endpoints
+// return a clear error but the server still runs (Zelle-only mode).
+const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
+const stripe = STRIPE_SECRET ? require('stripe')(STRIPE_SECRET) : null;
+const SITE_BASE_URL = process.env.SITE_BASE_URL || 'https://sattvapathcollective.com';
+
 const app = express();
 app.set('trust proxy', 'loopback');
+
+// The Stripe webhook needs the raw body to verify the signature, so mount
+// it BEFORE the JSON parser and give it its own raw parser.
+app.post('/api/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  if (!stripe || !STRIPE_WEBHOOK_SECRET) return res.status(503).json({ error: 'stripe_not_configured' });
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, req.get('stripe-signature'), STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error('Stripe webhook signature check failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+  try {
+    if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
+      const session = event.data.object;
+      const regId = session.metadata?.registration_id;
+      if (regId) {
+        await pool.query(
+          `UPDATE registrations SET
+              payment_status    = 'paid',
+              payment_method    = 'stripe',
+              stripe_session_id = $2,
+              stripe_payment_id = $3,
+              stripe_paid_at    = NOW()
+            WHERE id = $1`,
+          [regId, session.id, session.payment_intent || '']
+        );
+      }
+    } else if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
+      const session = event.data.object;
+      const regId = session.metadata?.registration_id;
+      if (regId) {
+        await pool.query(
+          `UPDATE registrations SET
+              stripe_session_id = COALESCE(NULLIF(stripe_session_id, ''), $2)
+            WHERE id = $1 AND payment_status = 'pending'`,
+          [regId, session.id]
+        );
+      }
+    }
+    res.json({ received: true });
+  } catch (err) {
+    console.error('Stripe webhook handler error:', err);
+    res.status(500).send('handler_error');
+  }
+});
+
 app.use(express.json({ limit: '128kb' }));
 app.use(cookieParser());
 
@@ -433,6 +487,71 @@ app.post('/api/registrations', async (req, res) => {
     ]
   );
   res.status(201).json({ id: inserted.rows[0].id, created_at: inserted.rows[0].created_at });
+});
+
+// ---------------- Stripe Checkout (public) ----------------
+
+app.post('/api/checkout-session', async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: 'stripe_not_configured' });
+  const ip = req.ip || 'unknown';
+  if (!rateLimit(`checkout:${ip}`, 10)) return res.status(429).json({ error: 'rate_limited' });
+  const { registration_id } = req.body || {};
+  if (!registration_id) return res.status(400).json({ error: 'missing_registration_id' });
+
+  const r = await pool.query(
+    `SELECT id, contact_name, contact_email, total_amount, participant_count,
+            event_id, payment_status
+       FROM registrations WHERE id = $1`,
+    [registration_id]
+  );
+  const reg = r.rows[0];
+  if (!reg) return res.status(404).json({ error: 'registration_not_found' });
+  if (reg.payment_status === 'paid') return res.status(409).json({ error: 'already_paid' });
+  const amountCents = Math.round(Number(reg.total_amount || 0) * 100);
+  if (amountCents < 50) return res.status(400).json({ error: 'invalid_amount' });
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    payment_method_types: ['card'],
+    customer_email: reg.contact_email,
+    client_reference_id: reg.id,
+    metadata: { registration_id: reg.id, event_id: reg.event_id || '' },
+    line_items: [{
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: `Sattva Path Retreat registration (${reg.participant_count} ${reg.participant_count === 1 ? 'person' : 'people'})`,
+          description: `Registration for ${reg.contact_name}`,
+        },
+        unit_amount: amountCents,
+      },
+      quantity: 1,
+    }],
+    success_url: `${SITE_BASE_URL}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${SITE_BASE_URL}/payment-cancel.html?registration_id=${reg.id}`,
+  });
+
+  res.json({ url: session.url, id: session.id });
+});
+
+// Small public endpoint for the success page to confirm the outcome
+// without exposing all registration data.
+app.get('/api/checkout-status', async (req, res) => {
+  const { session_id } = req.query;
+  if (!session_id) return res.status(400).json({ error: 'missing_session_id' });
+  const r = await pool.query(
+    `SELECT id, contact_name, total_amount, payment_status, stripe_paid_at
+       FROM registrations WHERE stripe_session_id = $1`,
+    [session_id]
+  );
+  const reg = r.rows[0];
+  if (!reg) return res.json({ status: 'processing' });
+  res.json({
+    status: reg.payment_status,
+    contact_name: reg.contact_name,
+    total_amount: reg.total_amount,
+    paid_at: reg.stripe_paid_at,
+  });
 });
 
 // ---------------- registrations (admin) ----------------

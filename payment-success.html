@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Payment Received | Sattva Path Collective</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="mask-icon" href="favicon.svg" color="#B8695C" />
+    <meta name="description" content="Thank you for your payment.">
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="stylesheet" href="assets/styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html">Sattva Path Collective</a>
+        <div class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="guidance.html">Guidance</a>
+          <div class="has-submenu">
+            <a href="events.html">Events</a>
+            <div class="submenu">
+              <a href="events-retreat.html">Retreat</a>
+              <a href="events-meditation.html">Meditation</a>
+              <a href="events-kirtan.html">Bhajan / Kirtan gathering</a>
+            </div>
+          </div>
+          <a href="photos.html">Photos</a>
+          <a href="heart.html">What's on Your Heart</a>
+          <a href="about.html">About</a>
+          <a href="assistant.html">Assistant</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </nav>
+    </header>
+    <main id="main">
+      <section class="band">
+        <div class="section-inner" style="max-width:720px;">
+          <p class="section-kicker">Payment received</p>
+          <h1 id="pageTitle">Thank you — your seat is confirmed.</h1>
+          <div id="statusBody" class="body-copy">
+            <p>Confirming your payment&hellip;</p>
+          </div>
+          <div class="actions" style="margin-top:24px;">
+            <a class="button" href="retreat.html">Retreat details</a>
+            <a class="button secondary" href="index.html">Back to home</a>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <div class="footer-inner">
+        <span>Sattva Path Collective LLC</span>
+        <span><a href="contact.html">Contact</a></span>
+      </div>
+    </footer>
+    <script src="assets/main.js"></script>
+    <script>
+      (async function () {
+        const params = new URLSearchParams(location.search);
+        const sessionId = params.get("session_id");
+        const title = document.getElementById("pageTitle");
+        const body = document.getElementById("statusBody");
+        if (!sessionId) {
+          title.textContent = "No payment session found.";
+          body.innerHTML = "<p>If you just paid, please check your email for a Stripe receipt. Otherwise you can <a href='register.html'>return to the registration form</a>.</p>";
+          return;
+        }
+        // Poll a few times: Stripe webhook may take a couple of seconds to land.
+        for (let i = 0; i < 8; i++) {
+          try {
+            const res = await fetch(`/api/checkout-status?session_id=${encodeURIComponent(sessionId)}`);
+            const data = await res.json();
+            if (data.status === "paid") {
+              title.textContent = "Thank you — your seat is confirmed.";
+              body.innerHTML = `
+                <p>Your <strong>card payment of $${Number(data.total_amount).toFixed(2)}</strong> has been received.</p>
+                <p>Registration for <strong>${escapeHtml(data.contact_name || "")}</strong> is now marked as paid. You should also receive a receipt from Stripe by email.</p>
+                <p>We look forward to sitting with you at the retreat. If anything comes up in the meantime, reply to that email or reach out via the <a href="contact.html">contact page</a>.</p>
+              `;
+              return;
+            }
+          } catch { /* keep polling */ }
+          await new Promise((r) => setTimeout(r, 1200));
+        }
+        title.textContent = "Your payment is processing.";
+        body.innerHTML = "<p>Card payments usually confirm within a few seconds. If you don't see a confirmation email within 10 minutes, please <a href='contact.html'>contact us</a>. Your Stripe receipt is the official record either way.</p>";
+        function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])); }
+      })();
+    </script>
+  </body>
+</html>

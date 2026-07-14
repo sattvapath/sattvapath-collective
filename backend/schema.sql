@@ -116,6 +116,10 @@ CREATE TABLE IF NOT EXISTS registrations (
     total_amount          NUMERIC(10,2) DEFAULT 0,
     payment_status        TEXT NOT NULL DEFAULT 'pending',
     payment_notes         TEXT DEFAULT '',
+    payment_method        TEXT DEFAULT '',
+    stripe_session_id     TEXT DEFAULT '',
+    stripe_payment_id     TEXT DEFAULT '',
+    stripe_paid_at        TIMESTAMPTZ,
     liability_accepted    BOOLEAN NOT NULL DEFAULT FALSE,
     admin_notes           TEXT DEFAULT '',
     source                TEXT DEFAULT 'website',
@@ -125,6 +129,13 @@ CREATE TABLE IF NOT EXISTS registrations (
 CREATE INDEX IF NOT EXISTS registrations_event_idx    ON registrations(event_id);
 CREATE INDEX IF NOT EXISTS registrations_status_idx   ON registrations(payment_status);
 CREATE INDEX IF NOT EXISTS registrations_created_idx  ON registrations(created_at DESC);
+
+-- Backfill Stripe columns on existing registrations tables (safe re-runs).
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS payment_method    TEXT DEFAULT '';
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS stripe_session_id TEXT DEFAULT '';
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS stripe_payment_id TEXT DEFAULT '';
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS stripe_paid_at    TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS registrations_stripe_session_idx ON registrations(stripe_session_id);
 
 -- Auto-update updated_at on any UPDATE.
 CREATE OR REPLACE FUNCTION touch_updated_at() RETURNS TRIGGER
