@@ -518,6 +518,49 @@
         cursor: pointer;
       }
       .room-modal-close:hover { background: rgba(0,0,0,0.06); color: var(--ink); }
+
+      .payment-modal-card { width: min(100%, 640px); }
+      .payment-modal-amount {
+        margin: 0 0 14px;
+        font-size: 1.15rem;
+        color: var(--ink);
+      }
+      .payment-modal-amount strong {
+        font-size: 1.75rem;
+        color: var(--leaf);
+      }
+      .payment-modal-note {
+        margin: 0 0 18px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .payment-modal-actions {
+        display: flex;
+        justify-content: center;
+        margin: 6px 0 14px;
+      }
+      .payment-modal-actions .button {
+        padding: 14px 32px;
+        font-size: 1.05rem;
+      }
+      .payment-modal-cancel {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px dashed var(--line);
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+      .linkish {
+        border: 0;
+        background: transparent;
+        color: var(--leaf);
+        cursor: pointer;
+        font: inherit;
+        text-decoration: underline;
+        padding: 0;
+      }
+      .linkish:hover { color: var(--ink); }
       .room-cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -912,18 +955,19 @@
             <div class="success error" id="errorMessage" role="alert" tabindex="-1">
               Please fix the highlighted fields before submitting registration.
             </div>
-            <div class="email-preview" id="emailPreview" aria-live="polite">
-              <h3>Thank you &mdash; complete your payment to confirm your seat</h3>
-              <div class="payment-choice payment-choice-single">
-                <div class="payment-option payment-option-card">
-                  <h4>Amount due: $<span id="payCardAmount">0</span></h4>
-                  <p class="payment-note">
-                    You'll be taken to a secure Stripe checkout page where you can pay by <strong>credit or debit card</strong> or, if enabled, <strong>US bank account (ACH)</strong>. Your seat is confirmed the moment payment succeeds &mdash; you'll get a receipt by email.
-                  </p>
-                  <button type="button" class="button" id="payCardBtn">Continue to secure payment</button>
-                  <p class="payment-msg" id="payCardMsg" hidden></p>
-                </div>
+          </form>
+
+          <div class="room-modal-backdrop payment-modal-backdrop" id="paymentModal" role="dialog" aria-modal="true" aria-labelledby="paymentModalTitle" hidden>
+            <div class="room-modal-card payment-modal-card">
+              <h2 id="paymentModalTitle" style="margin:0 0 6px; color:var(--leaf); font-size:1.5rem;">Complete your payment to confirm your seat</h2>
+              <p class="payment-modal-amount">Amount due: <strong>$<span id="payCardAmount">0</span></strong></p>
+              <p class="payment-modal-note">
+                You'll be taken to a secure Stripe checkout page where you can pay by <strong>credit or debit card</strong> or, if enabled, <strong>US bank account (ACH)</strong>. Your seat is confirmed the moment payment succeeds &mdash; you'll get a receipt by email.
+              </p>
+              <div class="payment-modal-actions">
+                <button type="button" class="button" id="payCardBtn">Continue to secure payment</button>
               </div>
+              <p class="payment-msg" id="payCardMsg" hidden></p>
               <details class="email-details">
                 <summary>See the summary email you can send yourself for your records</summary>
                 <p><strong>To:</strong> <span id="emailRecipients"></span></p>
@@ -932,8 +976,11 @@
                 <pre id="emailBody"></pre>
                 <a class="button secondary" id="emailDraftLink" href="#">Open email draft</a>
               </details>
+              <p class="payment-modal-cancel">
+                Need to edit your registration details? <button type="button" class="linkish" id="paymentModalClose">Close this and go back</button>
+              </p>
             </div>
-          </form>
+          </div>
 
           <div class="room-modal-backdrop" id="roomDetailsModal" role="dialog" aria-modal="true" aria-labelledby="roomDetailsTitle" hidden>
             <div class="room-modal-card">
@@ -1048,7 +1095,18 @@
       const participantCount = document.querySelector("#participantCount");
       const additionalParticipants = document.querySelector("#additionalParticipants");
       const questions = document.querySelector("#questions");
-      const emailPreview = document.querySelector("#emailPreview");
+      const paymentModal = document.querySelector("#paymentModal");
+      function openPaymentModal() {
+        if (!paymentModal) return;
+        paymentModal.hidden = false;
+        document.body.style.overflow = "hidden";
+      }
+      function closePaymentModal() {
+        if (!paymentModal) return;
+        paymentModal.hidden = true;
+        document.body.style.overflow = "";
+      }
+      document.getElementById("paymentModalClose")?.addEventListener("click", closePaymentModal);
       const emailRecipients = document.querySelector("#emailRecipients");
       const emailCc = document.querySelector("#emailCc");
       const emailSubject = document.querySelector("#emailSubject");
@@ -1206,7 +1264,7 @@
 
       function showError(message) {
         successMessage.classList.remove("is-visible");
-        emailPreview.classList.remove("is-visible");
+        closePaymentModal();
         errorMessage.textContent = message;
         errorMessage.classList.add("is-visible");
       }
@@ -1748,7 +1806,7 @@
         emailSubject.textContent = email.subject;
         emailBody.textContent = email.body;
         emailDraftLink.href = `mailto:${email.recipients.join(",")}?cc=${encodeURIComponent(email.cc)}&subject=${encodeURIComponent(email.subject)}&body=${encodeURIComponent(email.body)}`;
-        emailPreview.classList.add("is-visible");
+        openPaymentModal();
       }
 
       function enhanceSpeechFields(root = document) {
@@ -1865,7 +1923,7 @@
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        emailPreview.classList.remove("is-visible");
+        closePaymentModal();
         updateRoommateRequirements();
         updatePaymentTotal();
         syncFullNameHiddenFields();
@@ -1943,7 +2001,6 @@
           const created = await res.json();
           saveStoredSignatures([...savedSignatures, ...signatures]);
           clearFormState();
-          successMessage.classList.add("is-visible");
           showConfirmationEmailPreview(participants);
           setupPaymentButtons(created.id, totalDue, participants.length);
         } catch (err) {
@@ -2025,7 +2082,7 @@
         updatePaymentTotal();
         hideError();
         successMessage.classList.remove("is-visible");
-        emailPreview.classList.remove("is-visible");
+        closePaymentModal();
       });
 
       applyRetreatDetails();
