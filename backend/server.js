@@ -493,46 +493,51 @@ app.post('/api/registrations', async (req, res) => {
 
 app.post('/api/checkout-session', async (req, res) => {
   if (!stripe) return res.status(503).json({ error: 'stripe_not_configured' });
-  const ip = req.ip || 'unknown';
-  if (!rateLimit(`checkout:${ip}`, 10)) return res.status(429).json({ error: 'rate_limited' });
-  const { registration_id } = req.body || {};
-  if (!registration_id) return res.status(400).json({ error: 'missing_registration_id' });
+  try {
+    const ip = req.ip || 'unknown';
+    if (!rateLimit(`checkout:${ip}`, 10)) return res.status(429).json({ error: 'rate_limited' });
+    const { registration_id } = req.body || {};
+    if (!registration_id) return res.status(400).json({ error: 'missing_registration_id' });
 
-  const r = await pool.query(
-    `SELECT id, contact_name, contact_email, total_amount, participant_count,
-            event_id, payment_status
-       FROM registrations WHERE id = $1`,
-    [registration_id]
-  );
-  const reg = r.rows[0];
-  if (!reg) return res.status(404).json({ error: 'registration_not_found' });
-  if (reg.payment_status === 'paid') return res.status(409).json({ error: 'already_paid' });
-  const amountCents = Math.round(Number(reg.total_amount || 0) * 100);
-  if (amountCents < 50) return res.status(400).json({ error: 'invalid_amount' });
+    const r = await pool.query(
+      `SELECT id, contact_name, contact_email, total_amount, participant_count,
+              event_id, payment_status
+         FROM registrations WHERE id = $1`,
+      [registration_id]
+    );
+    const reg = r.rows[0];
+    if (!reg) return res.status(404).json({ error: 'registration_not_found' });
+    if (reg.payment_status === 'paid') return res.status(409).json({ error: 'already_paid' });
+    const amountCents = Math.round(Number(reg.total_amount || 0) * 100);
+    if (amountCents < 50) return res.status(400).json({ error: 'invalid_amount' });
 
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    // Show any payment method enabled in your Stripe dashboard (card, ACH bank, etc.)
-    automatic_payment_methods: { enabled: true },
-    customer_email: reg.contact_email,
-    client_reference_id: reg.id,
-    metadata: { registration_id: reg.id, event_id: reg.event_id || '' },
-    line_items: [{
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: `Sattva Path Retreat registration (${reg.participant_count} ${reg.participant_count === 1 ? 'person' : 'people'})`,
-          description: `Registration for ${reg.contact_name}`,
+    // For Checkout Sessions, payment methods enabled in the Stripe dashboard
+    // (Settings -> Payment methods) show up automatically. No need to list them.
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      customer_email: reg.contact_email,
+      client_reference_id: reg.id,
+      metadata: { registration_id: reg.id, event_id: reg.event_id || '' },
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Sattva Path Retreat registration (${reg.participant_count} ${reg.participant_count === 1 ? 'person' : 'people'})`,
+            description: `Registration for ${reg.contact_name}`,
+          },
+          unit_amount: amountCents,
         },
-        unit_amount: amountCents,
-      },
-      quantity: 1,
-    }],
-    success_url: `${SITE_BASE_URL}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${SITE_BASE_URL}/payment-cancel.html?registration_id=${reg.id}`,
-  });
+        quantity: 1,
+      }],
+      success_url: `${SITE_BASE_URL}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${SITE_BASE_URL}/payment-cancel.html?registration_id=${reg.id}`,
+    });
 
-  res.json({ url: session.url, id: session.id });
+    res.json({ url: session.url, id: session.id });
+  } catch (err) {
+    console.error('checkout-session error:', err?.message || err);
+    res.status(500).json({ error: err?.message || 'checkout_failed' });
+  }
 });
 
 // Small public endpoint for the success page to confirm the outcome
