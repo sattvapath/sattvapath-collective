@@ -248,14 +248,18 @@ async function applySiteContent() {
 async function initInlineEdit() {
   if (document.body.classList.contains("ce-inited")) return;
   document.body.classList.add("ce-inited");
-  // Only run on regular content pages, not admin.html itself.
-  if (document.getElementById("adminApp") || document.getElementById("loginScreen")) return;
 
+  // Check the admin session on every page so the Admin nav link can reveal
+  // itself even on admin.html itself. The inline-edit toolbar + pencils
+  // are only mounted on live content pages, not on admin.html.
   let user = null;
   try { user = (await apiGet("/api/admin/me")).user; } catch { return; }
   if (!user) return;
 
   document.body.classList.add("is-admin");
+
+  // On admin.html itself, we don't want a second toolbar or pencil overlays.
+  if (document.getElementById("adminApp") || document.getElementById("loginScreen")) return;
 
   const toolbar = document.createElement("div");
   toolbar.className = "ce-toolbar";

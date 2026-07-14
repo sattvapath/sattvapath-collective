@@ -1098,6 +1098,8 @@
         const signedIn = Boolean(user);
         loginScreen.hidden = signedIn;
         adminApp.hidden = !signedIn;
+        // Reveal the Admin nav link (styles.css hides .admin-link unless body has is-admin).
+        document.body.classList.toggle("is-admin", signedIn);
         if (!signedIn) return;
 
         document.querySelectorAll("[data-permission]").forEach((panel) => {

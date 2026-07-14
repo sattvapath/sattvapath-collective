@@ -1815,6 +1815,15 @@ footer {
   letter-spacing: 0.01em;
 }
 
+/* ---------- Admin nav link visibility ---------- */
+
+/* Public visitors never see the Admin tab. It reveals itself only when
+   the current browser has a valid admin session (main.js adds .is-admin
+   to <body> after /api/admin/me returns a user). */
+body:not(.is-admin) .nav-links .admin-link {
+  display: none !important;
+}
+
 /* ---------- Inline edit (admin only) ---------- */
 
 body.is-admin { padding-bottom: 56px; }
