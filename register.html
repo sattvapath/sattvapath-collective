@@ -805,18 +805,18 @@
             <li><strong>Age requirement</strong><span id="summaryAge">18 years or older</span></li>
             <li>
               <strong>Retreat Experience fee*</strong>
-              $259 early bird (before Aug 15) / $310 regular. Includes all sessions and 3 meals. Pay by Zelle and save $10.
+              $259 early bird (before Aug 15) / $310 regular. Includes all sessions and 3 meals.
             </li>
             <li style="color:var(--muted); font-size:0.9rem; padding-bottom:4px;">
               * Lodging is priced separately &mdash; you'll choose your accommodation during registration.
             </li>
             <li>
               <strong>Payment <span class="required">*</span></strong>
-              Zelle to <a href="mailto:Sattvapathcollective@gmail.com">Sattvapathcollective@gmail.com</a>
+              Secure card or US bank payment at checkout via Stripe.
             </li>
           </ul>
           <div class="notice">
-            <span class="required">*</span> Registration is considered incomplete until Zelle payment is received. Retreat fees are non-refundable after August 15.
+            <span class="required">*</span> Your seat is confirmed when payment is completed at checkout. Retreat fees are non-refundable after August 15.
           </div>
         </aside>
 
@@ -861,32 +861,8 @@
                   <small id="paymentTotalHelp">Select accommodation type and fee for each participant to calculate the total.</small>
                 </div>
                 <p class="help">
-                  Please send this amount by Zelle to <strong>Sattvapathcollective@gmail.com</strong>. In the payment note, include your name, phone number, and all participant names. Registration remains a placeholder until Zelle payment is received.
+                  You'll pay this amount securely by card or US bank account at checkout. Your seat is confirmed once payment is received.
                 </p>
-              </div>
-
-              <div class="field">
-                <label for="zelleName">Name used for Zelle payment <span class="required">*</span></label>
-                <p class="help">Write the sender name exactly as it will appear on the Zelle payment.</p>
-                <input id="zelleName" name="entry.1450178060" type="text" data-speech required>
-              </div>
-
-              <div class="field">
-                <fieldset>
-                  <legend>Payment acknowledgment <span class="required">*</span></legend>
-                  <p class="help">Registration will be considered incomplete until Zelle payment is received.</p>
-                  <label class="choice">
-                    <input
-                      id="paymentConfirm"
-                      type="checkbox"
-                      name="entry.1680640167"
-                      value="I understand that I must Zelle payment to Sattvapathcollective@gmail.com and include my name, phone number, and all participant names."
-                      data-error-message="Please confirm that you understand Zelle payment is required and must include your name, phone number, and all participant names."
-                      required
-                    >
-                    <span>I understand that I must Zelle payment to Sattvapathcollective@gmail.com and include my name, phone number, and all participant names.</span>
-                  </label>
-                </fieldset>
               </div>
 
               <div class="field">
@@ -931,40 +907,30 @@
             </div>
 
             <div class="success" id="successMessage" role="status">
-              Thank you. Your registration details have been sent. Please complete Zelle payment if you have not already done so. Until payment is received, this registration is a placeholder and your seat is not confirmed.
+              Thank you. Your registration details have been received. Please complete payment below to confirm your seat.
             </div>
             <div class="success error" id="errorMessage" role="alert" tabindex="-1">
               Please fix the highlighted fields before submitting registration.
             </div>
             <div class="email-preview" id="emailPreview" aria-live="polite">
-              <h3>Thank you &mdash; almost done!</h3>
-              <p>
-                Your registration details have been received. Choose how you'd like to pay to confirm your seat:
-              </p>
-              <div class="payment-choice">
+              <h3>Thank you &mdash; complete your payment to confirm your seat</h3>
+              <div class="payment-choice payment-choice-single">
                 <div class="payment-option payment-option-card">
-                  <h4>Pay by Card</h4>
-                  <p class="payment-amount"><strong>$<span id="payCardAmount">0</span></strong> &mdash; secure Stripe checkout</p>
-                  <p class="payment-note">Instant confirmation. Card payment processing fee is included.</p>
-                  <button type="button" class="button" id="payCardBtn">Pay with Card</button>
-                  <p class="payment-msg" id="payCardMsg" hidden></p>
-                </div>
-                <div class="payment-option payment-option-zelle">
-                  <h4>Pay by Zelle &mdash; save $10 per person</h4>
-                  <p class="payment-amount"><strong>$<span id="payZelleAmount">0</span></strong> &mdash; direct bank transfer</p>
+                  <h4>Amount due: $<span id="payCardAmount">0</span></h4>
                   <p class="payment-note">
-                    Send Zelle to <a href="mailto:Sattvapathcollective@gmail.com">Sattvapathcollective@gmail.com</a>.
-                    Include participant name(s) in the payment note. Your seat is confirmed once payment is received.
+                    You'll be taken to a secure Stripe checkout page where you can pay by <strong>credit or debit card</strong> or, if enabled, <strong>US bank account (ACH)</strong>. Your seat is confirmed the moment payment succeeds &mdash; you'll get a receipt by email.
                   </p>
-                  <a class="button secondary" id="emailDraftLink" href="#">Open confirmation email draft</a>
+                  <button type="button" class="button" id="payCardBtn">Continue to secure payment</button>
+                  <p class="payment-msg" id="payCardMsg" hidden></p>
                 </div>
               </div>
               <details class="email-details">
-                <summary>See the confirmation email that will go to your inbox</summary>
+                <summary>See the summary email you can send yourself for your records</summary>
                 <p><strong>To:</strong> <span id="emailRecipients"></span></p>
                 <p><strong>Cc:</strong> <span id="emailCc"></span></p>
                 <p><strong>Subject:</strong> <span id="emailSubject"></span></p>
                 <pre id="emailBody"></pre>
+                <a class="button secondary" id="emailDraftLink" href="#">Open email draft</a>
               </details>
             </div>
           </form>
@@ -1070,7 +1036,7 @@
     <footer>
       <div class="footer-inner">
         <span>Sattva Path Collective LLC</span>
-        <span>Registration is incomplete until Zelle payment is received.</span>
+        <span>Your seat is confirmed when payment is completed at checkout.</span>
       </div>
     </footer>
 
@@ -1108,7 +1074,6 @@
       // ---- Retreat Experience Fee ----
       const RETREAT_FEE_EARLY_BIRD = 259;
       const RETREAT_FEE_REGULAR    = 310;
-      const ZELLE_DISCOUNT         = 10;
       const EARLY_BIRD_CUTOFF      = "2026-08-15"; // strictly before this date = early bird
       const NIGHTS                 = 1;             // Sat night stay only
 
@@ -1443,7 +1408,7 @@
         }
         paymentTotalAmount.textContent = formatCurrency(total);
         paymentTotalHelp.textContent = complete === count
-          ? "This is the total amount to send by Zelle for this registration."
+          ? "This is the total you'll pay by card or bank at checkout."
           : `Room + spots chosen for ${complete} of ${count} participant${count === 1 ? "" : "s"}.`;
       }
 
@@ -1676,7 +1641,7 @@
           `Retreat: ${currentRetreat.title || fallbackRetreat.title}`,
           `Retreat date: ${currentRetreat.date || fallbackRetreat.date}`,
           `Retreat location: ${retreatLocation()}`,
-          `Total Zelle payment due: ${formatCurrency(totalPaymentDue(participants))}`,
+          `Total payment due: ${formatCurrency(totalPaymentDue(participants))}`,
           "Participant details included in this registration:",
           ...participants.map((participant) =>
             `${participant.role}: ${participant.name || "Name not provided"}; Age: ${participant.age || "not provided"}; Email: ${participant.email || "not provided"}; Phone: ${participant.phone || "not provided"}; Accommodation: ${participant.accommodation || "not provided"}; Fee: ${formatCurrency(participant.fee)}; Preferred roommate: ${participant.roommate || "none"}; Notes: ${participant.notes || "none"}; Emergency contact: ${participant.emergency || "not provided"}`
@@ -1714,20 +1679,17 @@
           "",
           `Thank you for registering for ${title}.`,
           "",
-          "We have received your registration details. Please note that this is a placeholder registration until Zelle payment is received. Your seat is not confirmed until payment has been sent and matched with your registration.",
+          "We have received your registration details. Your seat is confirmed once payment is completed at checkout. You'll receive a separate receipt from Stripe by email as soon as payment succeeds.",
           "",
           "Retreat details:",
           `Date: ${date}`,
           `Location: ${location}`,
-          `Total Zelle payment due: ${paymentTotal}`,
+          `Total payment due: ${paymentTotal}`,
           "",
           "Participant details included in this registration:",
           participantEmailDetails(participants),
           "",
-          "Payment reminder:",
-          `Please send Zelle payment to ${contactEmail} and include your name, phone number, and all participant names in the payment note.`,
-          "",
-          `You may reply to this email with questions, and your reply should go to ${confirmationSenderName} at ${contactEmail}.`,
+          `If you have any questions, please reply to this email at ${contactEmail}.`,
           "",
           "With warmth,",
           "Sattva Path Collective"
@@ -1741,18 +1703,15 @@
         };
       }
 
-      function setupPaymentButtons(registrationId, cardAmount, participantCount) {
-        const zelleAmount = Math.max(0, cardAmount - (ZELLE_DISCOUNT * participantCount));
+      function setupPaymentButtons(registrationId, cardAmount /*, participantCount */) {
         const cardAmtEl = document.getElementById("payCardAmount");
-        const zelleAmtEl = document.getElementById("payZelleAmount");
         const cardBtn = document.getElementById("payCardBtn");
         const cardMsg = document.getElementById("payCardMsg");
         if (cardAmtEl) cardAmtEl.textContent = cardAmount.toFixed(2);
-        if (zelleAmtEl) zelleAmtEl.textContent = zelleAmount.toFixed(2);
         if (!cardBtn) return;
         cardBtn.dataset.registrationId = registrationId;
         cardBtn.disabled = false;
-        cardBtn.textContent = "Pay with Card";
+        cardBtn.textContent = "Continue to secure payment";
         cardBtn.onclick = async () => {
           cardBtn.disabled = true;
           cardBtn.textContent = "Opening secure checkout...";
@@ -1764,9 +1723,9 @@
               body: JSON.stringify({ registration_id: registrationId }),
             });
             if (!res.ok) {
-              let msg = "Could not start checkout. Please use Zelle or contact us.";
+              let msg = "Could not start checkout. Please try again in a moment or contact us.";
               try { const e = await res.json();
-                if (e.error === "stripe_not_configured") msg = "Card checkout is not yet available. Please use Zelle for now.";
+                if (e.error === "stripe_not_configured") msg = "Payment is temporarily unavailable. Please contact us at Sattvapathcollective@gmail.com.";
                 else if (e.error === "already_paid") msg = "This registration is already marked as paid.";
                 else if (e.error) msg += " (" + e.error + ")";
               } catch {}
@@ -1776,7 +1735,7 @@
             if (url) { window.location.href = url; } else { throw new Error("No checkout URL returned"); }
           } catch (err) {
             cardBtn.disabled = false;
-            cardBtn.textContent = "Pay with Card";
+            cardBtn.textContent = "Continue to secure payment";
             if (cardMsg) { cardMsg.hidden = false; cardMsg.textContent = err.message; }
           }
         };
@@ -2000,7 +1959,7 @@
       });
 
       const FORM_STATE_KEY = "sattva-retreat-registration-inprogress";
-      const TOP_LEVEL_FIELDS = ["#zelleName", "#questions", "#paymentConfirm", "#ageConfirm", "#liabilityConfirm"];
+      const TOP_LEVEL_FIELDS = ["#questions", "#ageConfirm", "#liabilityConfirm"];
 
       function snapshotForm() {
         try {

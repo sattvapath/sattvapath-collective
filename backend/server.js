@@ -12,7 +12,7 @@ const PORT = Number(process.env.PORT || 3000);
 const pool = new Pool();
 
 // Stripe is optional — if STRIPE_SECRET_KEY is not set, checkout endpoints
-// return a clear error but the server still runs (Zelle-only mode).
+// return a clear error but the server still runs.
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 const stripe = STRIPE_SECRET ? require('stripe')(STRIPE_SECRET) : null;
@@ -512,7 +512,8 @@ app.post('/api/checkout-session', async (req, res) => {
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
-    payment_method_types: ['card'],
+    // Show any payment method enabled in your Stripe dashboard (card, ACH bank, etc.)
+    automatic_payment_methods: { enabled: true },
     customer_email: reg.contact_email,
     client_reference_id: reg.id,
     metadata: { registration_id: reg.id, event_id: reg.event_id || '' },
