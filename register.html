@@ -173,10 +173,9 @@
       }
 
       .content {
-        display: grid;
-        grid-template-columns: minmax(280px, 0.55fr) minmax(0, 1.45fr);
-        gap: 32px;
-        align-items: start;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
         padding: 48px 0 80px;
       }
 
@@ -190,9 +189,7 @@
       }
 
       .summary {
-        position: sticky;
-        top: 24px;
-        padding: 24px;
+        padding: 24px 28px;
         box-shadow: var(--shadow);
       }
 
@@ -235,11 +232,11 @@
 
       .fields {
         display: grid;
-        gap: 16px;
+        gap: 24px;
       }
 
       .field {
-        padding: 20px;
+        padding: 24px 28px;
       }
 
       label,
@@ -625,7 +622,7 @@
       .participant-grid {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        gap: 14px;
+        gap: 20px;
       }
 
       .participant-grid > .span-2 { grid-column: span 2; }
@@ -817,6 +814,87 @@
           margin-top: 8px;
         }
       }
+
+      .wizard-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 0 22px;
+        padding: 0;
+        list-style: none;
+        flex-wrap: wrap;
+      }
+      .wizard-steps li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+      .wizard-steps .step-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: rgba(72,99,71,0.15);
+        color: var(--leaf);
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: background 200ms ease, color 200ms ease;
+      }
+      .wizard-steps .step-connector {
+        width: 34px;
+        height: 1px;
+        background: var(--line);
+      }
+      .wizard-steps li[data-state="active"] { color: var(--ink); font-weight: 600; }
+      .wizard-steps li[data-state="active"] .step-num {
+        background: var(--leaf);
+        color: #fff;
+      }
+      .wizard-steps li[data-state="done"] .step-num {
+        background: var(--leaf);
+        color: #fff;
+      }
+      .wizard-steps li[data-state="done"] .step-num::after {
+        content: "✓";
+        display: inline;
+      }
+      .wizard-steps li[data-state="done"] .step-num .step-num-digit {
+        display: none;
+      }
+
+      /* Show only the fields relevant to the current step.
+         data-step-view supports multi-step (whitespace-separated), e.g.
+         data-step-view="1 2" is visible in both Step 1 and Step 2. */
+      .wizard[data-step="1"] [data-step-view]:not([data-step-view~="1"]),
+      .wizard[data-step="2"] [data-step-view]:not([data-step-view~="2"]),
+      .wizard[data-step="3"] [data-step-view]:not([data-step-view~="3"]) {
+        display: none !important;
+      }
+
+      /* Ensure the participant card header stays visible on any step it appears */
+      .group-card > h3 { display: block; }
+
+      .wizard-nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin-top: 26px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+      }
+      /* HTML5 [hidden] loses to .button's display rule — force it back. */
+      .wizard-nav [hidden] { display: none !important; }
+
+      @media (max-width: 720px) {
+        .wizard-steps .step-label { display: none; }
+        .wizard-steps .step-connector { width: 20px; }
+      }
     </style>
   </head>
   <body>
@@ -844,24 +922,15 @@
             <li><strong>Dates</strong><span id="summaryDates">September 19-20, 2026</span></li>
             <li><strong>Schedule</strong>Saturday 10 am to Sunday noon (1 night)</li>
             <li><strong>Location</strong><span id="summaryLocation">Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558 &mdash; <a href="https://enchantedhillsnapa.org/experiences/wellness/" target="_blank" rel="noopener noreferrer">enchantedhillsnapa.org</a></span></li>
-            <li><strong>What to expect</strong>Grounding, healing meditation, gentle yoga and breathwork, and other sacred ceremonies. Please check the retreat event page and location link for other activities during and outside of the event.</li>
-            <li class="limited-seats"><strong>Limited seats available</strong>Register today to reserve your spot.</li>
-            <li><strong>Age requirement</strong><span id="summaryAge">18 years or older</span></li>
+            <li><strong>What to expect</strong>Grounding, healing meditation, gentle yoga and breathwork, and other sacred ceremonies. Full event details will be shared with you after registration in the welcome package.</li>
             <li>
-              <strong>Retreat Experience fee*</strong>
+              <strong>Retreat Experience fee</strong>
               $299 early bird (before Aug 15) / $350 regular. Includes all sessions and 3 meals.
             </li>
             <li style="color:var(--muted); font-size:0.9rem; padding-bottom:4px;">
-              * Lodging is priced separately &mdash; you'll choose your accommodation during registration.
-            </li>
-            <li>
-              <strong>Payment <span class="required">*</span></strong>
-              Secure card or US bank payment at checkout via Stripe.
+              Lodging is priced separately &mdash; you'll choose your accommodation during registration.
             </li>
           </ul>
-          <div class="notice">
-            <span class="required">*</span> Your seat is confirmed when payment is completed at checkout. Retreat fees are non-refundable after August 15.
-          </div>
         </aside>
 
         <section class="form-card" aria-label="Registration form">
@@ -872,10 +941,20 @@
 
           <form
             id="registrationForm"
+            class="wizard"
+            data-step="1"
             novalidate
           >
+            <ol class="wizard-steps" aria-label="Registration progress">
+              <li data-step-index="1" data-state="active"><span class="step-num"><span class="step-num-digit">1</span></span><span class="step-label">Your party</span></li>
+              <li class="step-connector" aria-hidden="true"></li>
+              <li data-step-index="2"><span class="step-num"><span class="step-num-digit">2</span></span><span class="step-label">Stay &amp; preferences</span></li>
+              <li class="step-connector" aria-hidden="true"></li>
+              <li data-step-index="3"><span class="step-num"><span class="step-num-digit">3</span></span><span class="step-label">Review &amp; pay</span></li>
+            </ol>
+
             <div class="fields">
-              <div class="field">
+              <div class="field" data-step-view="1">
                 <label for="participantCount">Total number of people you are registering <span class="required">*</span></label>
                 <p class="help">
                   You may register up to 10 people at once. Additional participant details will be included with your notes for the host.
@@ -895,10 +974,15 @@
                 <p class="help">
                   When you choose more than 1 person, fields for each additional participant will appear automatically below.
                 </p>
-                <div id="additionalParticipants"></div>
               </div>
 
-              <div class="field">
+              <div id="additionalParticipants" data-step-view="1 2"></div>
+
+              <div class="field" data-step-view="3">
+                <div id="reviewSummary" aria-live="polite"></div>
+              </div>
+
+              <div class="field" data-step-view="3">
                 <div class="payment-total" id="paymentTotal" aria-live="polite">
                   <strong>Total payment</strong>
                   <span id="paymentTotalAmount">$0</span>
@@ -909,12 +993,12 @@
                 </p>
               </div>
 
-              <div class="field">
+              <div class="field" data-step-view="3">
                 <label for="questions">Questions or notes for Sattva Path Collective</label>
                 <textarea id="questions" name="entry.1333964764" data-speech></textarea>
               </div>
 
-              <div class="field">
+              <div class="field" data-step-view="3">
                 <fieldset>
                   <legend>Age confirmation <span class="required">*</span></legend>
                   <label class="choice">
@@ -924,7 +1008,7 @@
                 </fieldset>
               </div>
 
-              <div class="field">
+              <div class="field" data-step-view="3">
                 <fieldset>
                   <legend>Liability & Cancellation Agreement <span class="required">*</span></legend>
                   <label class="choice">
@@ -944,10 +1028,12 @@
               </div>
             </div>
 
-            <div class="actions">
-              <button class="button" type="submit">Submit Registration</button>
+            <div class="wizard-nav">
+              <button class="button secondary" type="button" id="backBtn" hidden>&larr; Back</button>
+              <button class="button" type="button" id="nextBtn">Next &rarr;</button>
+              <button class="button" type="submit" id="submitBtn" hidden>Complete Registration</button>
               <a class="button secondary" href="retreat.html">Review Retreat Details</a>
-              <button class="button secondary" type="button" id="cancelBtn">Cancel &amp; clear form</button>
+              <button class="button secondary" type="button" id="cancelBtn">Cancel &amp; clear</button>
             </div>
 
             <div class="success" id="successMessage" role="status">
@@ -1270,15 +1356,21 @@
         currentRetreat = currentPostedRetreat();
         duplicateKey = `sattva-retreat-registration-signatures-${currentRetreat.id || normalize(currentRetreat.title) || fallbackRetreat.id}`;
         document.title = `${currentRetreat.title || fallbackRetreat.title} Registration`;
-        document.querySelector("meta[name='description']").setAttribute("content", `Register for ${currentRetreat.title || fallbackRetreat.title}, ${currentRetreat.date || fallbackRetreat.date} at ${retreatLocation()}.`);
-        document.querySelector("#retreatTitle").textContent = `${currentRetreat.title || fallbackRetreat.title} Registration`;
+        const metaDesc = document.querySelector("meta[name='description']");
+        if (metaDesc) metaDesc.setAttribute("content", `Register for ${currentRetreat.title || fallbackRetreat.title}, ${currentRetreat.date || fallbackRetreat.date} at ${retreatLocation()}.`);
+        const retreatTitleEl = document.querySelector("#retreatTitle");
+        if (retreatTitleEl) retreatTitleEl.textContent = `${currentRetreat.title || fallbackRetreat.title} Registration`;
         setHeroCopy(
           `${currentRetreat.date || fallbackRetreat.date} at ${retreatHeroLocation()}.`,
           currentRetreat.description || fallbackRetreat.description
         );
-        document.querySelector("#summaryDates").textContent = currentRetreat.date || fallbackRetreat.date;
-        document.querySelector("#summaryLocation").textContent = retreatLocation();
-        document.querySelector("#summaryAge").textContent = currentRetreat.age || fallbackRetreat.age;
+        const summaryDatesEl = document.querySelector("#summaryDates");
+        if (summaryDatesEl) summaryDatesEl.textContent = currentRetreat.date || fallbackRetreat.date;
+        const summaryLocationEl = document.querySelector("#summaryLocation");
+        if (summaryLocationEl) summaryLocationEl.textContent = retreatLocation();
+        // #summaryAge was removed when the "Age requirement" line was trimmed
+        // from the "Before you register" list — guard the lookup instead of
+        // referencing a removed element.
       }
 
       function setSpeechStatus(message) {
@@ -1603,36 +1695,36 @@
               <h3>Participant ${index}</h3>
               ${isPrimary ? '<input type="hidden" name="entry.1187409292" data-group-field="fullNameHidden" data-participant-index="' + index + '">' : ""}
               <div class="participant-grid">
-                <div class="span-5">
+                <div class="span-5" data-step-view="1">
                   <label for="participant-${index}-firstName">First name <span class="required">*</span></label>
                   <input id="participant-${index}-firstName" data-group-field="firstName" data-participant-index="${index}" type="text" autocomplete="given-name" data-speech required>
                 </div>
-                <div class="span-5">
+                <div class="span-5" data-step-view="1">
                   <label for="participant-${index}-lastName">Last name <span class="required">*</span></label>
                   <input id="participant-${index}-lastName" data-group-field="lastName" data-participant-index="${index}" type="text" autocomplete="family-name" data-speech required>
                 </div>
-                <div class="span-2">
+                <div class="span-2" data-step-view="1">
                   <label for="participant-${index}-age">Age <span class="required">*</span></label>
                   <input id="participant-${index}-age" data-group-field="age" data-participant-index="${index}" type="number" min="18" max="120" inputmode="numeric" data-speech required>
                 </div>
-                <div class="span-6">
+                <div class="span-6" data-step-view="1">
                   <label for="participant-${index}-email">Email <span class="required">*</span></label>
                   <input id="participant-${index}-email" ${isPrimary ? 'name="emailAddress"' : ""} data-group-field="email" data-participant-index="${index}" type="email" autocomplete="email" data-speech required>
                 </div>
-                <div class="span-6">
+                <div class="span-6" data-step-view="1">
                   <label for="participant-${index}-phone">Phone number <span class="required">*</span></label>
                   <input id="participant-${index}-phone" ${isPrimary ? 'name="entry.557662615"' : ""} data-group-field="phone" data-participant-index="${index}" type="tel" autocomplete="tel" data-phone data-speech required>
                 </div>
-                <div class="span-6">
+                <div class="span-6" data-step-view="1">
                   <label for="participant-${index}-gender">Gender <span class="required">*</span></label>
                   <select id="participant-${index}-gender" data-group-field="gender" data-participant-index="${index}" required>
                     <option value="">Select</option>
-                    <option value="Man">Man</option>
-                    <option value="Woman">Woman</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
-                <div class="span-6">
+                <div class="span-6" data-step-view="1">
                   <label for="participant-${index}-shirtSize">T-shirt size <span class="required">*</span></label>
                   <select id="participant-${index}-shirtSize" data-group-field="shirtSize" data-participant-index="${index}" required>
                     <option value="">Select size</option>
@@ -1644,14 +1736,14 @@
                     <option value="XXL">XXL</option>
                   </select>
                 </div>
-                <div class="span-12 pad-top">
+                <div class="span-12 pad-top" data-step-view="2">
                   <div class="fee-summary">
                     <strong>Retreat Experience Fee:</strong>
                     <span>${currentRetreatFeeLabel()}</span>
                     <br><small>Includes all sessions and 3 meals for this participant.</small>
                   </div>
                 </div>
-                <div class="span-6 pad-top" style="padding-right:14px;">
+                <div class="span-6 pad-top" data-step-view="2" style="padding-right:14px;">
                   <label for="participant-${index}-roomId">Accommodation — cabin or room <span class="required">*</span></label>
                   <select id="participant-${index}-roomId" data-group-field="roomId" data-participant-index="${index}" required>
                     <option value="">Select a cabin or room</option>
@@ -1660,7 +1752,7 @@
                     <a href="#" data-open-room-details>View room details</a>
                   </p>
                 </div>
-                <div class="span-6 pad-top" style="padding-left:14px;">
+                <div class="span-6 pad-top" data-step-view="2" style="padding-left:14px;">
                   <label for="participant-${index}-spots">Number of spots <span class="required">*</span></label>
                   <select id="participant-${index}-spots" data-group-field="spots" data-participant-index="${index}" required>
                     <option value="">First pick a room</option>
@@ -1669,7 +1761,7 @@
                     Choose 2 spots if you don't want to share the bed.
                   </p>
                 </div>
-                <div class="span-12 pad-top">
+                <div class="span-12 pad-top" data-step-view="2">
                   <label for="participant-${index}-roommate">Preferred roommate name (optional — leave blank if none)</label>
                   <input id="participant-${index}-roommate" ${isPrimary ? 'name="entry.1016074176"' : ""} data-group-field="roommate" data-participant-index="${index}" type="text" data-speech placeholder="If you have someone in mind to share the room with">
                 </div>
@@ -1678,11 +1770,7 @@
                 <input type="hidden" data-group-field="retreatFee" data-participant-index="${index}" value="0">
                 <input type="hidden" data-group-field="roomFee" data-participant-index="${index}" value="0">
               </div>
-              <div>
-                <label for="participant-${index}-notes">Dietary, accessibility, medical, or other notes</label>
-                <textarea id="participant-${index}-notes" ${isPrimary ? 'name="entry.646685657"' : ""} data-group-field="notes" data-participant-index="${index}" data-speech></textarea>
-              </div>
-              <div class="participant-grid pad-top">
+              <div class="participant-grid pad-top" data-step-view="2">
                 <div class="span-6">
                   <label for="participant-${index}-emergencyName">Emergency contact name <span class="required">*</span></label>
                   <input id="participant-${index}-emergencyName" data-group-field="emergencyName" data-participant-index="${index}" type="text" autocomplete="name" data-speech required>
@@ -1969,6 +2057,12 @@
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        // Wizard guard: if user is on an earlier step (e.g. hit Enter in an input),
+        // treat submit as "Next" instead of submitting to Stripe.
+        if (form.dataset.step && form.dataset.step !== '3') {
+          document.querySelector('#nextBtn')?.click();
+          return;
+        }
         closePaymentModal();
         updateRoommateRequirements();
         updatePaymentTotal();
@@ -2151,6 +2245,142 @@
       applyClosedStatus();
       populatePriceTable();
       refreshServerAvailability();
+
+      // ---- v2 multi-step wizard controller ----
+      (function () {
+        const wizardForm = document.querySelector('#registrationForm');
+        const stepIndicators = document.querySelectorAll('.wizard-steps li[data-step-index]');
+        const nextBtn  = document.querySelector('#nextBtn');
+        const backBtn  = document.querySelector('#backBtn');
+        const submitBtn = document.querySelector('#submitBtn');
+        const reviewSummary = document.querySelector('#reviewSummary');
+        const TOTAL_STEPS = 3;
+        const STEP_NEXT_LABEL = {
+          1: 'Next: Stay & preferences →',
+          2: 'Next: Review & pay →',
+        };
+
+        function currentStep() {
+          return Number(wizardForm.dataset.step) || 1;
+        }
+
+        function updateStepChrome(step) {
+          stepIndicators.forEach((el) => {
+            const idx = Number(el.dataset.stepIndex);
+            if (idx < step)      el.dataset.state = 'done';
+            else if (idx === step) el.dataset.state = 'active';
+            else                  el.removeAttribute('data-state');
+          });
+          backBtn.hidden   = step === 1;
+          nextBtn.hidden   = step === TOTAL_STEPS;
+          submitBtn.hidden = step !== TOTAL_STEPS;
+          if (step < TOTAL_STEPS) nextBtn.textContent = STEP_NEXT_LABEL[step] || 'Next →';
+        }
+
+        function fieldsInStep(step) {
+          // Required inputs currently visible in this step, based on data-step-view attribute
+          // (either on the field itself or an ancestor).
+          return Array.from(wizardForm.querySelectorAll('input[required], select[required], textarea[required]'))
+            .filter((el) => {
+              // Walk up looking for the nearest data-step-view; default is "always visible"
+              let node = el;
+              while (node && node !== wizardForm) {
+                const view = node.getAttribute && node.getAttribute('data-step-view');
+                if (view) {
+                  return view.split(/\s+/).includes(String(step));
+                }
+                node = node.parentElement;
+              }
+              return true;
+            });
+        }
+
+        function fieldLabelFor(el) {
+          if (el.id) {
+            const lab = wizardForm.querySelector(`label[for="${el.id}"]`);
+            if (lab) return lab.textContent.replace(/\s*\*\s*$/, '').trim();
+          }
+          const legend = el.closest('fieldset')?.querySelector('legend');
+          if (legend) return legend.textContent.replace(/\s*\*\s*$/, '').trim();
+          return el.name || 'this field';
+        }
+
+        function validateStep(step) {
+          const fields = fieldsInStep(step);
+          const invalid = fields.filter((el) => !el.checkValidity());
+          if (!invalid.length) { hideError(); return true; }
+          const first = invalid[0];
+          const label = fieldLabelFor(first);
+          showError(`Please complete "${label}" — ${invalid.length} field${invalid.length === 1 ? ' is' : 's are'} still empty on this step.`);
+          try {
+            first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            first.focus({ preventScroll: true });
+            first.reportValidity();
+          } catch (_) { /* focus can fail on hidden ancestors; error banner still shows */ }
+          return false;
+        }
+
+        function renderReview() {
+          if (!reviewSummary) return;
+          const count = Number(participantCount.value);
+          const feeType = currentRetreatFeeLabel();
+          const parts = [];
+          for (let i = 1; i <= count; i += 1) {
+            const q = (name) => additionalParticipants.querySelector(`[data-participant-index="${i}"][data-group-field="${name}"]`)?.value || '';
+            const room = selectedRoom(i);
+            const spots = selectedSpots(i);
+            parts.push(`
+              <div class="review-participant" style="border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-bottom:12px; background:var(--white);">
+                <strong style="display:block; color:var(--leaf); margin-bottom:6px;">Participant ${i}${i === 1 ? ' (primary contact)' : ''}</strong>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:6px 20px; font-size:0.92rem;">
+                  <div><span style="color:var(--muted);">Name:</span> ${escapeHtml(`${q('firstName')} ${q('lastName')}`.trim() || '—')}</div>
+                  <div><span style="color:var(--muted);">Age:</span> ${escapeHtml(q('age') || '—')}</div>
+                  <div><span style="color:var(--muted);">Gender:</span> ${escapeHtml(q('gender') || '—')}</div>
+                  <div><span style="color:var(--muted);">T-shirt:</span> ${escapeHtml(q('shirtSize') || '—')}</div>
+                  <div><span style="color:var(--muted);">Email:</span> ${escapeHtml(q('email') || '—')}</div>
+                  <div><span style="color:var(--muted);">Phone:</span> ${escapeHtml(q('phone') || '—')}</div>
+                  <div><span style="color:var(--muted);">Room:</span> ${escapeHtml(room ? `${room.label} (${room.village}) × ${spots || '?'} spot${spots === 1 ? '' : 's'}` : '—')}</div>
+                  <div><span style="color:var(--muted);">Roommate:</span> ${escapeHtml(q('roommate') || 'none')}</div>
+                  <div style="grid-column:1/-1;"><span style="color:var(--muted);">Emergency:</span> ${escapeHtml(q('emergencyName') || '—')} · ${escapeHtml(q('emergencyPhone') || '—')}</div>
+                  <div style="grid-column:1/-1;"><span style="color:var(--muted);">Fee (retreat + lodging):</span> ${formatCurrency(participantTotalFee(i))}</div>
+                </div>
+              </div>`);
+          }
+          reviewSummary.innerHTML = `
+            <p class="section-kicker" style="margin-bottom:10px;">Please review before paying</p>
+            <p style="margin:0 0 12px;"><strong>${count} participant${count === 1 ? '' : 's'}</strong> · ${escapeHtml(feeType)}</p>
+            ${parts.join('')}`;
+        }
+
+        function escapeHtml(s) {
+          return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function goToStep(step) {
+          const target = Math.max(1, Math.min(TOTAL_STEPS, step));
+          wizardForm.dataset.step = String(target);
+          updateStepChrome(target);
+          if (target === TOTAL_STEPS) renderReview();
+          const anchor = document.querySelector('.wizard-steps');
+          if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        nextBtn.addEventListener('click', () => {
+          const step = currentStep();
+          if (!validateStep(step)) return;
+          goToStep(step + 1);
+        });
+        backBtn.addEventListener('click', () => {
+          hideError();
+          goToStep(currentStep() - 1);
+        });
+
+        // Reset to Step 1 whenever the form is cleared
+        document.querySelector('#cancelBtn').addEventListener('click', () => goToStep(1));
+
+        // Initial state
+        updateStepChrome(1);
+      })();
 
       // Room details modal (opens on "View room details" click)
       (function () {
