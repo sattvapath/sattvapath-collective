@@ -896,19 +896,20 @@
 
       .wizard-nav {
         display: flex;
-        justify-content: space-between;
-        gap: 12px;
+        flex-direction: column;
+        gap: 14px;
         margin-top: 26px;
         padding-top: 20px;
         border-top: 1px solid var(--line);
-        flex-wrap: wrap;
       }
-      .wizard-nav .nav-left,
-      .wizard-nav .nav-right {
+      .wizard-nav .nav-primary,
+      .wizard-nav .nav-secondary {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
       }
+      /* HTML5 [hidden] loses to .button's display rule — force it back. */
+      .wizard-nav [hidden] { display: none !important; }
 
       @media (max-width: 720px) {
         .wizard-steps .step-label { display: none; }
@@ -945,23 +946,14 @@
             <li><strong>Schedule</strong>Saturday 10 am to Sunday noon (1 night)</li>
             <li><strong>Location</strong><span id="summaryLocation">Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558 &mdash; <a href="https://enchantedhillsnapa.org/experiences/wellness/" target="_blank" rel="noopener noreferrer">enchantedhillsnapa.org</a></span></li>
             <li><strong>What to expect</strong>Grounding, healing meditation, gentle yoga and breathwork, and other sacred ceremonies. Please check the retreat event page and location link for other activities during and outside of the event.</li>
-            <li class="limited-seats"><strong>Limited seats available</strong>Register today to reserve your spot.</li>
-            <li><strong>Age requirement</strong><span id="summaryAge">18 years or older</span></li>
             <li>
-              <strong>Retreat Experience fee*</strong>
+              <strong>Retreat Experience fee</strong>
               $259 early bird (before Aug 15) / $310 regular. Includes all sessions and 3 meals.
             </li>
             <li style="color:var(--muted); font-size:0.9rem; padding-bottom:4px;">
-              * Lodging is priced separately &mdash; you'll choose your accommodation during registration.
-            </li>
-            <li>
-              <strong>Payment <span class="required">*</span></strong>
-              Secure card or US bank payment at checkout via Stripe.
+              Lodging is priced separately &mdash; you'll choose your accommodation during registration.
             </li>
           </ul>
-          <div class="notice">
-            <span class="required">*</span> Your seat is confirmed when payment is completed at checkout. Retreat fees are non-refundable after August 15.
-          </div>
         </aside>
 
         <section class="form-card" aria-label="Registration form">
@@ -1060,14 +1052,14 @@
             </div>
 
             <div class="wizard-nav">
-              <div class="nav-left">
+              <div class="nav-primary">
+                <button class="button" type="button" id="nextBtn">Next &rarr;</button>
+                <button class="button" type="submit" id="submitBtn" hidden>Complete Registration</button>
+              </div>
+              <div class="nav-secondary">
                 <button class="button secondary" type="button" id="backBtn" hidden>&larr; Back</button>
                 <a class="button secondary" href="retreat.html">Review Retreat Details</a>
                 <button class="button secondary" type="button" id="cancelBtn">Cancel &amp; clear</button>
-              </div>
-              <div class="nav-right">
-                <button class="button" type="button" id="nextBtn">Next &rarr;</button>
-                <button class="button" type="submit" id="submitBtn" hidden>Complete Registration</button>
               </div>
             </div>
 
@@ -1799,10 +1791,6 @@
                 <input type="hidden" data-group-field="retreatFee" data-participant-index="${index}" value="0">
                 <input type="hidden" data-group-field="roomFee" data-participant-index="${index}" value="0">
               </div>
-              <div data-step-view="2">
-                <label for="participant-${index}-notes">Dietary, accessibility, medical, or other notes</label>
-                <textarea id="participant-${index}-notes" ${isPrimary ? 'name="entry.646685657"' : ""} data-group-field="notes" data-participant-index="${index}" data-speech></textarea>
-              </div>
               <div class="participant-grid pad-top" data-step-view="2">
                 <div class="span-6">
                   <label for="participant-${index}-emergencyName">Emergency contact name <span class="required">*</span></label>
@@ -2367,7 +2355,6 @@
                   <div><span style="color:var(--muted);">Phone:</span> ${escapeHtml(q('phone') || '—')}</div>
                   <div><span style="color:var(--muted);">Room:</span> ${escapeHtml(room ? `${room.label} (${room.village}) × ${spots || '?'} spot${spots === 1 ? '' : 's'}` : '—')}</div>
                   <div><span style="color:var(--muted);">Roommate:</span> ${escapeHtml(q('roommate') || 'none')}</div>
-                  <div style="grid-column:1/-1;"><span style="color:var(--muted);">Notes:</span> ${escapeHtml(q('notes') || 'none')}</div>
                   <div style="grid-column:1/-1;"><span style="color:var(--muted);">Emergency:</span> ${escapeHtml(q('emergencyName') || '—')} · ${escapeHtml(q('emergencyPhone') || '—')}</div>
                   <div style="grid-column:1/-1;"><span style="color:var(--muted);">Fee (retreat + lodging):</span> ${formatCurrency(participantTotalFee(i))}</div>
                 </div>
