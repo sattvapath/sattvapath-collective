@@ -180,7 +180,7 @@ VALUES (
     'Posted',
     'Sattva Path Retreat',
     'September 19-20, 2026',
-    'Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558',
+    'Enchanted Hills Retreat, 3410 Mount Veeder Road, Napa, CA 94558',
     '$449 early bird / $499 regular',
     '18 years or older',
     'A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life.',
