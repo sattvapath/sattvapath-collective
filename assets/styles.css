@@ -82,10 +82,20 @@ a {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0;
   text-decoration: none;
+}
+
+.brand-mark {
+  height: 34px;
+  width: auto;
+  display: block;
+  align-self: baseline;
 }
 
 .nav-links {
