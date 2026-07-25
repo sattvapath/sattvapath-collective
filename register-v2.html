@@ -174,10 +174,9 @@
       }
 
       .content {
-        display: grid;
-        grid-template-columns: minmax(280px, 0.55fr) minmax(0, 1.45fr);
-        gap: 32px;
-        align-items: start;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
         padding: 48px 0 80px;
       }
 
@@ -191,9 +190,7 @@
       }
 
       .summary {
-        position: sticky;
-        top: 24px;
-        padding: 24px;
+        padding: 24px 28px;
         box-shadow: var(--shadow);
       }
 
@@ -236,11 +233,11 @@
 
       .fields {
         display: grid;
-        gap: 16px;
+        gap: 24px;
       }
 
       .field {
-        padding: 20px;
+        padding: 24px 28px;
       }
 
       label,
@@ -626,7 +623,7 @@
       .participant-grid {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        gap: 14px;
+        gap: 20px;
       }
 
       .participant-grid > .span-2 { grid-column: span 2; }
@@ -945,10 +942,10 @@
             <li><strong>Dates</strong><span id="summaryDates">September 19-20, 2026</span></li>
             <li><strong>Schedule</strong>Saturday 10 am to Sunday noon (1 night)</li>
             <li><strong>Location</strong><span id="summaryLocation">Enchanted Hills Retreat, 3568 Mt Veeder Rd, Napa, CA 94558 &mdash; <a href="https://enchantedhillsnapa.org/experiences/wellness/" target="_blank" rel="noopener noreferrer">enchantedhillsnapa.org</a></span></li>
-            <li><strong>What to expect</strong>Grounding, healing meditation, gentle yoga and breathwork, and other sacred ceremonies. Please check the retreat event page and location link for other activities during and outside of the event.</li>
+            <li><strong>What to expect</strong>Grounding, healing meditation, gentle yoga and breathwork, and other sacred ceremonies. Full event details will be shared with you after registration in the welcome package.</li>
             <li>
               <strong>Retreat Experience fee</strong>
-              $259 early bird (before Aug 15) / $310 regular. Includes all sessions and 3 meals.
+              $299 early bird (before Aug 15) / $350 regular. Includes all sessions and 3 meals.
             </li>
             <li style="color:var(--muted); font-size:0.9rem; padding-bottom:4px;">
               Lodging is priced separately &mdash; you'll choose your accommodation during registration.
@@ -1244,8 +1241,8 @@
       let activeRecognition = null;
 
       // ---- Retreat Experience Fee ----
-      const RETREAT_FEE_EARLY_BIRD = 259;
-      const RETREAT_FEE_REGULAR    = 310;
+      const RETREAT_FEE_EARLY_BIRD = 299;
+      const RETREAT_FEE_REGULAR    = 350;
       const EARLY_BIRD_CUTOFF      = "2026-08-15"; // strictly before this date = early bird
       const NIGHTS                 = 1;             // Sat night stay only
 
@@ -1740,9 +1737,9 @@
                   <label for="participant-${index}-gender">Gender <span class="required">*</span></label>
                   <select id="participant-${index}-gender" data-group-field="gender" data-participant-index="${index}" required>
                     <option value="">Select</option>
-                    <option value="Man">Man</option>
-                    <option value="Woman">Woman</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
                 <div class="span-6" data-step-view="1">
@@ -2316,22 +2313,29 @@
             });
         }
 
-        function focusFirstInvalid(fields) {
-          for (const el of fields) {
-            if (!el.checkValidity()) { el.focus(); el.reportValidity(); return; }
+        function fieldLabelFor(el) {
+          if (el.id) {
+            const lab = wizardForm.querySelector(`label[for="${el.id}"]`);
+            if (lab) return lab.textContent.replace(/\s*\*\s*$/, '').trim();
           }
+          const legend = el.closest('fieldset')?.querySelector('legend');
+          if (legend) return legend.textContent.replace(/\s*\*\s*$/, '').trim();
+          return el.name || 'this field';
         }
 
         function validateStep(step) {
           const fields = fieldsInStep(step);
           const invalid = fields.filter((el) => !el.checkValidity());
-          if (invalid.length) {
-            focusFirstInvalid(fields);
-            showError('Please complete the highlighted fields before continuing.');
-            return false;
-          }
-          hideError();
-          return true;
+          if (!invalid.length) { hideError(); return true; }
+          const first = invalid[0];
+          const label = fieldLabelFor(first);
+          showError(`Please complete "${label}" — ${invalid.length} field${invalid.length === 1 ? ' is' : 's are'} still empty on this step.`);
+          try {
+            first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            first.focus({ preventScroll: true });
+            first.reportValidity();
+          } catch (_) { /* focus can fail on hidden ancestors; error banner still shows */ }
+          return false;
         }
 
         function renderReview() {
