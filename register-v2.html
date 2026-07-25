@@ -893,17 +893,12 @@
 
       .wizard-nav {
         display: flex;
-        flex-direction: column;
-        gap: 14px;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
         margin-top: 26px;
         padding-top: 20px;
         border-top: 1px solid var(--line);
-      }
-      .wizard-nav .nav-primary,
-      .wizard-nav .nav-secondary {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
       }
       /* HTML5 [hidden] loses to .button's display rule — force it back. */
       .wizard-nav [hidden] { display: none !important; }
@@ -1049,15 +1044,11 @@
             </div>
 
             <div class="wizard-nav">
-              <div class="nav-primary">
-                <button class="button" type="button" id="nextBtn">Next &rarr;</button>
-                <button class="button" type="submit" id="submitBtn" hidden>Complete Registration</button>
-              </div>
-              <div class="nav-secondary">
-                <button class="button secondary" type="button" id="backBtn" hidden>&larr; Back</button>
-                <a class="button secondary" href="retreat.html">Review Retreat Details</a>
-                <button class="button secondary" type="button" id="cancelBtn">Cancel &amp; clear</button>
-              </div>
+              <button class="button secondary" type="button" id="backBtn" hidden>&larr; Back</button>
+              <button class="button" type="button" id="nextBtn">Next &rarr;</button>
+              <button class="button" type="submit" id="submitBtn" hidden>Complete Registration</button>
+              <a class="button secondary" href="retreat.html">Review Retreat Details</a>
+              <button class="button secondary" type="button" id="cancelBtn">Cancel &amp; clear</button>
             </div>
 
             <div class="success" id="successMessage" role="status">
@@ -1199,29 +1190,6 @@
     </footer>
 
     <script>
-      // ---- Debug (temporary) — first thing in the script so errors during
-      // subsequent init are visible on the page. ----
-      function __wizardDebug(msg) {
-        let el = document.querySelector('#__wizardDebug');
-        if (!el) {
-          el = document.createElement('div');
-          el.id = '__wizardDebug';
-          el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 14px;background:#212121;color:#fff;font:12px/1.4 monospace;max-height:40vh;overflow-y:auto;';
-          document.body && document.body.appendChild(el);
-        }
-        const line = document.createElement('div');
-        line.textContent = '[' + new Date().toISOString().slice(11,19) + '] ' + msg;
-        el.appendChild(line);
-        el.scrollTop = el.scrollHeight;
-      }
-      window.addEventListener('error', (e) => {
-        __wizardDebug('JS ERROR: ' + (e.message || String(e.error)) + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?'));
-      });
-      window.addEventListener('unhandledrejection', (e) => {
-        __wizardDebug('UNHANDLED PROMISE: ' + (e.reason && (e.reason.message || String(e.reason))));
-      });
-      __wizardDebug('script loaded; setting up...');
-
       const form = document.querySelector("#registrationForm");
       const successMessage = document.querySelector("#successMessage");
       const errorMessage = document.querySelector("#errorMessage");
@@ -2285,30 +2253,15 @@
         closePaymentModal();
       });
 
-      __wizardDebug('init: calling applyRetreatDetails');
       applyRetreatDetails();
-      __wizardDebug('init: calling renderAdditionalParticipants');
       renderAdditionalParticipants();
-      __wizardDebug('init: calling restoreForm');
       restoreForm();
-      __wizardDebug('init: calling enhanceSpeechFields');
       enhanceSpeechFields();
-      __wizardDebug('init: calling applyClosedStatus');
       applyClosedStatus();
-      __wizardDebug('init: calling populatePriceTable');
       populatePriceTable();
-      __wizardDebug('init: calling refreshServerAvailability');
       refreshServerAvailability();
-      __wizardDebug('init: all init calls returned');
 
       // ---- v2 multi-step wizard controller ----
-      // Global delegated Next-button handler — logs even if the IIFE below fails.
-      document.addEventListener('click', (e) => {
-        const nb = e.target.closest && e.target.closest('#nextBtn');
-        if (!nb) return;
-        __wizardDebug('#nextBtn clicked (delegated) — currentStep dataset: ' + (document.querySelector('#registrationForm')?.dataset.step || '(none)'));
-      });
-      __wizardDebug('reached wizard controller section — about to run IIFE.');
       (function () {
         const wizardForm = document.querySelector('#registrationForm');
         const stepIndicators = document.querySelectorAll('.wizard-steps li[data-step-index]');
@@ -2442,24 +2395,7 @@
 
         // Initial state
         updateStepChrome(1);
-
-        // Diagnostic hook: log every step transition + validation
-        __wizardDebug('wizard IIFE ready. handlers attached to #nextBtn / #backBtn.');
       })();
-
-      // Wrap validateStep and goToStep results after the IIFE — logs each call.
-      document.addEventListener('click', (e) => {
-        const nb = e.target.closest && e.target.closest('#nextBtn');
-        if (!nb) return;
-        // Wait a tick so the IIFE's click handler runs first, then read result
-        setTimeout(() => {
-          const form = document.querySelector('#registrationForm');
-          const step = form?.dataset.step;
-          const em = document.querySelector('#errorMessage');
-          const errorVisible = em?.classList.contains('is-visible');
-          __wizardDebug('after Next click → dataset.step now = ' + step + ' · error banner visible = ' + errorVisible + (errorVisible ? ' · error text = "' + em.textContent + '"' : ''));
-        }, 50);
-      });
 
       // Room details modal (opens on "View room details" click)
       (function () {
