@@ -2265,6 +2265,16 @@
       refreshServerAvailability();
 
       // ---- v2 multi-step wizard controller ----
+      // Temporary diagnostic: show any unhandled JS errors at the top of the page
+      // so we can see what's blocking the wizard from initializing.
+      window.addEventListener('error', (e) => {
+        try {
+          const box = document.createElement('div');
+          box.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:10px 14px;background:#c0392b;color:#fff;font:14px monospace;white-space:pre-wrap;';
+          box.textContent = 'WIZARD JS ERROR: ' + (e.message || e.error) + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?');
+          document.body.appendChild(box);
+        } catch (_) {}
+      });
       (function () {
         const wizardForm = document.querySelector('#registrationForm');
         const stepIndicators = document.querySelectorAll('.wizard-steps li[data-step-index]');
@@ -2398,6 +2408,16 @@
 
         // Initial state
         updateStepChrome(1);
+
+        // Diagnostic: prove the wizard IIFE finished setting up the Next handler
+        try {
+          const banner = document.createElement('div');
+          banner.id = 'wizardReadyBanner';
+          banner.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:9999;padding:6px 10px;background:#486347;color:#fff;font:12px monospace;border-radius:6px;opacity:0.85;';
+          banner.textContent = 'wizard ready · step ' + currentStep();
+          document.body.appendChild(banner);
+          setTimeout(() => banner.remove(), 6000);
+        } catch (_) {}
       })();
 
       // Room details modal (opens on "View room details" click)
