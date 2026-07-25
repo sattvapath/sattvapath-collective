@@ -1199,6 +1199,29 @@
     </footer>
 
     <script>
+      // ---- Debug (temporary) — first thing in the script so errors during
+      // subsequent init are visible on the page. ----
+      function __wizardDebug(msg) {
+        let el = document.querySelector('#__wizardDebug');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = '__wizardDebug';
+          el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 14px;background:#212121;color:#fff;font:12px/1.4 monospace;max-height:40vh;overflow-y:auto;';
+          document.body && document.body.appendChild(el);
+        }
+        const line = document.createElement('div');
+        line.textContent = '[' + new Date().toISOString().slice(11,19) + '] ' + msg;
+        el.appendChild(line);
+        el.scrollTop = el.scrollHeight;
+      }
+      window.addEventListener('error', (e) => {
+        __wizardDebug('JS ERROR: ' + (e.message || String(e.error)) + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?'));
+      });
+      window.addEventListener('unhandledrejection', (e) => {
+        __wizardDebug('UNHANDLED PROMISE: ' + (e.reason && (e.reason.message || String(e.reason))));
+      });
+      __wizardDebug('script loaded; setting up...');
+
       const form = document.querySelector("#registrationForm");
       const successMessage = document.querySelector("#successMessage");
       const errorMessage = document.querySelector("#errorMessage");
@@ -2256,39 +2279,30 @@
         closePaymentModal();
       });
 
+      __wizardDebug('init: calling applyRetreatDetails');
       applyRetreatDetails();
+      __wizardDebug('init: calling renderAdditionalParticipants');
       renderAdditionalParticipants();
+      __wizardDebug('init: calling restoreForm');
       restoreForm();
+      __wizardDebug('init: calling enhanceSpeechFields');
       enhanceSpeechFields();
+      __wizardDebug('init: calling applyClosedStatus');
       applyClosedStatus();
+      __wizardDebug('init: calling populatePriceTable');
       populatePriceTable();
+      __wizardDebug('init: calling refreshServerAvailability');
       refreshServerAvailability();
+      __wizardDebug('init: all init calls returned');
 
       // ---- v2 multi-step wizard controller ----
-      // Persistent diagnostic strip at the top of the page. Every wizard action
-      // writes into it so we can see what actually happens on click.
-      function __wizardDebug(msg) {
-        let el = document.querySelector('#__wizardDebug');
-        if (!el) {
-          el = document.createElement('div');
-          el.id = '__wizardDebug';
-          el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 14px;background:#212121;color:#fff;font:12px/1.4 monospace;max-height:40vh;overflow-y:auto;';
-          document.body.appendChild(el);
-        }
-        const line = document.createElement('div');
-        line.textContent = '[' + new Date().toISOString().slice(11,19) + '] ' + msg;
-        el.appendChild(line);
-        el.scrollTop = el.scrollHeight;
-      }
-      window.addEventListener('error', (e) => {
-        __wizardDebug('JS ERROR: ' + (e.message || e.error) + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?'));
-      });
-      // Global delegated Next-button handler — runs even if the IIFE below fails.
+      // Global delegated Next-button handler — logs even if the IIFE below fails.
       document.addEventListener('click', (e) => {
         const nb = e.target.closest && e.target.closest('#nextBtn');
         if (!nb) return;
         __wizardDebug('#nextBtn clicked (delegated) — currentStep dataset: ' + (document.querySelector('#registrationForm')?.dataset.step || '(none)'));
       });
+      __wizardDebug('reached wizard controller section — about to run IIFE.');
       (function () {
         const wizardForm = document.querySelector('#registrationForm');
         const stepIndicators = document.querySelectorAll('.wizard-steps li[data-step-index]');
