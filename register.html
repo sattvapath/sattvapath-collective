@@ -1194,7 +1194,9 @@
       // Returns total spots taken per room by all participants except the excluded one.
       function computeRoomAvailability(excludingParticipantIndex = null) {
         const usage = {};
-        ROOMS.forEach((r) => { usage[r.id] = { room: r, spotsTaken: Number(SERVER_SPOTS_TAKEN[r.id]) || 0 }; });
+        // SERVER_SPOTS_TAKEN is keyed by room LABEL (the value stored in
+        // accommodation_details.rooms[].room), not id — see backend aggregation.
+        ROOMS.forEach((r) => { usage[r.id] = { room: r, spotsTaken: Number(SERVER_SPOTS_TAKEN[r.label]) || 0 }; });
         additionalParticipants.querySelectorAll("[data-group-field='roomId']").forEach((sel) => {
           const idx = sel.dataset.participantIndex;
           if (excludingParticipantIndex != null && String(idx) === String(excludingParticipantIndex)) return;

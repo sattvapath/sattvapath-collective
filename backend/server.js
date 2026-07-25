@@ -445,14 +445,15 @@ app.post('/api/admin/content/bulk-import', requireAdmin, async (req, res) => {
 
 // ---------------- registrations (public) ----------------
 
-// Max occupancy per room, keyed by the same room ids the register form sends.
+// Max occupancy per room, keyed by the room LABEL the register form
+// stores in accommodation_details.rooms[].room (e.g. "Lakeside 1").
 // Mirrors the ROOMS catalog in register.html — update both if the retreat
 // center changes capacity.
 const RETREAT_ROOM_MAX_OCCUPANCY = {
-  'lakeside-1': 2, 'lakeside-2': 4, 'lakeside-3': 4, 'lakeside-4': 4, 'lakeside-5': 4,
-  'lakeside-6': 4, 'lakeside-7': 4, 'lakeside-8': 4, 'lakeside-9': 4,
-  'lodge-1': 2, 'lodge-2': 2, 'lodge-3': 2, 'lodge-4': 2,
-  'lodge-5': 2, 'lodge-6': 2, 'lodge-7': 2, 'lodge-8': 2,
+  'Lakeside 1': 2, 'Lakeside 2': 4, 'Lakeside 3': 4, 'Lakeside 4': 4, 'Lakeside 5': 4,
+  'Lakeside 6': 4, 'Lakeside 7': 4, 'Lakeside 8': 4, 'Lakeside 9': 4,
+  'Lodge 1': 2, 'Lodge 2': 2, 'Lodge 3': 2, 'Lodge 4': 2,
+  'Lodge 5': 2, 'Lodge 6': 2, 'Lodge 7': 2, 'Lodge 8': 2,
 };
 const RETREAT_EVENT_ID = 'sattva-path-retreat-2026';
 
