@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sattva Path Collective lotus mark">
+  <title>Sattva Path Collective</title>
+  <circle cx="32" cy="32" r="31" fill="#FCEEE0"/>
+  <g fill="#E39C89" stroke="#B8695C" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M32 32 Q22 18 32 8 Q42 18 32 32Z"/>
+    <path d="M32 32 Q22 18 32 8 Q42 18 32 32Z" transform="rotate(72 32 32)"/>
+    <path d="M32 32 Q22 18 32 8 Q42 18 32 32Z" transform="rotate(144 32 32)"/>
+    <path d="M32 32 Q22 18 32 8 Q42 18 32 32Z" transform="rotate(216 32 32)"/>
+    <path d="M32 32 Q22 18 32 8 Q42 18 32 32Z" transform="rotate(288 32 32)"/>
+  </g>
+  <circle cx="32" cy="32" r="4.5" fill="#EDBB74" stroke="#B8955A" stroke-width="0.8"/>
+</svg>
