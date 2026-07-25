@@ -1171,10 +1171,30 @@
       ];
       const ROOM_BY_ID = Object.fromEntries(ROOMS.map((r) => [r.id, r]));
 
+      // Spots already taken globally per room id, fetched from the server so
+      // the dropdown reflects other people's registrations, not just this form.
+      // Empty map means "no server data yet" — falls back to within-form only.
+      let SERVER_SPOTS_TAKEN = {};
+
+      async function refreshServerAvailability() {
+        try {
+          const eventId = (currentRetreat && currentRetreat.id) || featuredRetreatId;
+          const res = await fetch(`/api/retreat/room-availability?event_id=${encodeURIComponent(eventId)}`);
+          if (!res.ok) return;
+          const data = await res.json();
+          SERVER_SPOTS_TAKEN = (data && data.spots_taken && typeof data.spots_taken === "object") ? data.spots_taken : {};
+          populateRoomDropdowns();
+          populateSpotsDropdowns();
+          updatePaymentTotal();
+        } catch (_err) {
+          // Network failure: keep within-form-only behavior rather than blocking registration.
+        }
+      }
+
       // Returns total spots taken per room by all participants except the excluded one.
       function computeRoomAvailability(excludingParticipantIndex = null) {
         const usage = {};
-        ROOMS.forEach((r) => { usage[r.id] = { room: r, spotsTaken: 0 }; });
+        ROOMS.forEach((r) => { usage[r.id] = { room: r, spotsTaken: Number(SERVER_SPOTS_TAKEN[r.id]) || 0 }; });
         additionalParticipants.querySelectorAll("[data-group-field='roomId']").forEach((sel) => {
           const idx = sel.dataset.participantIndex;
           if (excludingParticipantIndex != null && String(idx) === String(excludingParticipantIndex)) return;
@@ -1600,6 +1620,27 @@
                   <label for="participant-${index}-phone">Phone number <span class="required">*</span></label>
                   <input id="participant-${index}-phone" ${isPrimary ? 'name="entry.557662615"' : ""} data-group-field="phone" data-participant-index="${index}" type="tel" autocomplete="tel" data-phone data-speech required>
                 </div>
+                <div class="span-6">
+                  <label for="participant-${index}-gender">Gender <span class="required">*</span></label>
+                  <select id="participant-${index}-gender" data-group-field="gender" data-participant-index="${index}" required>
+                    <option value="">Select</option>
+                    <option value="Man">Man</option>
+                    <option value="Woman">Woman</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+                <div class="span-6">
+                  <label for="participant-${index}-shirtSize">T-shirt size <span class="required">*</span></label>
+                  <select id="participant-${index}-shirtSize" data-group-field="shirtSize" data-participant-index="${index}" required>
+                    <option value="">Select size</option>
+                    <option value="XS">XS</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                    <option value="XXL">XXL</option>
+                  </select>
+                </div>
                 <div class="span-12 pad-top">
                   <div class="fee-summary">
                     <strong>Retreat Experience Fee:</strong>
@@ -1675,6 +1716,8 @@
             firstName: field("firstName"),
             lastName: field("lastName"),
             age: field("age"),
+            gender: field("gender"),
+            shirtSize: field("shirtSize"),
             email: field("email"),
             phone: field("phone"),
             room: room ? room.label : "",
@@ -1994,8 +2037,21 @@
             body: JSON.stringify(payload),
           });
           if (!res.ok) {
+            let errBody = null;
+            try { errBody = await res.json(); } catch {}
+            if (res.status === 409 && errBody && errBody.error === "room_unavailable") {
+              const room = ROOM_BY_ID[errBody.room];
+              const label = room ? `${room.label} (${room.village})` : errBody.room;
+              const left = Number(errBody.spots_available) || 0;
+              await refreshServerAvailability();
+              throw new Error(
+                left > 0
+                  ? `${label} only has ${left} spot${left === 1 ? "" : "s"} left. We refreshed the room list — please pick again.`
+                  : `${label} was just booked by someone else. We refreshed the room list — please pick another room.`
+              );
+            }
             let errMsg = "We could not submit your registration.";
-            try { const e = await res.json(); if (e.error) errMsg += ` (${e.error})`; } catch {}
+            if (errBody && errBody.error) errMsg += ` (${errBody.error})`;
             throw new Error(errMsg);
           }
           const created = await res.json();
@@ -2091,6 +2147,7 @@
       enhanceSpeechFields();
       applyClosedStatus();
       populatePriceTable();
+      refreshServerAvailability();
 
       // Room details modal (opens on "View room details" click)
       (function () {

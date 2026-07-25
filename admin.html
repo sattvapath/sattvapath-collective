@@ -1732,7 +1732,7 @@
                 <div style="grid-column:1/-1;"><strong>Dietary/notes:</strong><br>${escapeHtmlAdmin(r.dietary_notes || "—")}</div>
                 <div style="grid-column:1/-1;">
                   <strong>Participants:</strong>
-                  <ol style="margin:4px 0 0 20px;">${participants.map((p) => `<li>${escapeHtmlAdmin(p.name)} (age ${escapeHtmlAdmin(p.age)}) — ${escapeHtmlAdmin(p.email)} · ${escapeHtmlAdmin(p.phone)} · Room: ${escapeHtmlAdmin(p.room)} × ${escapeHtmlAdmin(p.spots)} spots · Fee ${formatMoney(p.fee)}</li>`).join("")}</ol>
+                  <ol style="margin:4px 0 0 20px;">${participants.map((p) => `<li>${escapeHtmlAdmin(p.name)} (age ${escapeHtmlAdmin(p.age)}, ${escapeHtmlAdmin(p.gender || "—")}, shirt ${escapeHtmlAdmin(p.shirtSize || "—")}) — ${escapeHtmlAdmin(p.email)} · ${escapeHtmlAdmin(p.phone)} · Room: ${escapeHtmlAdmin(p.room)} × ${escapeHtmlAdmin(p.spots)} spots · Fee ${formatMoney(p.fee)}</li>`).join("")}</ol>
                 </div>
                 <div style="grid-column:1/-1;">
                   <label style="display:block; font-weight:600;">Admin notes</label>

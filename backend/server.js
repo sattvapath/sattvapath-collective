@@ -445,6 +445,53 @@ app.post('/api/admin/content/bulk-import', requireAdmin, async (req, res) => {
 
 // ---------------- registrations (public) ----------------
 
+// Max occupancy per room, keyed by the same room ids the register form sends.
+// Mirrors the ROOMS catalog in register.html — update both if the retreat
+// center changes capacity.
+const RETREAT_ROOM_MAX_OCCUPANCY = {
+  'lakeside-1': 2, 'lakeside-2': 4, 'lakeside-3': 4, 'lakeside-4': 4, 'lakeside-5': 4,
+  'lakeside-6': 4, 'lakeside-7': 4, 'lakeside-8': 4, 'lakeside-9': 4,
+  'lodge-1': 2, 'lodge-2': 2, 'lodge-3': 2, 'lodge-4': 2,
+  'lodge-5': 2, 'lodge-6': 2, 'lodge-7': 2, 'lodge-8': 2,
+};
+const RETREAT_EVENT_ID = 'sattva-path-retreat-2026';
+
+// Aggregate spots-taken per room across all registrations for an event.
+// 'paid' rows are hard-taken; 'pending' rows within 30 min are a soft hold
+// so a room stays reserved while a registrant is still in checkout.
+async function getRoomSpotsTaken(eventId) {
+  const q = `
+    SELECT (elem->>'room') AS room_id,
+           SUM(COALESCE(NULLIF(elem->>'spots','')::int, 0))::int AS spots_taken
+      FROM (
+        SELECT accommodation_details->'rooms' AS rooms
+          FROM registrations
+         WHERE event_id = $1
+           AND ( payment_status = 'paid'
+              OR (payment_status = 'pending' AND created_at > NOW() - INTERVAL '30 minutes') )
+           AND jsonb_typeof(accommodation_details->'rooms') = 'array'
+      ) r,
+      LATERAL jsonb_array_elements(r.rooms) AS elem
+     WHERE COALESCE(elem->>'room','') <> ''
+     GROUP BY room_id`;
+  const result = await pool.query(q, [eventId]);
+  const out = {};
+  for (const row of result.rows) out[row.room_id] = Number(row.spots_taken) || 0;
+  return out;
+}
+
+app.get('/api/retreat/room-availability', async (req, res) => {
+  const eventId = String(req.query.event_id || '').slice(0, 100);
+  if (!eventId) return res.status(400).json({ error: 'missing_event_id' });
+  try {
+    const spotsTaken = await getRoomSpotsTaken(eventId);
+    res.json({ event_id: eventId, spots_taken: spotsTaken });
+  } catch (err) {
+    console.error('room-availability error:', err?.message || err);
+    res.status(500).json({ error: 'availability_lookup_failed' });
+  }
+});
+
 app.post('/api/registrations', async (req, res) => {
   const ip = req.ip || 'unknown';
   if (!rateLimit(`reg:${ip}`, 5)) return res.status(429).json({ error: 'rate_limited' });
@@ -456,6 +503,34 @@ app.post('/api/registrations', async (req, res) => {
   const participants = Array.isArray(r.participants) ? r.participants : [];
   const accommodationDetails = r.accommodation_details && typeof r.accommodation_details === 'object'
     ? r.accommodation_details : {};
+
+  // For the retreat, reject if requested rooms would exceed remaining capacity.
+  if (eventId === RETREAT_EVENT_ID && Array.isArray(accommodationDetails.rooms) && accommodationDetails.rooms.length) {
+    const requested = {};
+    for (const item of accommodationDetails.rooms) {
+      const rid = String(item?.room || '');
+      const spots = Number(item?.spots) || 0;
+      if (!rid || spots <= 0) continue;
+      requested[rid] = (requested[rid] || 0) + spots;
+    }
+    if (Object.keys(requested).length) {
+      const taken = await getRoomSpotsTaken(eventId);
+      for (const [rid, req] of Object.entries(requested)) {
+        const max = RETREAT_ROOM_MAX_OCCUPANCY[rid];
+        if (max == null) continue;
+        const already = taken[rid] || 0;
+        if (already + req > max) {
+          return res.status(409).json({
+            error: 'room_unavailable',
+            room: rid,
+            spots_available: Math.max(0, max - already),
+            spots_requested: req,
+          });
+        }
+      }
+    }
+  }
+
   const inserted = await pool.query(
     `INSERT INTO registrations (
         event_id, contact_name, contact_email, contact_phone,
@@ -580,6 +655,7 @@ app.get('/api/admin/registrations.csv', requireAdmin, async (req, res) => {
   const cols = ['id','event_id','created_at','payment_status','contact_name','contact_email','contact_phone',
                 'participant_count','accommodation','fee_type','fee_per_person','retreat_fee_total',
                 'lodging_total','total_amount','emergency_name','emergency_phone','dietary_notes',
+                'genders','shirt_sizes',
                 'admin_notes','payment_notes','participants','accommodation_details'];
   const esc = (v) => {
     if (v == null) return '';
@@ -587,7 +663,12 @@ app.get('/api/admin/registrations.csv', requireAdmin, async (req, res) => {
     return `"${s.replace(/"/g, '""')}"`;
   };
   const lines = [cols.join(',')];
-  for (const row of r.rows) lines.push(cols.map((c) => esc(row[c])).join(','));
+  for (const row of r.rows) {
+    const parts = Array.isArray(row.participants) ? row.participants : [];
+    row.genders = parts.map((p) => p?.gender || '').filter(Boolean).join(', ');
+    row.shirt_sizes = parts.map((p) => p?.shirtSize || '').filter(Boolean).join(', ');
+    lines.push(cols.map((c) => esc(row[c])).join(','));
+  }
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename="registrations-${new Date().toISOString().slice(0,10)}.csv"`);
   res.send(lines.join('\n'));
