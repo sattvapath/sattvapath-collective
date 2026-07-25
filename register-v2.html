@@ -1403,15 +1403,21 @@
         currentRetreat = currentPostedRetreat();
         duplicateKey = `sattva-retreat-registration-signatures-${currentRetreat.id || normalize(currentRetreat.title) || fallbackRetreat.id}`;
         document.title = `${currentRetreat.title || fallbackRetreat.title} Registration`;
-        document.querySelector("meta[name='description']").setAttribute("content", `Register for ${currentRetreat.title || fallbackRetreat.title}, ${currentRetreat.date || fallbackRetreat.date} at ${retreatLocation()}.`);
-        document.querySelector("#retreatTitle").textContent = `${currentRetreat.title || fallbackRetreat.title} Registration`;
+        const metaDesc = document.querySelector("meta[name='description']");
+        if (metaDesc) metaDesc.setAttribute("content", `Register for ${currentRetreat.title || fallbackRetreat.title}, ${currentRetreat.date || fallbackRetreat.date} at ${retreatLocation()}.`);
+        const retreatTitleEl = document.querySelector("#retreatTitle");
+        if (retreatTitleEl) retreatTitleEl.textContent = `${currentRetreat.title || fallbackRetreat.title} Registration`;
         setHeroCopy(
           `${currentRetreat.date || fallbackRetreat.date} at ${retreatHeroLocation()}.`,
           currentRetreat.description || fallbackRetreat.description
         );
-        document.querySelector("#summaryDates").textContent = currentRetreat.date || fallbackRetreat.date;
-        document.querySelector("#summaryLocation").textContent = retreatLocation();
-        document.querySelector("#summaryAge").textContent = currentRetreat.age || fallbackRetreat.age;
+        const summaryDatesEl = document.querySelector("#summaryDates");
+        if (summaryDatesEl) summaryDatesEl.textContent = currentRetreat.date || fallbackRetreat.date;
+        const summaryLocationEl = document.querySelector("#summaryLocation");
+        if (summaryLocationEl) summaryLocationEl.textContent = retreatLocation();
+        // #summaryAge was removed when the "Age requirement" line was trimmed
+        // from the "Before you register" list — guard the lookup instead of
+        // referencing a removed element.
       }
 
       function setSpeechStatus(message) {
