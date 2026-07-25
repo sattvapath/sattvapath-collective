@@ -1633,33 +1633,9 @@ footer {
 .footer-inner {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   gap: 18px;
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
-}
-
-.footer-brand {
-  display: inline-flex;
-  align-items: center;
-}
-
-.footer-brand img {
-  height: 56px;
-  width: auto;
-  display: block;
-}
-
-.brand-mark {
-  display: flex;
-  justify-content: center;
-  padding: 28px 16px 8px;
-}
-
-.brand-mark img {
-  width: min(320px, 60%);
-  height: auto;
-  display: block;
 }
 
 .home-teaser {
