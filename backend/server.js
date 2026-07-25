@@ -450,8 +450,9 @@ app.post('/api/admin/content/bulk-import', requireAdmin, async (req, res) => {
 // Mirrors the ROOMS catalog in register.html — update both if the retreat
 // center changes capacity.
 const RETREAT_ROOM_MAX_OCCUPANCY = {
-  'Lakeside 1': 2, 'Lakeside 2': 4, 'Lakeside 3': 4, 'Lakeside 4': 4, 'Lakeside 5': 4,
-  'Lakeside 6': 4, 'Lakeside 7': 4, 'Lakeside 8': 4, 'Lakeside 9': 4,
+  'Hillside Apartment': 5,
+  'Casita 1': 2, 'Casita 2': 2, 'Casita 3': 2, 'Casita 4': 2,
+  'Casita 5': 2, 'Casita 6': 2, 'Casita 7': 2, 'Casita 8': 2,
   'Lodge 1': 2, 'Lodge 2': 2, 'Lodge 3': 2, 'Lodge 4': 2,
   'Lodge 5': 2, 'Lodge 6': 2, 'Lodge 7': 2, 'Lodge 8': 2,
 };

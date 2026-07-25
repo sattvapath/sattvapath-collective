@@ -1089,43 +1089,47 @@
 
               <div class="room-cards">
                 <article class="room-card">
-                  <h4>Lakeside 1</h4>
-                  <p class="room-village">Lakeside Village · heating &amp; A/C · 1 cabin</p>
+                  <h4>Hillside Apartment</h4>
+                  <p class="room-village">Hillside · heating &amp; A/C · 1 apartment</p>
                   <ul>
-                    <li>1 queen bed</li>
-                    <li>Private bathroom and shower</li>
+                    <li>2 twin beds, 1 queen bed, 1 twin sleeper sofa (4 beds total)</li>
+                    <li>Private kitchen</li>
+                    <li>Access to community room with kitchen, lounge area, and TV</li>
+                    <li>Private ADA-accessible bathroom</li>
                   </ul>
                   <dl class="pricing">
-                    <dt>Beds</dt><dd>1</dd>
-                    <dt>Max occupancy</dt><dd>2 spots</dd>
-                    <dt>Price per spot / night</dt><dd>$132.50</dd>
-                    <dt>Whole room (2 spots)</dt><dd>$265.00</dd>
-                    <dt>Early bird total (1 spot)</dt><dd class="total">$381.50</dd>
-                    <dt>Regular total (1 spot)</dt><dd>$431.50</dd>
+                    <dt>Beds</dt><dd>4</dd>
+                    <dt>Max occupancy</dt><dd>5 spots</dd>
+                    <dt>Price per spot / night</dt><dd>$78.80</dd>
+                    <dt>Whole apartment (5 spots)</dt><dd>$394.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$377.80</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$428.80</dd>
                   </dl>
                 </article>
 
                 <article class="room-card">
-                  <h4>Lakeside 2–9</h4>
-                  <p class="room-village">Lakeside Village · heating &amp; A/C · 8 cabins</p>
+                  <h4>Casita 1–8</h4>
+                  <p class="room-village">Casita · heating &amp; A/C · 8 casitas</p>
                   <ul>
-                    <li>Either 2 twin beds (forest view) or 1 king bed (two twins pushed together)</li>
-                    <li>1 queen sofa bed (lake view side)</li>
-                    <li>Shared bathroom within each cabin (shared among guests staying in that cabin)</li>
+                    <li>1 queen bed</li>
+                    <li>Access to community room with kitchen, lounge area, and TV</li>
                   </ul>
+                  <div class="bath-note">
+                    <strong>Shared outdoor bathhouse:</strong> 2 bathrooms and 2 showers total, shared across the Casita village.
+                  </div>
                   <dl class="pricing">
-                    <dt>Beds</dt><dd>2</dd>
-                    <dt>Max occupancy</dt><dd>4 spots</dd>
-                    <dt>Price per spot / night</dt><dd>$98.50</dd>
-                    <dt>Whole room (4 spots)</dt><dd>$394.00</dd>
-                    <dt>Early bird total (1 spot)</dt><dd class="total">$347.50</dd>
-                    <dt>Regular total (1 spot)</dt><dd>$397.50</dd>
+                    <dt>Beds</dt><dd>1</dd>
+                    <dt>Max occupancy</dt><dd>2 spots</dd>
+                    <dt>Price per spot / night</dt><dd>$49.25</dd>
+                    <dt>Whole casita (2 spots)</dt><dd>$197.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$348.25</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$399.25</dd>
                   </dl>
                 </article>
 
                 <article class="room-card">
                   <h4>Lodge 1–6</h4>
-                  <p class="room-village">Lodge Village · heating only, no A/C · 6 rooms</p>
+                  <p class="room-village">Lodge · heating only, no A/C · 6 rooms</p>
                   <ul>
                     <li>2 twin beds per room</li>
                   </ul>
@@ -1137,14 +1141,14 @@
                     <dt>Max occupancy</dt><dd>2 spots</dd>
                     <dt>Price per spot / night</dt><dd>$65.00</dd>
                     <dt>Whole room (2 spots)</dt><dd>$130.00</dd>
-                    <dt>Early bird total (1 spot)</dt><dd class="total">$314.00</dd>
-                    <dt>Regular total (1 spot)</dt><dd>$364.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$364.00</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$415.00</dd>
                   </dl>
                 </article>
 
                 <article class="room-card">
                   <h4>Lodge 7–8</h4>
-                  <p class="room-village">Lodge Village · heating only, no A/C · 2 rooms</p>
+                  <p class="room-village">Lodge · heating only, no A/C · 2 rooms</p>
                   <ul>
                     <li>3 twin beds per room</li>
                   </ul>
@@ -1155,9 +1159,9 @@
                     <dt>Beds</dt><dd>3</dd>
                     <dt>Max occupancy</dt><dd>2 spots</dd>
                     <dt>Price per spot / night</dt><dd>$65.00</dd>
-                    <dt>Whole room (2 spots)</dt><dd>$130.00</dd>
-                    <dt>Early bird total (1 spot)</dt><dd class="total">$314.00</dd>
-                    <dt>Regular total (1 spot)</dt><dd>$364.00</dd>
+                    <dt>Whole room (2 spots)</dt><dd>$195.00</dd>
+                    <dt>Early bird total (1 spot)</dt><dd class="total">$364.00</dd>
+                    <dt>Regular total (1 spot)</dt><dd>$415.00</dd>
                   </dl>
                 </article>
               </div>
@@ -1236,17 +1240,18 @@
       // ---- Room catalog: beds, max occupancy, single/shared prices per night ----
       // maxOccupancy accounts for bed-sharing / sofa beds (may exceed bed count).
       const ROOMS = [
-        // Lakeside Village: heating + A/C
-        { id: "lakeside-1", label: "Lakeside 1",  village: "Lakeside", beds: 1, maxOccupancy: 2, single: 265, shared: 132.5 },
-        { id: "lakeside-2", label: "Lakeside 2",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
-        { id: "lakeside-3", label: "Lakeside 3",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
-        { id: "lakeside-4", label: "Lakeside 4",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
-        { id: "lakeside-5", label: "Lakeside 5",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
-        { id: "lakeside-6", label: "Lakeside 6",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
-        { id: "lakeside-7", label: "Lakeside 7",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
-        { id: "lakeside-8", label: "Lakeside 8",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
-        { id: "lakeside-9", label: "Lakeside 9",  village: "Lakeside", beds: 2, maxOccupancy: 4, single: 394, shared: 98.5 },
-        // Lodge Village: heating only, no A/C
+        // Hillside Apartment: private kitchen, heating + A/C, ADA-accessible bathroom
+        { id: "hillside-apartment", label: "Hillside Apartment", village: "Hillside", beds: 4, maxOccupancy: 5, single: 394, shared: 78.8 },
+        // Casitas: heating + A/C, shared outdoor bathhouse
+        { id: "casita-1", label: "Casita 1", village: "Casita", beds: 1, maxOccupancy: 2, single: 197, shared: 49.25 },
+        { id: "casita-2", label: "Casita 2", village: "Casita", beds: 1, maxOccupancy: 2, single: 197, shared: 49.25 },
+        { id: "casita-3", label: "Casita 3", village: "Casita", beds: 1, maxOccupancy: 2, single: 197, shared: 49.25 },
+        { id: "casita-4", label: "Casita 4", village: "Casita", beds: 1, maxOccupancy: 2, single: 197, shared: 49.25 },
+        { id: "casita-5", label: "Casita 5", village: "Casita", beds: 1, maxOccupancy: 2, single: 197, shared: 49.25 },
+        { id: "casita-6", label: "Casita 6", village: "Casita", beds: 1, maxOccupancy: 2, single: 197, shared: 49.25 },
+        { id: "casita-7", label: "Casita 7", village: "Casita", beds: 1, maxOccupancy: 2, single: 197, shared: 49.25 },
+        { id: "casita-8", label: "Casita 8", village: "Casita", beds: 1, maxOccupancy: 2, single: 197, shared: 49.25 },
+        // Lodge: heating only, no A/C, shared lodge bathrooms
         { id: "lodge-1", label: "Lodge 1", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
         { id: "lodge-2", label: "Lodge 2", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
         { id: "lodge-3", label: "Lodge 3", village: "Lodge", beds: 2, maxOccupancy: 2, single: 130, shared: 65 },
