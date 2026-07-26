@@ -128,9 +128,12 @@
 
   section {
     page-break-inside: avoid;
-    margin-bottom: 26pt;
+    margin-bottom: 18pt;
   }
   .page-break { page-break-after: always; }
+  /* Long sections (schedule tables, guideline lists) may split — the
+     row-level rules below keep individual rows intact instead. */
+  section.flow { page-break-inside: auto; }
 
   .eyebrow {
     font-size: 9pt;
@@ -143,8 +146,10 @@
   .card {
     background: var(--soft);
     border-left: 3pt solid var(--gold);
-    padding: 14pt 18pt;
-    margin: 14pt 0 20pt;
+    padding: 10pt 16pt;
+    margin: 8pt 0 0;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
   .card p:last-child { margin-bottom: 0; }
 
@@ -178,24 +183,26 @@
   .schedule {
     width: 100%;
     border-collapse: collapse;
-    margin: 8pt 0 20pt;
+    margin: 4pt 0 10pt;
+    font-size: 10pt;
   }
   .schedule th {
     text-align: left;
     font-family: Georgia, serif;
     font-weight: 700;
     color: var(--leaf);
-    font-size: 11pt;
-    padding: 8pt 10pt;
+    font-size: 10pt;
+    padding: 4pt 8pt;
     border-bottom: 1pt solid var(--gold);
   }
   .schedule td {
-    padding: 9pt 10pt;
+    padding: 4pt 8pt;
     border-bottom: 0.5pt solid var(--line);
     vertical-align: top;
   }
+  .schedule tr { page-break-inside: avoid; }
   .schedule td.time {
-    width: 1.6in;
+    width: 1.4in;
     color: var(--leaf);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
@@ -206,18 +213,26 @@
   .schedule td.note {
     color: var(--muted);
     font-style: italic;
-    font-size: 10.5pt;
+    font-size: 9.5pt;
   }
   .day-label {
-    display: inline-block;
-    background: var(--leaf);
-    color: var(--paper);
-    padding: 4pt 12pt;
-    font-size: 10pt;
-    letter-spacing: 0.18em;
+    display: block;
+    color: var(--leaf);
+    font-family: Georgia, serif;
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    margin-bottom: 6pt;
+    padding: 5pt 0 3pt;
+    border-top: 1.2pt solid var(--leaf);
+    border-bottom: 1.2pt solid var(--leaf);
+    margin: 10pt 0 6pt;
+    /* print without relying on background color */
+    background: transparent;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
+  .day-label:first-of-type { margin-top: 4pt; }
 
   .contact-grid {
     display: table;
@@ -230,8 +245,10 @@
     width: 50%;
     background: var(--soft);
     border-left: 3pt solid var(--gold);
-    padding: 14pt 18pt;
+    padding: 10pt 14pt;
     vertical-align: top;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
   .contact-cell .label {
     color: var(--muted);
@@ -365,17 +382,14 @@
 
 <!-- PAGE 3 — SCHEDULE -->
 <div class="page">
-  <section>
+  <section class="flow">
     <p class="eyebrow">Two days together</p>
     <h2>Retreat schedule</h2>
-    <p style="color:var(--muted); font-style:italic;">
-      Timings are gentle guides. If you need to step away, rest, or simply
-      sit quietly during any session, please do — the schedule is here to
-      hold you, not to press on you.
+    <p style="color:var(--muted); font-style:italic; font-size:10.5pt; margin-bottom:12pt;">
+      Timings are gentle guides — step away, rest, or sit quietly during
+      any session if you need to.
     </p>
-  </section>
 
-  <section>
     <span class="day-label">Day 1 &nbsp;·&nbsp; Saturday, September 19</span>
     <table class="schedule">
       <tr><th>Time</th><th>Session</th></tr>
@@ -386,15 +400,13 @@
       <tr><td class="time">1:00 – 2:00 pm</td><td class="session" style="color:var(--muted); font-style:italic;">Free time — rest, walk the property, or sit by the lake</td></tr>
       <tr><td class="time">2:00 – 3:30 pm</td><td class="session">Manifestation &amp; EFT with Dr. Tanwar</td></tr>
       <tr><td class="time">3:30 – 4:30 pm</td><td class="session">Yoga with Patricia</td></tr>
-      <tr><td class="time">4:00 pm onwards</td><td class="session" style="color:var(--muted); font-style:italic;">Room check-in opens (settle into your room any time after 4 pm)</td></tr>
+      <tr><td class="time">4:00 pm onwards</td><td class="session" style="color:var(--muted); font-style:italic;">Room check-in opens (settle in any time after 4 pm)</td></tr>
       <tr><td class="time">6:00 pm</td><td class="session">Dinner</td></tr>
       <tr><td class="time">7:30 – 8:30 pm</td><td class="session">Kirtan — devotional chanting</td></tr>
       <tr><td class="time">9:00 – 9:30 pm</td><td class="session">Moonlight meditation with Dr. Gupta <span style="color:var(--muted); font-style:italic;">— weather permitting</span></td></tr>
     </table>
-  </section>
 
-  <section>
-    <span class="day-label">Day 2 &nbsp;·&nbsp; Sunday, September 20</span>
+    <span class="day-label" style="margin-top:6pt;">Day 2 &nbsp;·&nbsp; Sunday, September 20</span>
     <table class="schedule">
       <tr><th>Time</th><th>Session</th></tr>
       <tr><td class="time">6:30 – 7:30 am</td><td class="session">Yoga with Patricia</td></tr>
@@ -493,21 +505,21 @@
 
 <!-- PAGE 6 — PROPERTY MAP + CONTACT + CLOSING -->
 <div class="page">
-  <section>
+  <section style="margin-bottom:10pt;">
     <p class="eyebrow">Finding your way</p>
     <h2>Property map</h2>
-    <p style="margin-bottom:10pt;">
+    <p style="margin-bottom:8pt; font-size:10.5pt;">
       Everything is walkable from the Welcome Pavilion. Save a copy to your
       phone before you arrive — cell service on the property is very limited.
     </p>
     <img
       src="assets/images/enchanted-hills-map.png"
       alt="Enchanted Hills property map showing the Welcome Pavilion, parking lot, Hillside Commons and Casitas 1-8, Lodge, Forest Commons Dining Hall, Meditation Yurt, Fire Circle, Redwood Grove Amphitheater, pool, and pond."
-      style="display:block; width:100%; max-height:3.5in; object-fit:contain; border:0.5pt solid var(--line); border-radius:4pt; margin:0 auto 6pt;"
+      style="display:block; width:100%; max-height:2.8in; object-fit:contain; border:0.5pt solid var(--line); border-radius:4pt; margin:0 auto;"
     >
   </section>
 
-  <section>
+  <section style="margin-bottom:10pt;">
     <h2>Reaching us</h2>
     <div class="contact-grid">
       <div class="contact-cell">
@@ -525,20 +537,20 @@
     </div>
   </section>
 
-  <section>
+  <section style="margin-bottom:0;">
     <div class="card">
-      <p style="font-style: italic; color: var(--ink); font-size: 12pt; margin:0;">
+      <p style="font-style: italic; color: var(--ink); font-size: 11.5pt; margin:0;">
         You do not have to leave your life behind to become spiritual.
         You can learn to bring stillness, awareness, and acceptance into
         the life you are already living.
       </p>
-      <p style="font-style: italic; color: var(--muted); text-align: right; margin: 6pt 0 0;">
+      <p style="font-style: italic; color: var(--muted); text-align: right; margin: 4pt 0 0; font-size: 10pt;">
         — Sattva Path Collective
       </p>
     </div>
   </section>
 
-  <footer class="foot">
+  <footer class="foot" style="margin-top:14pt; padding-top:8pt;">
     Sattva Path Collective LLC &nbsp;·&nbsp; sattvapathcollective.com &nbsp;·&nbsp; Napa, California
   </footer>
 </div>
