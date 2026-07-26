@@ -76,7 +76,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  width: min(1180px, calc(100% - 32px));
+  width: calc(100% - 32px);
   min-height: 68px;
   margin: 0 auto;
 }
