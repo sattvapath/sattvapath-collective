@@ -105,7 +105,44 @@
       .hero-inner {
         position: relative;
         z-index: 1;
-        padding: 44px 0 58px;
+        padding: 36px 0 40px;
+      }
+
+      .hero-facts {
+        display: grid;
+        grid-template-columns: 0.8fr 1.1fr 1.3fr 1.8fr;
+        gap: 14px 28px;
+        margin-top: 24px;
+        width: 100%;
+        max-width: none;
+        font-family: Arial, sans-serif;
+        font-size: 0.92rem;
+      }
+      .hero-facts > div { min-width: 0; }
+      .hero-facts > div {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .hero-facts .hf-label {
+        color: #f1d5a1;
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+      .hero-facts .hf-val {
+        color: #fff;
+        line-height: 1.35;
+      }
+      .hero-facts .hf-val a {
+        color: #f1d5a1;
+        text-decoration: underline;
+      }
+      @media (max-width: 780px) {
+        .hero-facts {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
       }
 
       .back-link {
@@ -143,7 +180,7 @@
 
       h1 {
         max-width: 780px;
-        font-size: clamp(2.4rem, 7vw, 5.6rem);
+        font-size: clamp(2.2rem, 5.5vw, 4.4rem);
       }
 
       h2 {
@@ -160,8 +197,9 @@
 
       .hero-copy {
         max-width: 720px;
-        margin-top: 18px;
-        font-size: clamp(1.05rem, 2.4vw, 1.28rem);
+        margin-top: 14px;
+        font-size: clamp(0.9rem, 1.4vw, 1rem);
+        line-height: 1.55;
       }
 
       .hero-copy span {
@@ -908,31 +946,30 @@
           <p class="eyebrow">Retreat registration</p>
           <h1 id="retreatTitle">Sattva Path Retreat Registration</h1>
           <p class="hero-copy" id="retreatHeroCopy">
-            <span>September 19-20, 2026 at Enchanted Hills, Napa, CA.</span>
-            <span>A gentle two-day retreat for adults seeking peace, acceptance, meditation, and spiritual guidance.</span>
+            A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life.
           </p>
+          <div class="hero-facts">
+            <div>
+              <span class="hf-label">Dates</span>
+              <span class="hf-val">Sep 19 – 20, 2026</span>
+            </div>
+            <div>
+              <span class="hf-label">Schedule</span>
+              <span class="hf-val">Sat 10 am – Sun 12 pm &nbsp;·&nbsp; 1 night</span>
+            </div>
+            <div>
+              <span class="hf-label">Location</span>
+              <span class="hf-val">Enchanted Hills Napa, CA &nbsp;·&nbsp; <a href="https://enchantedhillsnapa.org/experiences/wellness/" target="_blank" rel="noopener noreferrer">enchantedhillsnapa.org</a></span>
+            </div>
+            <div>
+              <span class="hf-label">Retreat Experience fee</span>
+              <span class="hf-val">$299 early bird (before Aug 15) / $350 regular &nbsp;·&nbsp; lodging priced separately</span>
+            </div>
+          </div>
         </div>
       </section>
 
       <div class="content">
-        <aside class="summary" aria-label="Retreat summary">
-          <p class="section-kicker">Retreat details</p>
-          <h2>Before you register</h2>
-          <ul class="summary-list">
-            <li><strong>Dates</strong><span id="summaryDates">September 19-20, 2026</span></li>
-            <li><strong>Schedule</strong>Saturday 10 am to Sunday noon (1 night)</li>
-            <li><strong>Location</strong><span id="summaryLocation">Enchanted Hills Retreat, 3410 Mount Veeder Road, Napa, CA 94558 &mdash; <a href="https://enchantedhillsnapa.org/experiences/wellness/" target="_blank" rel="noopener noreferrer">enchantedhillsnapa.org</a></span></li>
-            <li><strong>What to expect</strong>Grounding, healing meditation, gentle yoga and breathwork, and other sacred ceremonies. Full event details will be shared with you after registration in the welcome package.</li>
-            <li>
-              <strong>Retreat Experience fee</strong>
-              $299 early bird (before Aug 15) / $350 regular. Includes all sessions and 3 meals.
-            </li>
-            <li style="color:var(--muted); font-size:0.9rem; padding-bottom:4px;">
-              Lodging is priced separately &mdash; you'll choose your accommodation during registration.
-            </li>
-          </ul>
-        </aside>
-
         <section class="form-card" aria-label="Registration form">
           <div class="form-intro">
             <p class="section-kicker">Participant information</p>
@@ -1214,7 +1251,7 @@
         date: "September 19-20, 2026",
         location: "Enchanted Hills Retreat, 3410 Mount Veeder Road, Napa, CA 94558",
         age: "18 years or older",
-        description: "A gentle two-day retreat for adults seeking peace, acceptance, meditation, and spiritual guidance."
+        description: "A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life."
       };
       let currentRetreat = fallbackRetreat;
       let duplicateKey = `sattva-retreat-registration-signatures-${fallbackRetreat.id}`;
@@ -1348,13 +1385,11 @@
         return location;
       }
 
-      function setHeroCopy(firstLine, secondLine) {
+      function setHeroCopy(description) {
+        // Hero now has a dedicated .hero-facts grid for dates + location; the
+        // hero-copy paragraph carries only the retreat description.
         const heroCopy = document.querySelector("#retreatHeroCopy");
-        const first = document.createElement("span");
-        const second = document.createElement("span");
-        first.textContent = firstLine;
-        second.textContent = secondLine;
-        heroCopy.replaceChildren(first, second);
+        if (heroCopy) heroCopy.textContent = description;
       }
 
       function applyRetreatDetails() {
@@ -1365,10 +1400,7 @@
         if (metaDesc) metaDesc.setAttribute("content", `Register for ${currentRetreat.title || fallbackRetreat.title}, ${currentRetreat.date || fallbackRetreat.date} at ${retreatLocation()}.`);
         const retreatTitleEl = document.querySelector("#retreatTitle");
         if (retreatTitleEl) retreatTitleEl.textContent = `${currentRetreat.title || fallbackRetreat.title} Registration`;
-        setHeroCopy(
-          `${currentRetreat.date || fallbackRetreat.date} at ${retreatHeroLocation()}.`,
-          currentRetreat.description || fallbackRetreat.description
-        );
+        setHeroCopy(currentRetreat.description || fallbackRetreat.description);
         const summaryDatesEl = document.querySelector("#summaryDates");
         if (summaryDatesEl) summaryDatesEl.textContent = currentRetreat.date || fallbackRetreat.date;
         const summaryLocationEl = document.querySelector("#summaryLocation");
