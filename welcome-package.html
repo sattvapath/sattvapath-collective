@@ -16,8 +16,8 @@
   }
 
   @page {
-    size: Letter;
-    margin: 0.7in 0.75in;
+    size: A4;
+    margin: 15mm 18mm;
   }
 
   * { box-sizing: border-box; }
@@ -262,17 +262,38 @@
   }
 
   @media screen {
-    body { padding: 20px; }
-    .page-container {
-      max-width: 8.5in;
-      margin: 0 auto;
-      background: var(--paper);
-      box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+    body {
+      padding: 24px 16px;
+      background: #cfd3c8;
     }
+    .page-container {
+      max-width: none;
+      margin: 0 auto;
+      background: transparent;
+      box-shadow: none;
+    }
+    /* Each page renders as its own A4 sheet on screen */
+    .cover,
+    .page {
+      max-width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 22px;
+      background: var(--paper);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.18);
+      box-sizing: border-box;
+    }
+    .page-break { display: none; }
   }
   @media print {
-    body { padding: 0; }
+    body { padding: 0; background: #fff; }
     .page-container { box-shadow: none; }
+    .cover,
+    .page {
+      box-shadow: none;
+      margin: 0;
+      min-height: 0;
+      max-width: none;
+    }
   }
 </style>
 </head>
