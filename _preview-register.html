@@ -111,13 +111,15 @@
 
       .hero-facts {
         display: grid;
-        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.1fr) minmax(0, 1.3fr) minmax(0, 1.8fr);
-        gap: 14px 32px;
+        grid-template-columns: 0.8fr 1.1fr 1.3fr 1.8fr;
+        gap: 14px 28px;
         margin-top: 24px;
+        width: 100%;
         max-width: none;
         font-family: Arial, sans-serif;
-        font-size: 0.95rem;
+        font-size: 0.92rem;
       }
+      .hero-facts > div { min-width: 0; }
       .hero-facts > div {
         display: flex;
         flex-direction: column;
