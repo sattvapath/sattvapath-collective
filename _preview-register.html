@@ -1248,7 +1248,7 @@
         date: "September 19-20, 2026",
         location: "Enchanted Hills Retreat, 3410 Mount Veeder Road, Napa, CA 94558",
         age: "18 years or older",
-        description: "A gentle two-day retreat for adults seeking peace, acceptance, meditation, and spiritual guidance."
+        description: "A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life."
       };
       let currentRetreat = fallbackRetreat;
       let duplicateKey = `sattva-retreat-registration-signatures-${fallbackRetreat.id}`;
@@ -1382,13 +1382,11 @@
         return location;
       }
 
-      function setHeroCopy(firstLine, secondLine) {
+      function setHeroCopy(description) {
+        // Hero now has a dedicated .hero-facts grid for dates + location; the
+        // hero-copy paragraph carries only the retreat description.
         const heroCopy = document.querySelector("#retreatHeroCopy");
-        const first = document.createElement("span");
-        const second = document.createElement("span");
-        first.textContent = firstLine;
-        second.textContent = secondLine;
-        heroCopy.replaceChildren(first, second);
+        if (heroCopy) heroCopy.textContent = description;
       }
 
       function applyRetreatDetails() {
@@ -1399,10 +1397,7 @@
         if (metaDesc) metaDesc.setAttribute("content", `Register for ${currentRetreat.title || fallbackRetreat.title}, ${currentRetreat.date || fallbackRetreat.date} at ${retreatLocation()}.`);
         const retreatTitleEl = document.querySelector("#retreatTitle");
         if (retreatTitleEl) retreatTitleEl.textContent = `${currentRetreat.title || fallbackRetreat.title} Registration`;
-        setHeroCopy(
-          `${currentRetreat.date || fallbackRetreat.date} at ${retreatHeroLocation()}.`,
-          currentRetreat.description || fallbackRetreat.description
-        );
+        setHeroCopy(currentRetreat.description || fallbackRetreat.description);
         const summaryDatesEl = document.querySelector("#summaryDates");
         if (summaryDatesEl) summaryDatesEl.textContent = currentRetreat.date || fallbackRetreat.date;
         const summaryLocationEl = document.querySelector("#summaryLocation");
