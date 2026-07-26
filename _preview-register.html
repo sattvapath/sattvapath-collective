@@ -111,10 +111,10 @@
 
       .hero-facts {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.1fr) minmax(0, 1.3fr) minmax(0, 1.8fr);
         gap: 14px 32px;
         margin-top: 24px;
-        max-width: 900px;
+        max-width: none;
         font-family: Arial, sans-serif;
         font-size: 0.95rem;
       }
@@ -137,6 +137,11 @@
       .hero-facts .hf-val a {
         color: #f1d5a1;
         text-decoration: underline;
+      }
+      @media (max-width: 780px) {
+        .hero-facts {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
       }
 
       .back-link {
