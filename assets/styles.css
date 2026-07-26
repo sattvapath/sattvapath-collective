@@ -84,7 +84,7 @@ a {
 .brand {
   display: inline-flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 4px;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0;
