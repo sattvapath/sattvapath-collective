@@ -506,6 +506,28 @@ app.post('/api/registrations', async (req, res) => {
   const accommodationDetails = r.accommodation_details && typeof r.accommodation_details === 'object'
     ? r.accommodation_details : {};
 
+  // For the retreat, every participant must include the currently-required fields.
+  // Guards against stale/cached versions of register.html that omit newer fields
+  // (gender, shirtSize were added 2026-07-24).
+  if (eventId === RETREAT_EVENT_ID && participants.length) {
+    const REQUIRED_PARTICIPANT_FIELDS = [
+      'firstName', 'lastName', 'age', 'gender', 'shirtSize',
+      'email', 'phone', 'emergencyName', 'emergencyPhone',
+    ];
+    for (let i = 0; i < participants.length; i++) {
+      const p = participants[i] || {};
+      const missing = REQUIRED_PARTICIPANT_FIELDS.filter((k) => !String(p[k] || '').trim());
+      if (missing.length) {
+        return res.status(400).json({
+          error: 'missing_participant_fields',
+          participant: i + 1,
+          fields: missing,
+          hint: 'Your registration page may be out of date. Hard-refresh (Ctrl+Shift+R) and re-submit.',
+        });
+      }
+    }
+  }
+
   // For the retreat, reject if requested rooms would exceed remaining capacity.
   if (eventId === RETREAT_EVENT_ID && Array.isArray(accommodationDetails.rooms) && accommodationDetails.rooms.length) {
     const requested = {};

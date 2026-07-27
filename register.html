@@ -4,6 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sattva Path Retreat Registration</title>
+    <!-- Registration form fields evolve; force browsers to re-check on every visit
+         so a stale cached form doesn't submit an older participant shape. -->
+    <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="mask-icon" href="favicon.svg" color="#B8695C" />
     <link rel="apple-touch-icon" href="assets/images/logo.png" />
@@ -2201,6 +2205,11 @@
                 left > 0
                   ? `${label} only has ${left} spot${left === 1 ? "" : "s"} left. We refreshed the room list — please pick again.`
                   : `${label} was just booked by someone else. We refreshed the room list — please pick another room.`
+              );
+            }
+            if (res.status === 400 && errBody && errBody.error === "missing_participant_fields") {
+              throw new Error(
+                `Your registration page is out of date and missing some required fields (${(errBody.fields || []).join(", ")}). Please hard-refresh this page (Ctrl+Shift+R) and re-submit.`
               );
             }
             let errMsg = "We could not submit your registration.";
