@@ -40,6 +40,11 @@ CREATE TABLE IF NOT EXISTS events (
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS events_type_status_idx ON events(type, status);
+-- Generalized fields for the reminder + email builder (item 7b). Idempotent.
+ALTER TABLE events ADD COLUMN IF NOT EXISTS event_datetime TIMESTAMPTZ;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS zoom_link      TEXT DEFAULT '';
+ALTER TABLE events ADD COLUMN IF NOT EXISTS email_extra    TEXT DEFAULT '';
+CREATE INDEX IF NOT EXISTS events_datetime_idx ON events(event_datetime) WHERE event_datetime IS NOT NULL;
 
 -- Emotion board posts.
 CREATE TABLE IF NOT EXISTS emotions (
@@ -156,6 +161,9 @@ ALTER TABLE registrations ADD COLUMN IF NOT EXISTS stripe_session_id TEXT DEFAUL
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS stripe_payment_id TEXT DEFAULT '';
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS stripe_paid_at    TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS registrations_stripe_session_idx ON registrations(stripe_session_id);
+-- Reminder tracking for retreat/event registrations (item 7b).
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS reminder_24h_sent_at TIMESTAMPTZ;
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS reminder_1h_sent_at  TIMESTAMPTZ;
 
 -- Auto-update updated_at on any UPDATE.
 CREATE OR REPLACE FUNCTION touch_updated_at() RETURNS TRIGGER
@@ -205,6 +213,32 @@ VALUES (
     '18 years or older',
     'A two-day retreat for adults seeking peace, acceptance, spiritual guidance, and simple meditation practices that can be carried into daily life.',
     '["Full name","Email","Phone number","Emergency contact","Accommodation preference","Dietary considerations","Payment acknowledgment","Liability / cancellation agreement"]'::jsonb
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Backfill retreat start time (Sep 19, 2026 at 9:00 AM PDT = 16:00 UTC).
+-- Only sets the value on rows that don't already have one, so this is safe
+-- to re-run and won't clobber a value edited via the admin panel later.
+UPDATE events SET event_datetime = '2026-09-19 16:00:00+00'
+ WHERE id = 'sattva-path-retreat-2026' AND event_datetime IS NULL;
+
+-- Seed the free meditation webinar as a proper events row so the reminder
+-- scheduler can iterate it uniformly with other events. type='Webinar'
+-- means no public events-page renderer picks it up (that's on purpose —
+-- the webinar has its own /free-webinar.html landing page).
+INSERT INTO events (id, type, status, title, date, location, price, age, description, event_datetime, zoom_link)
+VALUES (
+    'free-webinar-2026-08-09',
+    'Webinar',
+    'Posted',
+    'Free Meditation Webinar',
+    'Sunday, August 9, 2026 at 10:30 AM PST',
+    'via Zoom',
+    'Free',
+    'All ages',
+    'Experience inner peace in just one hour with Dr. Nirupama Gupta. A guided meditation and live Q&A over Zoom.',
+    '2026-08-09 17:30:00+00',
+    'https://epikso.zoom.us/j/6558586811'
 )
 ON CONFLICT (id) DO NOTHING;
 
