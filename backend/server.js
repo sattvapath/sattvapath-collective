@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const PORT = Number(process.env.PORT || 3000);
 const pool = new Pool();
@@ -17,6 +18,20 @@ const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 const stripe = STRIPE_SECRET ? require('stripe')(STRIPE_SECRET) : null;
 const SITE_BASE_URL = process.env.SITE_BASE_URL || 'https://sattvapathcollective.com';
+
+// SMTP for outbound email. Server boots without it; endpoints that need it
+// still save data and return success, but flag email_status='failed'.
+const SMTP_USER = process.env.SMTP_USER || '';
+const SMTP_PASS = process.env.SMTP_PASS || '';
+const SMTP_FROM = process.env.SMTP_FROM || (SMTP_USER ? `Sattva Path Collective <${SMTP_USER}>` : '');
+const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || SMTP_USER;
+const mailer = (SMTP_USER && SMTP_PASS) ? nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  auth: { user: SMTP_USER, pass: SMTP_PASS }
+}) : null;
+if (!mailer) console.warn('SMTP not configured (SMTP_USER/SMTP_PASS unset) — outbound email disabled.');
 
 const app = express();
 app.set('trust proxy', 'loopback');
@@ -390,6 +405,148 @@ app.patch('/api/admin/inquiries/:id', requireAdmin, async (req, res) => {
 app.delete('/api/admin/inquiries/:id', requireAdmin, async (req, res) => {
   const r = await pool.query(`DELETE FROM contact_inquiries WHERE id = $1`, [req.params.id]);
   res.json({ deleted: r.rowCount });
+});
+
+// ---------------- webinar registrations (public post) ----------------
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function webinarConfirmationEmail({ name, email, phone }) {
+  const safeName = escapeHtml(name);
+  const safeEmail = escapeHtml(email);
+  const safePhone = phone ? escapeHtml(phone) : '(not provided)';
+  const html = `
+<div style="font-family:Arial,Helvetica,sans-serif; color:#253027; line-height:1.55; font-size:15px;">
+  <p>Hi ${safeName},</p>
+  <p>Thank you for registering for the free live webinar with Dr. Nirupama Gupta!</p>
+  <p><strong>Your registration details:</strong></p>
+  <ul>
+    <li>Name: ${safeName}</li>
+    <li>Email: <a href="mailto:${safeEmail}">${safeEmail}</a></li>
+    <li>Phone: ${safePhone}</li>
+  </ul>
+  <p><strong>Webinar details:</strong></p>
+  <ul>
+    <li>Date: Sunday, August 9</li>
+    <li>Time: 10:30 AM PST</li>
+    <li>Host: Dr. Nirupama Gupta</li>
+  </ul>
+  <p>We&rsquo;ll email you the Zoom join link before the session. See you there!</p>
+  <p style="color:#5f6d61; font-size:13px; margin-top:24px;">&mdash; Sattva Path Collective</p>
+</div>`.trim();
+  const text = [
+    `Hi ${name},`,
+    ``,
+    `Thank you for registering for the free live webinar with Dr. Nirupama Gupta!`,
+    ``,
+    `Your registration details:`,
+    `  Name:  ${name}`,
+    `  Email: ${email}`,
+    `  Phone: ${phone || '(not provided)'}`,
+    ``,
+    `Webinar details:`,
+    `  Date: Sunday, August 9`,
+    `  Time: 10:30 AM PST`,
+    `  Host: Dr. Nirupama Gupta`,
+    ``,
+    `We'll email you the Zoom join link before the session. See you there!`,
+    ``,
+    `— Sattva Path Collective`
+  ].join('\n');
+  return {
+    subject: `You're registered — Dr. Nirupama Gupta's Free Webinar`,
+    html, text
+  };
+}
+
+function webinarNotificationEmail({ name, email, phone, message, id, created_at }) {
+  const rows = [
+    ['Name', name],
+    ['Email', email],
+    ['Phone', phone || '(none)'],
+    ['Message', message || '(none)'],
+    ['Registered', new Date(created_at).toISOString()],
+    ['ID', id]
+  ];
+  const html = `
+<div style="font-family:Arial,Helvetica,sans-serif; color:#253027; font-size:14px;">
+  <p><strong>New webinar registration</strong></p>
+  <table cellpadding="6" cellspacing="0" style="border-collapse:collapse; border:1px solid #ddd;">
+    ${rows.map(([k, v]) => `<tr><td style="border:1px solid #ddd; background:#f7f5ef;"><strong>${escapeHtml(k)}</strong></td><td style="border:1px solid #ddd;">${escapeHtml(v)}</td></tr>`).join('')}
+  </table>
+</div>`.trim();
+  const text = rows.map(([k, v]) => `${k}: ${v}`).join('\n');
+  return { subject: `New webinar registration: ${name}`, html, text };
+}
+
+async function sendWebinarEmails(reg) {
+  if (!mailer) throw new Error('smtp_not_configured');
+  const conf = webinarConfirmationEmail(reg);
+  const notif = webinarNotificationEmail(reg);
+  await mailer.sendMail({
+    from: SMTP_FROM,
+    to: reg.email,
+    subject: conf.subject,
+    html: conf.html,
+    text: conf.text,
+    replyTo: NOTIFY_EMAIL || SMTP_USER
+  });
+  if (NOTIFY_EMAIL) {
+    await mailer.sendMail({
+      from: SMTP_FROM,
+      to: NOTIFY_EMAIL,
+      subject: notif.subject,
+      html: notif.html,
+      text: notif.text,
+      replyTo: reg.email
+    });
+  }
+}
+
+app.post('/api/webinar-register', async (req, res) => {
+  const ip = req.ip || 'unknown';
+  if (!rateLimit(`webinar:${ip}`, 5)) return res.status(429).json({ error: 'rate_limited' });
+  const b = req.body || {};
+  const name = String(b.name || '').trim().slice(0, 200);
+  const email = String(b.email || '').trim().slice(0, 200);
+  const phone = String(b.phone || '').trim().slice(0, 60);
+  const message = String(b.message || '').trim().slice(0, 4000);
+  const eventSlug = String(b.event_slug || 'free-webinar').trim().slice(0, 80);
+  if (!name || !email) return res.status(400).json({ error: 'missing_fields' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'invalid_email' });
+  const ipHash = crypto.createHash('sha256').update(ip).digest('hex').slice(0, 32);
+  const insert = await pool.query(
+    `INSERT INTO webinar_registrations (event_slug, name, email, phone, message, ip_hash)
+     VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, created_at`,
+    [eventSlug, name, email, phone, message, ipHash]
+  );
+  const reg = { id: insert.rows[0].id, created_at: insert.rows[0].created_at, name, email, phone, message };
+  try {
+    await sendWebinarEmails(reg);
+    await pool.query(`UPDATE webinar_registrations SET email_status='sent' WHERE id=$1`, [reg.id]);
+    res.status(201).json({ id: reg.id, email_status: 'sent' });
+  } catch (err) {
+    console.error('Webinar email send failed:', err.message);
+    await pool.query(
+      `UPDATE webinar_registrations SET email_status='failed', email_error=$2 WHERE id=$1`,
+      [reg.id, String(err.message || err).slice(0, 500)]
+    );
+    // Still 201 — the seat IS reserved. Client shows thank-you either way.
+    res.status(201).json({ id: reg.id, email_status: 'failed' });
+  }
+});
+
+// ---------------- webinar registrations (admin) ----------------
+
+app.get('/api/admin/webinar-registrations', requireAdmin, async (req, res) => {
+  const r = await pool.query(
+    `SELECT id, event_slug, name, email, phone, message, email_status, email_error, created_at
+       FROM webinar_registrations
+      ORDER BY created_at DESC`
+  );
+  res.json(r.rows);
 });
 
 // ---------------- site content (public read) ----------------

@@ -130,6 +130,23 @@ CREATE INDEX IF NOT EXISTS registrations_event_idx    ON registrations(event_id)
 CREATE INDEX IF NOT EXISTS registrations_status_idx   ON registrations(payment_status);
 CREATE INDEX IF NOT EXISTS registrations_created_idx  ON registrations(created_at DESC);
 
+-- Free webinar / one-off event registrations that don't need the full
+-- retreat payment flow. Rows are created via POST /api/webinar-register.
+CREATE TABLE IF NOT EXISTS webinar_registrations (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_slug    TEXT NOT NULL,        -- e.g. 'free-webinar-2026-08-09'
+    name          TEXT NOT NULL,
+    email         TEXT NOT NULL,
+    phone         TEXT DEFAULT '',
+    message       TEXT DEFAULT '',
+    ip_hash       TEXT DEFAULT '',
+    email_status  TEXT NOT NULL DEFAULT 'pending',  -- 'pending' | 'sent' | 'failed'
+    email_error   TEXT DEFAULT '',
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS webinar_registrations_event_idx   ON webinar_registrations(event_slug);
+CREATE INDEX IF NOT EXISTS webinar_registrations_created_idx ON webinar_registrations(created_at DESC);
+
 -- Backfill Stripe columns on existing registrations tables (safe re-runs).
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS payment_method    TEXT DEFAULT '';
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS stripe_session_id TEXT DEFAULT '';
