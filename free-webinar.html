@@ -7,7 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="mask-icon" href="favicon.svg" color="#B8695C" />
     <link rel="apple-touch-icon" href="assets/images/logo.png" />
-    <meta name="description" content="Free live meditation webinar with Dr. Nirupama Gupta — experience inner peace in just one hour via Zoom.">
+    <meta name="description" content="Free live meditation webinar with Dr. Nirupama Gupta — experience inner peace in just one hour, Sunday, Aug 9 at 10:30 AM PST via Zoom.">
     <link rel="canonical" href="https://sattvapathcollective.com/free-webinar.html" />
     <meta name="theme-color" content="#B8695C" />
     <meta name="author" content="Sattva Path Collective" />
@@ -16,94 +16,390 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Sattva Path Collective" />
     <meta property="og:title" content="Free Meditation Webinar | Sattva Path Collective" />
-    <meta property="og:description" content="Free live meditation webinar with Dr. Nirupama Gupta — experience inner peace in just one hour via Zoom." />
+    <meta property="og:description" content="Experience inner peace in just one hour — Sunday, Aug 9 at 10:30 AM PST." />
     <meta property="og:url" content="https://sattvapathcollective.com/free-webinar.html" />
     <meta property="og:locale" content="en_US" />
-    <meta property="og:image" content="https://sattvapathcollective.com/assets/images/hero-retreat.png" />
-    <meta property="og:image:width" content="1536" />
-    <meta property="og:image:height" content="1024" />
-    <meta property="og:image:alt" content="A serene retreat setting evoking calm and reflection" />
+    <meta property="og:image" content="https://sattvapathcollective.com/assets/images/meditation-space.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Free Meditation Webinar | Sattva Path Collective" />
-    <meta name="twitter:description" content="Free live meditation webinar with Dr. Nirupama Gupta — experience inner peace in just one hour via Zoom." />
-    <meta name="twitter:image" content="https://sattvapathcollective.com/assets/images/hero-retreat.png" />
+    <meta name="twitter:description" content="Experience inner peace in just one hour — Sunday, Aug 9 at 10:30 AM PST." />
+    <meta name="twitter:image" content="https://sattvapathcollective.com/assets/images/meditation-space.png" />
 
     <link rel="stylesheet" href="assets/styles.css">
+    <style>
+      /* Webinar landing — self-contained styles */
+      body.webinar-body {
+        background: var(--paper);
+      }
+      .webinar-topbar {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        z-index: 5;
+        padding: 20px 32px;
+      }
+      .webinar-topbar .brand {
+        color: #fffdf8;
+        font-family: "Playfair Display", Georgia, serif;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 1.1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .webinar-topbar .brand img { height: 32px; width: auto; }
+
+      .webinar-hero {
+        position: relative;
+        min-height: 720px;
+        padding: 120px 6vw 80px;
+        color: #fffdf8;
+        background-image: linear-gradient(rgba(20, 30, 22, 0.55), rgba(20, 30, 22, 0.55)), url("assets/images/meditation-space.png");
+        background-size: cover;
+        background-position: center;
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 460px);
+        gap: 56px;
+        align-items: center;
+      }
+
+      .webinar-hero-copy .brandmark {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 40px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font: 600 0.85rem Arial, sans-serif;
+      }
+      .webinar-hero-copy .brandmark img {
+        height: 44px; width: auto;
+      }
+      .webinar-hero-copy .kicker {
+        color: var(--gold);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font: 700 0.9rem Arial, sans-serif;
+        margin: 0 0 20px;
+      }
+      .webinar-hero-copy h1 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-weight: 400;
+        font-size: clamp(2.4rem, 5.2vw, 4rem);
+        line-height: 1.08;
+        margin: 0 0 24px;
+        letter-spacing: -0.01em;
+      }
+      .webinar-hero-copy .desc {
+        font-size: 1.05rem;
+        line-height: 1.55;
+        max-width: 560px;
+        margin: 0 0 48px;
+      }
+      .webinar-hero-copy .desc a {
+        color: var(--gold);
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .webinar-hero-copy .desc a:hover { text-decoration: underline; }
+      .webinar-hero-copy .desc .highlight { font-weight: 700; }
+
+      .hero-meta {
+        display: flex;
+        gap: 56px;
+        flex-wrap: wrap;
+        margin-bottom: 32px;
+      }
+      .hero-meta > div { display: grid; gap: 6px; }
+      .hero-meta .label {
+        color: var(--gold);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font: 700 0.72rem Arial, sans-serif;
+      }
+      .hero-meta .value {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 1.15rem;
+      }
+
+      .join-zoom-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--gold);
+        text-decoration: none;
+        font: 600 0.95rem Arial, sans-serif;
+      }
+      .join-zoom-link:hover { text-decoration: underline; }
+      .join-zoom-link svg { width: 18px; height: 18px; }
+
+      /* Registration card */
+      .register-card {
+        background: #fffdf8;
+        border-radius: 18px;
+        padding: 40px 36px 32px;
+        color: var(--ink);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+        justify-self: end;
+        width: 100%;
+      }
+      .register-card h2 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-weight: 500;
+        text-align: center;
+        margin: 0 0 8px;
+        font-size: 1.9rem;
+      }
+      .register-card .subtitle {
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin: 0 0 24px;
+      }
+      .register-card .subtitle a {
+        color: var(--gold);
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .register-card label {
+        display: block;
+        margin-bottom: 16px;
+      }
+      .register-card .field-label {
+        display: block;
+        color: var(--ink);
+        font: 700 0.72rem Arial, sans-serif;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .register-card input,
+      .register-card textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid rgba(37, 48, 39, 0.25);
+        border-radius: 6px;
+        font: inherit;
+        color: var(--ink);
+        background: #fffdf8;
+        box-sizing: border-box;
+      }
+      .register-card textarea { min-height: 88px; resize: vertical; font-family: inherit; }
+      .register-card input:focus,
+      .register-card textarea:focus {
+        outline: none;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(184, 132, 66, 0.18);
+      }
+      .register-card .register-btn {
+        display: block;
+        width: 100%;
+        margin-top: 8px;
+        padding: 16px 20px;
+        background: var(--leaf);
+        color: #fffdf8;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font: 700 0.95rem Arial, sans-serif;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .register-card .register-btn:hover { background: #3a5237; }
+      .register-card .safe {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .register-card .safe svg { width: 14px; height: 14px; }
+
+      /* Thank-you banner (post-submit) */
+      .thankyou {
+        background: rgba(255, 253, 248, 0.96);
+        border-radius: 18px;
+        padding: 40px 36px;
+        color: var(--ink);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+        text-align: center;
+      }
+      .thankyou h2 {
+        font-family: "Playfair Display", Georgia, serif;
+        margin: 0 0 12px;
+      }
+
+      /* "What to expect" below hero */
+      .webinar-details {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 72px 6vw 96px;
+      }
+      .webinar-details h2 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: clamp(1.6rem, 3vw, 2.2rem);
+        margin: 0 0 20px;
+      }
+      .webinar-details p, .webinar-details li { line-height: 1.7; }
+      .webinar-details ul { padding-left: 22px; }
+      .webinar-details ul li { margin-bottom: 8px; }
+      .webinar-details .back-link {
+        display: inline-block;
+        margin-top: 24px;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+      .webinar-details .back-link:hover { color: var(--ink); text-decoration: underline; }
+
+      .webinar-mini-footer {
+        border-top: 1px solid var(--line);
+        padding: 24px 6vw;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .webinar-mini-footer a { color: var(--muted); text-decoration: none; }
+      .webinar-mini-footer a:hover { color: var(--ink); text-decoration: underline; }
+
+      /* Mobile: stack the hero */
+      @media (max-width: 900px) {
+        .webinar-hero {
+          grid-template-columns: 1fr;
+          gap: 40px;
+          padding: 100px 5vw 60px;
+          min-height: auto;
+        }
+        .register-card { justify-self: stretch; padding: 32px 24px; }
+        .hero-meta { gap: 32px; }
+      }
+    </style>
   </head>
-  <body>
-    <div class="sr-only" id="speechStatus" aria-live="polite"></div>
-    <a class="skip-link" href="#main">Skip to main content</a>
-    <header class="site-header">
-      <nav class="nav" aria-label="Main navigation">
-        <a class="brand" href="index.html"><img class="brand-mark" src="assets/images/logo-mark.png" alt="">Sattva Path Collective</a>
-        <div class="nav-links">
-          <a href="index.html">Home</a>
-          <a href="guidance.html">Guidance</a>
-          <div class="has-submenu">
-            <a href="events.html" aria-current="page">Events</a>
-            <div class="submenu">
-            <a href="events-retreat.html">Retreat</a>
-            <a href="events-meditation.html" aria-current="page">Meditation</a>
-            <a href="events-kirtan.html">Bhajan / Kirtan gathering</a>
-            </div>
+  <body class="webinar-body">
+    <a class="skip-link" href="#register">Skip to registration</a>
+
+    <div class="webinar-topbar">
+      <a class="brand" href="index.html">
+        <img src="assets/images/logo-mark.png" alt="">Sattva Path Collective
+      </a>
+    </div>
+
+    <section class="webinar-hero">
+      <div class="webinar-hero-copy">
+        <p class="kicker">Meditation Live Webinar</p>
+        <h1>Experience inner peace in just one hour</h1>
+        <p class="desc">
+          Take a pause from your busy life and reconnect with yourself through guided meditation and live Q&amp;A. <span class="highlight">Spots are limited.</span> <a href="#register">Register Now!</a>
+        </p>
+
+        <div class="hero-meta">
+          <div>
+            <span class="label">Date</span>
+            <span class="value">Sunday, August 9</span>
           </div>
-          <a href="photos.html">Photos</a>
-          <a href="heart.html">What's on Your Heart</a>
-          <a href="about.html">About</a>
-          <a href="assistant.html">Assistant</a>
-          <a href="contact.html">Contact</a>
-          <a href="admin.html" class="admin-link">Admin</a>
-          <div class="nav-social" aria-label="Social media">
-            <a class="social-icon social-instagram" href="https://www.instagram.com/healing_with_dr_nirupama_gupta/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg></a>
-            <a class="social-icon social-facebook" href="https://www.facebook.com/SattvaPathCollective" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg></a>
+          <div>
+            <span class="label">Time</span>
+            <span class="value">10:30 AM PST</span>
+          </div>
+          <div>
+            <span class="label">Hosted by</span>
+            <span class="value">Dr. Nirupama Gupta</span>
           </div>
         </div>
-      </nav>
-    </header>
-    <main id="main">
-      <section class="category-band meditation-band">
-        <div class="section-inner-wide">
-          <p class="section-kicker">Free Live Meditation Webinar</p>
-          <h1>Experience inner peace in just one hour</h1>
-          <p class="lead">
-            Take a pause from your busy life and reconnect with yourself through guided meditation and live Q&amp;A. Spots are limited.
-          </p>
 
-          <div class="wide-event featured-webinar-block" style="margin-top:24px;">
-            <div class="wide-event-meta" style="border-top:none;padding-top:0;">
-              <div><span class="wide-event-label">Date</span><span>Sunday, August 9, 2026</span></div>
-              <div><span class="wide-event-label">Time</span><span>10:30 AM PST</span></div>
-              <div><span class="wide-event-label">Hosted by</span><span>Dr. Nirupama Gupta</span></div>
-              <div><span class="wide-event-label">Location</span><span><a href="https://epikso.zoom.us/j/6558586811" target="_blank" rel="noopener noreferrer">via Zoom</a></span></div>
-            </div>
-            <div class="actions">
-              <a class="button" href="https://epikso.zoom.us/j/6558586811" target="_blank" rel="noopener noreferrer">Join the Zoom Room</a>
-              <a class="button secondary" href="events-meditation.html">Other meditation gatherings</a>
-            </div>
-          </div>
-
-          <h2 style="margin-top:56px;">What to expect</h2>
-          <p>Come as you are — no prior meditation experience required. In one hour together we'll:</p>
-          <ul>
-            <li>Settle into stillness with a short breath practice.</li>
-            <li>Move through a guided meditation for inner peace.</li>
-            <li>Close with a live Q&amp;A — ask anything about the practice or your own path.</li>
-          </ul>
-          <p>All you need is a quiet space, headphones if you have them, and an open mind. When it's time, click <strong>Join the Zoom Room</strong> above.</p>
-        </div>
-      </section>
-    </main>
-    <footer>
-      <div class="footer-inner">
-        <span>Sattva Path Collective LLC</span>
-        <span class="footer-social">
-          <a class="social-icon social-instagram" href="https://www.instagram.com/healing_with_dr_nirupama_gupta/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg></a>
-          <a class="social-icon social-facebook" href="https://www.facebook.com/SattvaPathCollective" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg></a>
-        </span>
-        <span><a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <a href="contact.html">Contact</a></span>
+        <a class="join-zoom-link" href="https://epikso.zoom.us/j/6558586811" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+          Join Zoom
+        </a>
       </div>
+
+      <div id="register" class="register-card" data-card>
+        <h2>Reserve your free seat</h2>
+        <p class="subtitle">Spots are limited. <a href="#register">Register Now!</a></p>
+
+        <form action="https://formsubmit.co/sattvapathcollective@gmail.com" method="POST">
+          <input type="hidden" name="_subject" value="New free-webinar registration (Sattva Path)">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_next" value="https://sattvapathcollective.com/free-webinar.html?registered=1">
+          <input type="hidden" name="_autoresponse" value="Thank you for registering for the Sattva Path free meditation webinar on Sunday, August 9 at 10:30 AM PST. We'll send you a reminder before the session. You can also join directly here: https://epikso.zoom.us/j/6558586811">
+          <input type="hidden" name="Event" value="Free Meditation Webinar — Aug 9, 2026">
+
+          <label>
+            <span class="field-label">Full Name</span>
+            <input type="text" name="Full Name" required autocomplete="name">
+          </label>
+
+          <label>
+            <span class="field-label">Email Address</span>
+            <input type="email" name="Email" required autocomplete="email">
+          </label>
+
+          <label>
+            <span class="field-label">Phone Number</span>
+            <input type="tel" name="Phone" autocomplete="tel">
+          </label>
+
+          <label>
+            <span class="field-label">Message</span>
+            <textarea name="Message"></textarea>
+          </label>
+
+          <button type="submit" class="register-btn">Register Free &rarr;</button>
+
+          <div class="safe">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Your information is safe and secure.
+          </div>
+        </form>
+      </div>
+
+      <div id="thankYouCard" class="thankyou" hidden data-card>
+        <h2>Thank you — your seat is reserved.</h2>
+        <p>Look for a confirmation email shortly. You can also <a href="https://epikso.zoom.us/j/6558586811" target="_blank" rel="noopener noreferrer">save the Zoom link</a> for Sunday, August 9 at 10:30 AM PST.</p>
+      </div>
+    </section>
+
+    <section class="webinar-details">
+      <h2>What to expect</h2>
+      <p>Come as you are — no prior meditation experience required. In one hour together we'll:</p>
+      <ul>
+        <li>Settle into stillness with a short breath practice.</li>
+        <li>Move through a guided meditation for inner peace.</li>
+        <li>Close with a live Q&amp;A — ask anything about the practice or your own path.</li>
+      </ul>
+      <p>All you need is a quiet space, headphones if you have them, and an open mind.</p>
+      <a class="back-link" href="events-meditation.html">&larr; Back to Meditation gatherings</a>
+    </section>
+
+    <footer class="webinar-mini-footer">
+      <span>Sattva Path Collective LLC</span>
+      <span>
+        <a href="privacy.html">Privacy</a> &middot;
+        <a href="terms.html">Terms</a> &middot;
+        <a href="contact.html">Contact</a>
+      </span>
     </footer>
-    <script src="assets/main.js"></script>
+
+    <script>
+      (function () {
+        var params = new URLSearchParams(location.search);
+        if (params.get("registered") === "1") {
+          var form = document.getElementById("register");
+          var thanks = document.getElementById("thankYouCard");
+          if (form) form.hidden = true;
+          if (thanks) {
+            thanks.hidden = false;
+            thanks.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }
+      })();
+    </script>
   </body>
 </html>
