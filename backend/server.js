@@ -417,6 +417,7 @@ function webinarConfirmationEmail({ name, email, phone }) {
   const safeName = escapeHtml(name);
   const safeEmail = escapeHtml(email);
   const safePhone = phone ? escapeHtml(phone) : '(not provided)';
+  const zoomUrl = 'https://epikso.zoom.us/j/6558586811';
   const html = `
 <div style="font-family:Arial,Helvetica,sans-serif; color:#253027; line-height:1.55; font-size:15px;">
   <p>Hi ${safeName},</p>
@@ -432,8 +433,9 @@ function webinarConfirmationEmail({ name, email, phone }) {
     <li>Date: Sunday, August 9</li>
     <li>Time: 10:30 AM PST</li>
     <li>Host: Dr. Nirupama Gupta</li>
+    <li>Zoom link: <a href="${zoomUrl}">${zoomUrl}</a></li>
   </ul>
-  <p>We&rsquo;ll email you the Zoom join link before the session. See you there!</p>
+  <p>Save this Zoom link for Sunday &mdash; we&rsquo;ll also send a reminder before the session. See you there!</p>
   <p style="color:#5f6d61; font-size:13px; margin-top:24px;">&mdash; Sattva Path Collective</p>
 </div>`.trim();
   const text = [
@@ -447,11 +449,12 @@ function webinarConfirmationEmail({ name, email, phone }) {
     `  Phone: ${phone || '(not provided)'}`,
     ``,
     `Webinar details:`,
-    `  Date: Sunday, August 9`,
-    `  Time: 10:30 AM PST`,
-    `  Host: Dr. Nirupama Gupta`,
+    `  Date:  Sunday, August 9`,
+    `  Time:  10:30 AM PST`,
+    `  Host:  Dr. Nirupama Gupta`,
+    `  Zoom:  ${zoomUrl}`,
     ``,
-    `We'll email you the Zoom join link before the session. See you there!`,
+    `Save this Zoom link for Sunday — we'll also send a reminder before the session. See you there!`,
     ``,
     `— Sattva Path Collective`
   ].join('\n');
