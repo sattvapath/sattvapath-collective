@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Sattva Path reminder job every 10 minutes
+
+[Timer]
+# Fire 5 min after boot, then every 10 min while the box is up.
+OnBootSec=5min
+OnUnitActiveSec=10min
+Unit=sattva-reminders.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

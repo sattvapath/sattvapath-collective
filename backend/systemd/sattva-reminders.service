@@ -1,0 +1,14 @@
+[Unit]
+Description=Sattva Path — send scheduled reminder emails
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/sattva-api
+EnvironmentFile=/etc/sattva/db.env
+ExecStart=/usr/bin/node send-reminders.js
+# Match whatever user sattva-api.service runs as; adjust if different.
+User=nirupama
+StandardOutput=journal
+StandardError=journal

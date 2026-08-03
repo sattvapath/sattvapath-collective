@@ -146,6 +146,9 @@ CREATE TABLE IF NOT EXISTS webinar_registrations (
 );
 CREATE INDEX IF NOT EXISTS webinar_registrations_event_idx   ON webinar_registrations(event_slug);
 CREATE INDEX IF NOT EXISTS webinar_registrations_created_idx ON webinar_registrations(created_at DESC);
+-- Reminder tracking (idempotent — safe on re-runs).
+ALTER TABLE webinar_registrations ADD COLUMN IF NOT EXISTS reminder_24h_sent_at TIMESTAMPTZ;
+ALTER TABLE webinar_registrations ADD COLUMN IF NOT EXISTS reminder_1h_sent_at  TIMESTAMPTZ;
 
 -- Backfill Stripe columns on existing registrations tables (safe re-runs).
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS payment_method    TEXT DEFAULT '';
