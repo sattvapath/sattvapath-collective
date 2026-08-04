@@ -173,6 +173,7 @@ app.get('/api/events/:id', async (req, res) => {
 app.get('/api/admin/events', requireAdmin, async (req, res) => {
   const r = await pool.query(
     `SELECT id, type, status, title, date, location, price, age, description, fields,
+            event_datetime, zoom_link, email_extra,
             created_at, updated_at
        FROM events
       ORDER BY updated_at DESC`
@@ -186,32 +187,47 @@ app.post('/api/admin/events', requireAdmin, async (req, res) => {
     return res.status(400).json({ error: 'missing_fields' });
   }
   const r = await pool.query(
-    `INSERT INTO events (id, type, status, title, date, location, price, age, description, fields)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb)
+    `INSERT INTO events
+       (id, type, status, title, date, location, price, age, description, fields,
+        event_datetime, zoom_link, email_extra)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12,$13)
      RETURNING *`,
     [e.id, e.type, e.status, e.title, e.date, e.location, e.price || '', e.age || '',
-     e.description, JSON.stringify(e.fields || [])]
+     e.description, JSON.stringify(e.fields || []),
+     e.event_datetime || null, e.zoom_link || '', e.email_extra || '']
   );
   res.status(201).json(r.rows[0]);
 });
 
 app.patch('/api/admin/events/:id', requireAdmin, async (req, res) => {
   const e = req.body || {};
+  // event_datetime uses a special sentinel: undefined = don't touch,
+  // null = clear it, string = set it. zoom_link/email_extra use plain
+  // COALESCE (undefined => don't touch; empty string overwrites).
   const r = await pool.query(
     `UPDATE events SET
-        type        = COALESCE($2, type),
-        status      = COALESCE($3, status),
-        title       = COALESCE($4, title),
-        date        = COALESCE($5, date),
-        location    = COALESCE($6, location),
-        price       = COALESCE($7, price),
-        age         = COALESCE($8, age),
-        description = COALESCE($9, description),
-        fields      = COALESCE($10::jsonb, fields)
+        type           = COALESCE($2, type),
+        status         = COALESCE($3, status),
+        title          = COALESCE($4, title),
+        date           = COALESCE($5, date),
+        location       = COALESCE($6, location),
+        price          = COALESCE($7, price),
+        age            = COALESCE($8, age),
+        description    = COALESCE($9, description),
+        fields         = COALESCE($10::jsonb, fields),
+        event_datetime = CASE WHEN $11::text = '__unchanged__' THEN event_datetime
+                              WHEN $11::text = '__clear__'     THEN NULL
+                              ELSE $11::timestamptz END,
+        zoom_link      = COALESCE($12, zoom_link),
+        email_extra    = COALESCE($13, email_extra)
       WHERE id = $1
       RETURNING *`,
     [req.params.id, e.type, e.status, e.title, e.date, e.location, e.price, e.age,
-     e.description, e.fields ? JSON.stringify(e.fields) : null]
+     e.description, e.fields ? JSON.stringify(e.fields) : null,
+     e.event_datetime === undefined ? '__unchanged__'
+       : (e.event_datetime === null || e.event_datetime === '') ? '__clear__'
+       : e.event_datetime,
+     e.zoom_link, e.email_extra]
   );
   if (!r.rows[0]) return res.status(404).json({ error: 'not_found' });
   res.json(r.rows[0]);

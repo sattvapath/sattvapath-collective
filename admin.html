@@ -643,6 +643,23 @@
             </div>
 
             <fieldset>
+              <legend>Reminders &amp; email content</legend>
+              <div>
+                <label for="eventDatetime">Start date &amp; time <span style="color:#5f6d61;font-weight:400;">(used for auto reminder emails — leave blank to disable reminders for this event)</span></label>
+                <input id="eventDatetime" type="datetime-local" step="60">
+                <small style="display:block;color:#5f6d61;margin-top:4px;">Enter the time in <em>your local timezone</em>. Pacific time is assumed if you're in California. 24h and 1h reminder emails will fire automatically to registrants.</small>
+              </div>
+              <div>
+                <label for="eventZoomLink">Zoom link <span style="color:#5f6d61;font-weight:400;">(optional — leave blank for in-person events)</span></label>
+                <input id="eventZoomLink" type="url" placeholder="https://us02web.zoom.us/j/1234567890">
+              </div>
+              <div>
+                <label for="eventEmailExtra">Extra email notes <span style="color:#5f6d61;font-weight:400;">(optional — appended to reminder emails for this event)</span></label>
+                <textarea id="eventEmailExtra" rows="3" placeholder="Example: Bring your own yoga mat. Gate opens at 8 AM sharp — please arrive by 8:30."></textarea>
+              </div>
+            </fieldset>
+
+            <fieldset>
               <legend>Registration fields to include</legend>
               <div class="checks" id="fieldChoices"></div>
             </fieldset>
@@ -1556,6 +1573,25 @@
         `).join("");
       }
 
+      // Convert an ISO timestamp from the DB to the value expected by
+      // <input type="datetime-local"> — i.e., local wall-clock "YYYY-MM-DDTHH:MM".
+      function datetimeToLocalInput(iso) {
+        if (!iso) return "";
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return "";
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+
+      // Convert a datetime-local input value (browser-local) back to an ISO
+      // string suitable for a Postgres timestamptz column.
+      function localInputToISO(local) {
+        if (!local) return null;
+        const d = new Date(local);
+        if (isNaN(d.getTime())) return null;
+        return d.toISOString();
+      }
+
       function eventFromForm() {
         return {
           id: document.querySelector("#eventId").value || crypto.randomUUID(),
@@ -1567,6 +1603,9 @@
           price: document.querySelector("#eventPrice").value.trim(),
           age: document.querySelector("#eventAge").value.trim(),
           description: document.querySelector("#eventDescription").value.trim(),
+          event_datetime: localInputToISO(document.querySelector("#eventDatetime").value),
+          zoom_link: document.querySelector("#eventZoomLink").value.trim(),
+          email_extra: document.querySelector("#eventEmailExtra").value.trim(),
           fields: selectedFields()
         };
       }
@@ -1641,6 +1680,9 @@
           document.querySelector("#eventPrice").value = saved.price || "";
           document.querySelector("#eventAge").value = saved.age || "";
           document.querySelector("#eventDescription").value = saved.description;
+          document.querySelector("#eventDatetime").value = datetimeToLocalInput(saved.event_datetime);
+          document.querySelector("#eventZoomLink").value = saved.zoom_link || "";
+          document.querySelector("#eventEmailExtra").value = saved.email_extra || "";
           customFields = [...new Set([...customFields, ...saved.fields.filter((field) => !defaultFields.includes(field))])];
           renderFieldChoices(saved.fields);
           formTitle.textContent = "Edit event";
