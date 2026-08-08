@@ -795,6 +795,37 @@
         </div>
       </section>
 
+      <section class="wrap panel" aria-label="Webinar registrations" data-permission="events">
+        <p class="eyebrow">Registrations</p>
+        <h2>Webinar registrations</h2>
+        <p class="permission-note">
+          Everyone who signed up through the free-webinar landing page. Confirmation and reminder emails send automatically — the columns here show the status so you can spot failures.
+        </p>
+        <div class="reg-toolbar" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:12px 0;">
+          <span id="webinarRegSummary" style="font-size:0.9rem; color:var(--muted);"></span>
+          <div style="margin-left:auto;">
+            <button type="button" class="button secondary" id="webinarRegRefreshBtn">Refresh</button>
+          </div>
+        </div>
+        <div id="webinarRegEmpty" class="permission-note" hidden>No webinar registrations yet.</div>
+        <div style="overflow-x:auto;">
+          <table id="webinarRegTable" style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+              <tr style="text-align:left; border-bottom:1px solid var(--line);">
+                <th style="padding:8px;">Received</th>
+                <th style="padding:8px;">Name / Email</th>
+                <th style="padding:8px;">Phone</th>
+                <th style="padding:8px;">Message</th>
+                <th style="padding:8px;">Confirmation</th>
+                <th style="padding:8px;">24h reminder</th>
+                <th style="padding:8px;">1h reminder</th>
+              </tr>
+            </thead>
+            <tbody id="webinarRegTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="wrap panel" aria-label="Contact inquiries" data-permission="events">
         <p class="eyebrow">Inbox</p>
         <h2>Contact inquiries</h2>
@@ -894,21 +925,24 @@
       }
       async function refreshApiCaches() {
         try {
-          const [events, emotions, registrations, inquiries] = await Promise.all([
+          const [events, emotions, registrations, inquiries, webinarRegs] = await Promise.all([
             apiGet("/api/admin/events").catch(() => []),
             apiGet("/api/emotions").catch(() => []),
             apiGet("/api/admin/registrations").catch(() => []),
-            apiGet("/api/admin/inquiries").catch(() => [])
+            apiGet("/api/admin/inquiries").catch(() => []),
+            apiGet("/api/admin/webinar-registrations").catch(() => [])
           ]);
           apiEventsCache = events;
           apiEmotionsCache = emotions.map(normalizeEmotion);
           regCache = registrations;
           inqCache = inquiries;
+          webinarRegCache = webinarRegs;
           // Mirror to localStorage so any legacy readers still see fresh data.
           setJson(emotionKey, apiEmotionsCache);
           setJson(storageKey, apiEventsCache);
           renderRegistrations();
           renderInquiries();
+          renderWebinarRegistrations();
         } catch (err) { console.warn("API cache refresh failed", err); }
       }
       const contentKey = "sattva-site-content";
@@ -1790,6 +1824,64 @@
 
       regFilterStatus?.addEventListener("change", renderRegistrations);
       regRefreshBtn?.addEventListener("click", fetchRegistrations);
+
+      // ---------- Webinar registrations dashboard ----------
+      let webinarRegCache = [];
+      const webinarRegTableBody   = document.getElementById("webinarRegTableBody");
+      const webinarRegEmpty       = document.getElementById("webinarRegEmpty");
+      const webinarRegSummary     = document.getElementById("webinarRegSummary");
+      const webinarRegTable       = document.getElementById("webinarRegTable");
+      const webinarRegRefreshBtn  = document.getElementById("webinarRegRefreshBtn");
+
+      async function fetchWebinarRegistrations() {
+        try {
+          webinarRegCache = await apiGet("/api/admin/webinar-registrations");
+        } catch (err) {
+          webinarRegCache = [];
+          showAdminStatus?.("Could not load webinar registrations: " + (err.message || "error"), "error");
+        }
+        renderWebinarRegistrations();
+      }
+
+      function statusBadge(text, ok) {
+        const bg = ok ? "rgba(72,99,71,0.14)" : "rgba(184,105,92,0.14)";
+        const fg = ok ? "var(--leaf)" : "#a33";
+        return `<span style="display:inline-block; padding:2px 8px; border-radius:999px; background:${bg}; color:${fg}; font-size:0.78rem; font-weight:600;">${escapeHtmlAdmin(text)}</span>`;
+      }
+
+      function renderWebinarRegistrations() {
+        if (!webinarRegTableBody) return;
+        const list = webinarRegCache;
+        webinarRegEmpty.hidden = list.length > 0;
+        webinarRegTable.hidden = list.length === 0;
+        const sentCount    = list.filter((r) => r.email_status === "sent").length;
+        const failedCount  = list.filter((r) => r.email_status === "failed").length;
+        const remind24     = list.filter((r) => r.reminder_24h_sent_at).length;
+        const remind1      = list.filter((r) => r.reminder_1h_sent_at).length;
+        webinarRegSummary.textContent =
+          `${list.length} total · ${sentCount} confirmations sent${failedCount ? " · " + failedCount + " failed" : ""} · 24h: ${remind24} · 1h: ${remind1}`;
+        webinarRegTableBody.innerHTML = list.map((r) => `
+          <tr style="border-bottom:1px solid var(--line);">
+            <td style="padding:8px; vertical-align:top; white-space:nowrap;">${escapeHtmlAdmin(formatDateTime(r.created_at))}</td>
+            <td style="padding:8px; vertical-align:top;">
+              <strong>${escapeHtmlAdmin(r.name)}</strong><br>
+              <a href="mailto:${escapeHtmlAdmin(r.email)}">${escapeHtmlAdmin(r.email)}</a>
+            </td>
+            <td style="padding:8px; vertical-align:top; white-space:nowrap;">${escapeHtmlAdmin(r.phone) || "<span style='color:var(--muted);'>—</span>"}</td>
+            <td style="padding:8px; vertical-align:top; max-width:220px;">${r.message ? escapeHtmlAdmin(r.message) : "<span style='color:var(--muted);'>—</span>"}</td>
+            <td style="padding:8px; vertical-align:top;">
+              ${r.email_status === "sent"
+                ? statusBadge("sent", true)
+                : r.email_status === "failed"
+                ? statusBadge("failed", false) + (r.email_error ? `<br><small style='color:var(--muted);'>${escapeHtmlAdmin(r.email_error).slice(0, 100)}</small>` : "")
+                : statusBadge(r.email_status || "pending", false)}
+            </td>
+            <td style="padding:8px; vertical-align:top; white-space:nowrap;">${r.reminder_24h_sent_at ? statusBadge(formatDateTime(r.reminder_24h_sent_at), true) : "<span style='color:var(--muted);'>—</span>"}</td>
+            <td style="padding:8px; vertical-align:top; white-space:nowrap;">${r.reminder_1h_sent_at ? statusBadge(formatDateTime(r.reminder_1h_sent_at), true) : "<span style='color:var(--muted);'>—</span>"}</td>
+          </tr>`).join("");
+      }
+
+      webinarRegRefreshBtn?.addEventListener("click", fetchWebinarRegistrations);
 
       function regIdFromEvent(e) {
         const trMain = e.target.closest("tr[data-reg-id]");
