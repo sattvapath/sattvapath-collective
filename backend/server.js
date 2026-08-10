@@ -429,53 +429,85 @@ function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 
-function webinarConfirmationEmail({ name, email, phone }) {
-  const safeName = escapeHtml(name);
+// Human-readable "Thursday, August 13, 2026 at 6:30 PM PDT" from any ISO/Date.
+function formatEventWhen(dt) {
+  if (!dt) return '';
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+      hour: 'numeric', minute: '2-digit',
+      timeZone: 'America/Los_Angeles', timeZoneName: 'short'
+    }).format(new Date(dt)).replace(/,\s(\d+:\d+\s[AP]M)/, ' at $1');
+  } catch { return String(dt); }
+}
+
+// Event-driven confirmation email — replaces the old hardcoded webinar body
+// (item 7b, Stage B). Reads title, date, zoom_link, location, email_extra
+// from the event row. isOnline = has a link (Zoom or Teams URL).
+function eventConfirmationEmail(event, { name, email, phone }) {
+  const safeName  = escapeHtml(name);
   const safeEmail = escapeHtml(email);
   const safePhone = phone ? escapeHtml(phone) : '(not provided)';
-  const zoomUrl = 'https://epikso.zoom.us/j/6558586811';
+  const isOnline  = !!(event && event.zoom_link && event.zoom_link.trim());
+  const title     = (event && event.title) || 'the session';
+  const when      = (event && event.event_datetime) ? formatEventWhen(event.event_datetime) : (event && event.date) || '';
+  const where     = (event && event.location) || '';
+  const link      = (event && event.zoom_link || '').trim();
+  const extra     = (event && event.email_extra || '').trim();
+
+  const joinRowHtml = isOnline
+    ? `<li>Join link: <a href="${link}">${escapeHtml(link)}</a></li>`
+    : (where ? `<li>Location: ${escapeHtml(where)}</li>` : '');
+  const joinRowText = isOnline
+    ? `  Link:  ${link}`
+    : (where ? `  Where: ${where}` : '');
+  const extraHtml = extra ? `<p>${escapeHtml(extra).replace(/\n/g, '<br>')}</p>` : '';
+  const extraText = extra ? `\n${extra}\n` : '';
+
   const html = `
 <div style="font-family:Arial,Helvetica,sans-serif; color:#253027; line-height:1.55; font-size:15px;">
   <p>Hi ${safeName},</p>
-  <p>Thank you for registering for the free live webinar with Dr. Nirupama Gupta!</p>
+  <p>Thank you for registering for <strong>${escapeHtml(title)}</strong>!</p>
   <p><strong>Your registration details:</strong></p>
   <ul>
     <li>Name: ${safeName}</li>
     <li>Email: <a href="mailto:${safeEmail}">${safeEmail}</a></li>
     <li>Phone: ${safePhone}</li>
   </ul>
-  <p><strong>Webinar details:</strong></p>
+  <p><strong>Event details:</strong></p>
   <ul>
-    <li>Date: Sunday, August 9</li>
-    <li>Time: 10:30 AM PST</li>
-    <li>Host: Dr. Nirupama Gupta</li>
-    <li>Zoom link: <a href="${zoomUrl}">${zoomUrl}</a></li>
+    ${when ? `<li>When: ${escapeHtml(when)}</li>` : ''}
+    <li>Host: Nirupama Gupta</li>
+    ${joinRowHtml}
   </ul>
-  <p>Save this Zoom link for Sunday &mdash; we&rsquo;ll also send a reminder before the session. See you there!</p>
+  ${extraHtml}
+  <p>${isOnline ? 'Save this link' : 'See you'} &mdash; we&rsquo;ll also send a reminder before the session. See you there!</p>
   <p style="color:#5f6d61; font-size:13px; margin-top:24px;">&mdash; Sattva Path Collective</p>
 </div>`.trim();
+
   const text = [
     `Hi ${name},`,
     ``,
-    `Thank you for registering for the free live webinar with Dr. Nirupama Gupta!`,
+    `Thank you for registering for ${title}!`,
     ``,
     `Your registration details:`,
     `  Name:  ${name}`,
     `  Email: ${email}`,
     `  Phone: ${phone || '(not provided)'}`,
     ``,
-    `Webinar details:`,
-    `  Date:  Sunday, August 9`,
-    `  Time:  10:30 AM PST`,
-    `  Host:  Dr. Nirupama Gupta`,
-    `  Zoom:  ${zoomUrl}`,
-    ``,
-    `Save this Zoom link for Sunday — we'll also send a reminder before the session. See you there!`,
+    `Event details:`,
+    when ? `  When:  ${when}` : null,
+    `  Host:  Nirupama Gupta`,
+    joinRowText || null,
+    extraText,
+    isOnline ? "Save this link — we'll also send a reminder before the session. See you there!"
+             : "See you there — we'll also send a reminder before the session.",
     ``,
     `— Sattva Path Collective`
-  ].join('\n');
+  ].filter((v) => v !== null && v !== undefined).join('\n');
+
   return {
-    subject: `You're registered — Dr. Nirupama Gupta's Free Webinar`,
+    subject: `You're registered — ${title}`,
     html, text
   };
 }
@@ -500,9 +532,9 @@ function webinarNotificationEmail({ name, email, phone, message, id, created_at 
   return { subject: `New webinar registration: ${name}`, html, text };
 }
 
-async function sendWebinarEmails(reg) {
+async function sendWebinarEmails(event, reg) {
   if (!mailer) throw new Error('smtp_not_configured');
-  const conf = webinarConfirmationEmail(reg);
+  const conf = eventConfirmationEmail(event, reg);
   const notif = webinarNotificationEmail(reg);
   await mailer.sendMail({
     from: SMTP_FROM,
@@ -516,7 +548,7 @@ async function sendWebinarEmails(reg) {
     await mailer.sendMail({
       from: SMTP_FROM,
       to: NOTIFY_EMAIL,
-      subject: notif.subject,
+      subject: (event && event.title) ? `New registration for ${event.title}: ${reg.name}` : notif.subject,
       html: notif.html,
       text: notif.text,
       replyTo: reg.email
@@ -535,6 +567,18 @@ app.post('/api/webinar-register', async (req, res) => {
   const eventSlug = String(b.event_slug || 'free-webinar').trim().slice(0, 80);
   if (!name || !email) return res.status(400).json({ error: 'missing_fields' });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'invalid_email' });
+
+  // Look up the event so the confirmation email + admin notification can
+  // reflect the specific session (title, datetime, zoom_link). If the slug
+  // doesn't match a row (e.g. legacy 'free-webinar' shorthand), we still
+  // save the registration and fall back to a generic email body.
+  const eventQ = await pool.query(
+    `SELECT id, type, title, date, location, zoom_link, email_extra, event_datetime
+       FROM events WHERE id = $1`,
+    [eventSlug]
+  );
+  const event = eventQ.rows[0] || null;
+
   const ipHash = crypto.createHash('sha256').update(ip).digest('hex').slice(0, 32);
   const insert = await pool.query(
     `INSERT INTO webinar_registrations (event_slug, name, email, phone, message, ip_hash)
@@ -543,7 +587,7 @@ app.post('/api/webinar-register', async (req, res) => {
   );
   const reg = { id: insert.rows[0].id, created_at: insert.rows[0].created_at, name, email, phone, message };
   try {
-    await sendWebinarEmails(reg);
+    await sendWebinarEmails(event, reg);
     await pool.query(`UPDATE webinar_registrations SET email_status='sent' WHERE id=$1`, [reg.id]);
     res.status(201).json({ id: reg.id, email_status: 'sent' });
   } catch (err) {

@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Meditation Webinar Series | Sattva Path Collective</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="mask-icon" href="favicon.svg" color="#B8695C" />
+    <link rel="apple-touch-icon" href="assets/images/logo.png" />
+    <meta name="description" content="Three free live meditation sessions with Nirupama Gupta over Microsoft Teams — Thursday Aug 13 (6:30 PM), Saturday Aug 15 (11 AM), or Sunday Aug 16 (6 PM) PDT. Pick the session that fits your schedule.">
+    <link rel="canonical" href="https://sattvapathcollective.com/meditation-webinars.html" />
+    <meta name="theme-color" content="#B8695C" />
+    <meta name="author" content="Sattva Path Collective" />
+    <meta name="robots" content="index,follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Sattva Path Collective" />
+    <meta property="og:title" content="Meditation Webinar Series | Sattva Path Collective" />
+    <meta property="og:description" content="Three free live meditation sessions this week — pick the one that fits." />
+    <meta property="og:url" content="https://sattvapathcollective.com/meditation-webinars.html" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content="https://sattvapathcollective.com/assets/images/meditation-space.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Meditation Webinar Series | Sattva Path Collective" />
+    <meta name="twitter:description" content="Three free live meditation sessions this week — pick the one that fits." />
+    <meta name="twitter:image" content="https://sattvapathcollective.com/assets/images/meditation-space.png" />
+
+    <link rel="stylesheet" href="assets/styles.css">
+    <style>
+      /* Webinar landing — self-contained styles */
+      body.webinar-body {
+        background: var(--paper);
+      }
+      .webinar-topbar {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        z-index: 5;
+        padding: 20px 32px;
+      }
+      .webinar-topbar .brand {
+        color: #fffdf8;
+        font-family: "Playfair Display", Georgia, serif;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 1.1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .webinar-topbar .brand img { height: 32px; width: auto; }
+
+      .webinar-hero {
+        position: relative;
+        min-height: 720px;
+        padding: 120px 6vw 80px;
+        color: #fffdf8;
+        background-image: linear-gradient(rgba(20, 30, 22, 0.55), rgba(20, 30, 22, 0.55)), url("assets/images/meditation-space.png");
+        background-size: cover;
+        background-position: center;
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 460px);
+        gap: 56px;
+        align-items: center;
+      }
+
+      .webinar-hero-copy .brandmark {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 40px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font: 600 0.85rem Arial, sans-serif;
+      }
+      .webinar-hero-copy .brandmark img {
+        height: 44px; width: auto;
+      }
+      .webinar-hero-copy .kicker {
+        color: var(--gold);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font: 700 0.9rem Arial, sans-serif;
+        margin: 0 0 20px;
+      }
+      .webinar-hero-copy h1 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-weight: 400;
+        font-size: clamp(2.4rem, 5.2vw, 4rem);
+        line-height: 1.08;
+        margin: 0 0 24px;
+        letter-spacing: -0.01em;
+      }
+      .webinar-hero-copy .desc {
+        font-size: 1.05rem;
+        line-height: 1.55;
+        max-width: 560px;
+        margin: 0 0 48px;
+      }
+      .webinar-hero-copy .desc a {
+        color: var(--gold);
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .webinar-hero-copy .desc a:hover { text-decoration: underline; }
+      .webinar-hero-copy .desc .highlight { font-weight: 700; }
+
+      .hero-meta {
+        display: flex;
+        gap: 56px;
+        flex-wrap: wrap;
+        margin-bottom: 32px;
+      }
+      .hero-meta > div { display: grid; gap: 6px; }
+      .hero-meta .label {
+        color: var(--gold);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font: 700 0.72rem Arial, sans-serif;
+      }
+      .hero-meta .value {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 1.15rem;
+      }
+
+      .session-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 24px;
+        display: grid;
+        gap: 14px;
+      }
+      .session-list li {
+        display: flex;
+        align-items: baseline;
+        gap: 18px;
+        padding: 10px 0;
+        border-top: 1px solid rgba(255,253,248,0.22);
+      }
+      .session-list li:last-child { border-bottom: 1px solid rgba(255,253,248,0.22); }
+      .session-list .session-day {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 1.18rem;
+        min-width: 190px;
+      }
+      .session-list .session-time {
+        color: var(--gold);
+        font: 600 0.95rem Arial, sans-serif;
+        letter-spacing: 0.04em;
+      }
+      .hosted-by-line {
+        color: #fffdf8;
+        font-size: 0.98rem;
+        margin: 0;
+      }
+      .hosted-by-line strong { color: var(--gold); }
+
+      .register-card select {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid rgba(37, 48, 39, 0.25);
+        border-radius: 6px;
+        font: inherit;
+        color: var(--ink);
+        background: #fffdf8;
+        box-sizing: border-box;
+      }
+      .register-card select:focus {
+        outline: none;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(184, 132, 66, 0.18);
+      }
+
+      /* Registration card */
+      .register-card {
+        background: #fffdf8;
+        border-radius: 18px;
+        padding: 40px 36px 32px;
+        color: var(--ink);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+        justify-self: end;
+        width: 100%;
+      }
+      .register-card h2 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-weight: 500;
+        text-align: center;
+        margin: 0 0 8px;
+        font-size: 1.9rem;
+      }
+      .register-card .subtitle {
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin: 0 0 24px;
+      }
+      .register-card .subtitle a {
+        color: var(--gold);
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .register-card label {
+        display: block;
+        margin-bottom: 16px;
+      }
+      .register-card .field-label {
+        display: block;
+        color: var(--ink);
+        font: 700 0.72rem Arial, sans-serif;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .register-card input,
+      .register-card textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid rgba(37, 48, 39, 0.25);
+        border-radius: 6px;
+        font: inherit;
+        color: var(--ink);
+        background: #fffdf8;
+        box-sizing: border-box;
+      }
+      .register-card textarea { min-height: 88px; resize: vertical; font-family: inherit; }
+      .register-card input:focus,
+      .register-card textarea:focus {
+        outline: none;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(184, 132, 66, 0.18);
+      }
+      .register-card .register-btn {
+        display: block;
+        width: 100%;
+        margin-top: 8px;
+        padding: 16px 20px;
+        background: var(--leaf);
+        color: #fffdf8;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font: 700 0.95rem Arial, sans-serif;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .register-card .register-btn:hover { background: #3a5237; }
+      .register-card .safe {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .register-card .safe svg { width: 14px; height: 14px; }
+
+      /* Thank-you banner (post-submit) */
+      .thankyou {
+        background: rgba(255, 253, 248, 0.96);
+        border-radius: 18px;
+        padding: 40px 36px;
+        color: var(--ink);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+        text-align: center;
+      }
+      .thankyou h2 {
+        font-family: "Playfair Display", Georgia, serif;
+        margin: 0 0 12px;
+      }
+
+      /* "What to expect" below hero */
+      .webinar-details {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 72px 6vw 96px;
+      }
+      .webinar-details h2 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: clamp(1.6rem, 3vw, 2.2rem);
+        margin: 0 0 20px;
+      }
+      .webinar-details p, .webinar-details li { line-height: 1.7; }
+      .webinar-details ul { padding-left: 22px; }
+      .webinar-details ul li { margin-bottom: 8px; }
+      .webinar-details .back-link {
+        display: inline-block;
+        margin-top: 24px;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+      .webinar-details .back-link:hover { color: var(--ink); text-decoration: underline; }
+      .share-block {
+        margin-top: 56px;
+        padding: 32px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--white);
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 28px;
+        align-items: center;
+      }
+      .share-block img {
+        width: 180px;
+        height: 180px;
+        display: block;
+        border-radius: 6px;
+      }
+      .share-block h3 {
+        margin: 0 0 8px;
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 1.35rem;
+      }
+      .share-block p { margin: 0; color: var(--muted); }
+      @media (max-width: 600px) {
+        .share-block { grid-template-columns: 1fr; text-align: center; }
+        .share-block img { margin: 0 auto; }
+      }
+
+      .webinar-mini-footer {
+        border-top: 1px solid var(--line);
+        padding: 24px 6vw;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .webinar-mini-footer a { color: var(--muted); text-decoration: none; }
+      .webinar-mini-footer a:hover { color: var(--ink); text-decoration: underline; }
+
+      /* Mobile: stack the hero */
+      @media (max-width: 900px) {
+        .webinar-hero {
+          grid-template-columns: 1fr;
+          gap: 40px;
+          padding: 100px 5vw 60px;
+          min-height: auto;
+        }
+        .register-card { justify-self: stretch; padding: 32px 24px; }
+        .hero-meta { gap: 32px; }
+      }
+    </style>
+  </head>
+  <body class="webinar-body">
+    <a class="skip-link" href="#register">Skip to registration</a>
+
+    <div class="webinar-topbar">
+      <a class="brand" href="index.html">
+        <img src="assets/images/logo-mark.png" alt="">Sattva Path Collective
+      </a>
+    </div>
+
+    <section class="webinar-hero">
+      <div class="webinar-hero-copy">
+        <p class="kicker">Meditation Webinar Series</p>
+        <h1>Three sessions this week &mdash; pick one</h1>
+        <p class="desc">
+          A one-hour live meditation with Nirupama Gupta over Microsoft Teams. Take a pause from your busy life and reconnect with yourself. <span class="highlight">Spots are limited.</span> <a href="#register">Reserve your seat &rarr;</a>
+        </p>
+
+        <ul class="session-list" aria-label="Session dates">
+          <li>
+            <span class="session-day">Thursday, Aug 13</span>
+            <span class="session-time">6:30 PM PDT</span>
+          </li>
+          <li>
+            <span class="session-day">Saturday, Aug 15</span>
+            <span class="session-time">11:00 AM PDT</span>
+          </li>
+          <li>
+            <span class="session-day">Sunday, Aug 16</span>
+            <span class="session-time">6:00 PM PDT</span>
+          </li>
+        </ul>
+
+        <p class="hosted-by-line">Hosted by <strong>Nirupama Gupta</strong></p>
+      </div>
+
+      <div id="register" class="register-card" data-card>
+        <h2>Reserve your free seat</h2>
+        <p class="subtitle">Spots are limited. <a href="#register">Register Now!</a></p>
+
+        <form id="webinarForm" novalidate>
+          <label>
+            <span class="field-label">Choose a session</span>
+            <select name="session" required>
+              <option value="">— Pick a date —</option>
+              <option value="meditation-webinar-2026-08-13">Thursday, Aug 13 · 6:30 PM PDT</option>
+              <option value="meditation-webinar-2026-08-15">Saturday, Aug 15 · 11:00 AM PDT</option>
+              <option value="meditation-webinar-2026-08-16">Sunday, Aug 16 · 6:00 PM PDT</option>
+            </select>
+          </label>
+
+          <label>
+            <span class="field-label">Full Name</span>
+            <input type="text" name="name" required autocomplete="name">
+          </label>
+
+          <label>
+            <span class="field-label">Email Address</span>
+            <input type="email" name="email" required autocomplete="email">
+          </label>
+
+          <label>
+            <span class="field-label">Phone Number</span>
+            <input type="tel" name="phone" autocomplete="tel">
+          </label>
+
+          <label>
+            <span class="field-label">Message</span>
+            <textarea name="message"></textarea>
+          </label>
+
+          <div id="formError" hidden style="margin:0 0 12px; color:#a33; font-size:0.9rem;"></div>
+
+          <button type="submit" class="register-btn" id="submitBtn">Register Free &rarr;</button>
+
+          <div class="safe">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Your information is safe and secure.
+          </div>
+        </form>
+      </div>
+
+      <div id="thankYouCard" class="thankyou" hidden data-card>
+        <h2>Thank you — your seat is reserved.</h2>
+        <p>Look for a confirmation email shortly. It includes your Microsoft Teams join link and the exact date/time of the session you picked.</p>
+      </div>
+    </section>
+
+    <section class="webinar-details">
+      <h2>What to expect</h2>
+      <p>Come as you are — no prior meditation experience required. In one hour together we'll:</p>
+      <ul>
+        <li>Settle into stillness with a short breath practice.</li>
+        <li>Move through a guided meditation for inner peace.</li>
+        <li>Close with a live Q&amp;A — ask anything about the practice or your own path.</li>
+      </ul>
+      <p>All you need is a quiet space, headphones if you have them, and an open mind.</p>
+
+      <a class="back-link" href="events-meditation.html">&larr; Back to Meditation gatherings</a>
+    </section>
+
+    <footer class="webinar-mini-footer">
+      <span>Sattva Path Collective LLC</span>
+      <span>
+        <a href="privacy.html">Privacy</a> &middot;
+        <a href="terms.html">Terms</a> &middot;
+        <a href="contact.html">Contact</a>
+      </span>
+    </footer>
+
+    <script>
+      (function () {
+        var form = document.getElementById("webinarForm");
+        var submitBtn = document.getElementById("submitBtn");
+        var errorEl = document.getElementById("formError");
+        var card = document.getElementById("register");
+        var thanks = document.getElementById("thankYouCard");
+
+        function showThanks() {
+          if (card) card.hidden = true;
+          if (thanks) {
+            thanks.hidden = false;
+            thanks.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }
+
+        function showError(msg) {
+          if (!errorEl) return;
+          errorEl.textContent = msg;
+          errorEl.hidden = false;
+        }
+
+        if (form) {
+          form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            if (errorEl) errorEl.hidden = true;
+
+            var fd = new FormData(form);
+            var session = String(fd.get("session") || "").trim();
+            var data = {
+              name: String(fd.get("name") || "").trim(),
+              email: String(fd.get("email") || "").trim(),
+              phone: String(fd.get("phone") || "").trim(),
+              message: String(fd.get("message") || "").trim(),
+              event_slug: session
+            };
+            if (!session) {
+              showError("Please choose which session you'd like to attend.");
+              return;
+            }
+            if (!data.name || !data.email) {
+              showError("Please enter your name and email.");
+              return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+              showError("Please enter a valid email address.");
+              return;
+            }
+
+            submitBtn.disabled = true;
+            var originalLabel = submitBtn.textContent;
+            submitBtn.textContent = "Registering…";
+
+            try {
+              var res = await fetch("/api/webinar-register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+              });
+              var body = await res.json().catch(function () { return {}; });
+              if (!res.ok) {
+                if (res.status === 429) throw new Error("Too many attempts — please try again in a minute.");
+                if (body && body.error === "invalid_email") throw new Error("That email doesn't look valid.");
+                if (body && body.error === "missing_fields") throw new Error("Please fill in the required fields.");
+                throw new Error("We couldn't complete your registration. Please try again.");
+              }
+              showThanks();
+            } catch (err) {
+              showError(err.message || "Something went wrong. Please try again.");
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalLabel;
+            }
+          });
+        }
+
+        // Legacy ?registered=1 fallback (still works if we ever redirect).
+        var params = new URLSearchParams(location.search);
+        if (params.get("registered") === "1") showThanks();
+      })();
+    </script>
+  </body>
+</html>

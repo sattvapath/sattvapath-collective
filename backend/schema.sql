@@ -242,4 +242,24 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
+-- Meditation webinar series (Aug 13/15/16 2026, on Microsoft Teams). Three
+-- separate events so the reminder scheduler treats each independently and
+-- registrants only get reminders for the session they picked. Datetimes are
+-- 2026 dates in America/Los_Angeles (PDT = UTC-7 in August).
+INSERT INTO events (id, type, status, title, date, location, price, age, description, event_datetime, zoom_link)
+VALUES
+    ('meditation-webinar-2026-08-13', 'Webinar', 'Posted', 'Meditation Webinar — Thursday Evening',
+     'Thursday, August 13, 2026 at 6:30 PM PDT', 'via Microsoft Teams', 'Free', 'All ages',
+     'A one-hour live meditation session with Nirupama Gupta over Microsoft Teams.',
+     '2026-08-14 01:30:00+00', 'https://teams.live.com/meet/9378260350547?p=HqCDYEMy7D3rJSGoek'),
+    ('meditation-webinar-2026-08-15', 'Webinar', 'Posted', 'Meditation Webinar — Saturday Morning',
+     'Saturday, August 15, 2026 at 11:00 AM PDT', 'via Microsoft Teams', 'Free', 'All ages',
+     'A one-hour live meditation session with Nirupama Gupta over Microsoft Teams.',
+     '2026-08-15 18:00:00+00', 'https://teams.live.com/meet/93119896045353?p=4fi4Y7RT9EuSxUtiUj'),
+    ('meditation-webinar-2026-08-16', 'Webinar', 'Posted', 'Meditation Webinar — Sunday Evening',
+     'Sunday, August 16, 2026 at 6:00 PM PDT', 'via Microsoft Teams', 'Free', 'All ages',
+     'A one-hour live meditation session with Nirupama Gupta over Microsoft Teams.',
+     '2026-08-17 01:00:00+00', 'https://teams.live.com/meet/9366432296211?p=UNN7WZsiGx9L8ZXeL2')
+ON CONFLICT (id) DO NOTHING;
+
 COMMIT;
