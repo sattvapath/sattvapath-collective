@@ -177,6 +177,9 @@
       .session-check input {
         width: 18px;
         height: 18px;
+        padding: 0;
+        border: 1px solid rgba(37, 48, 39, 0.4);
+        border-radius: 3px;
         flex-shrink: 0;
         accent-color: var(--leaf);
         margin: 0;
@@ -245,7 +248,7 @@
         text-transform: uppercase;
         margin-bottom: 8px;
       }
-      .register-card input,
+      .register-card input:not([type="checkbox"]):not([type="radio"]),
       .register-card textarea {
         width: 100%;
         padding: 12px 14px;
@@ -257,7 +260,7 @@
         box-sizing: border-box;
       }
       .register-card textarea { min-height: 88px; resize: vertical; font-family: inherit; }
-      .register-card input:focus,
+      .register-card input:not([type="checkbox"]):not([type="radio"]):focus,
       .register-card textarea:focus {
         outline: none;
         border-color: var(--gold);
