@@ -155,20 +155,54 @@
       }
       .hosted-by-line strong { color: var(--gold); }
 
-      .register-card select {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1px solid rgba(37, 48, 39, 0.25);
-        border-radius: 6px;
-        font: inherit;
-        color: var(--ink);
-        background: #fffdf8;
-        box-sizing: border-box;
+      .session-picker {
+        border: 1px solid rgba(37, 48, 39, 0.18);
+        border-radius: 8px;
+        padding: 10px 14px 14px;
+        margin: 0 0 16px;
       }
-      .register-card select:focus {
-        outline: none;
-        border-color: var(--gold);
-        box-shadow: 0 0 0 3px rgba(184, 132, 66, 0.18);
+      .session-picker legend {
+        padding: 0 6px;
+      }
+      .session-check {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 4px;
+        cursor: pointer;
+        margin: 0;
+        border-bottom: 1px dashed rgba(37, 48, 39, 0.12);
+      }
+      .session-check:last-child { border-bottom: none; }
+      .session-check input {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        accent-color: var(--leaf);
+        margin: 0;
+      }
+      .session-check span {
+        color: var(--ink);
+        font-size: 0.95rem;
+      }
+      .session-check:has(input:checked) {
+        color: var(--leaf);
+        font-weight: 600;
+      }
+      .session-check.is-past {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .session-check.is-past .past-badge {
+        margin-left: auto;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(37, 48, 39, 0.08);
+        color: var(--muted);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
       }
 
       /* Registration card */
@@ -385,15 +419,21 @@
         <p class="subtitle">Spots are limited. <a href="#register">Register Now!</a></p>
 
         <form id="webinarForm" novalidate>
-          <label>
-            <span class="field-label">Choose a session</span>
-            <select name="session" required>
-              <option value="">— Pick a date —</option>
-              <option value="meditation-webinar-2026-08-13">Thursday, Aug 13 · 6:30 PM PDT</option>
-              <option value="meditation-webinar-2026-08-15">Saturday, Aug 15 · 11:00 AM PDT</option>
-              <option value="meditation-webinar-2026-08-16">Sunday, Aug 16 · 6:00 PM PDT</option>
-            </select>
-          </label>
+          <fieldset class="session-picker">
+            <legend class="field-label">Choose one or more sessions</legend>
+            <label class="session-check" data-when="2026-08-14T01:30:00Z">
+              <input type="checkbox" name="session" value="meditation-webinar-2026-08-13">
+              <span>Thursday, Aug 13 · 6:30 PM PDT</span>
+            </label>
+            <label class="session-check" data-when="2026-08-15T18:00:00Z">
+              <input type="checkbox" name="session" value="meditation-webinar-2026-08-15">
+              <span>Saturday, Aug 15 · 11:00 AM PDT</span>
+            </label>
+            <label class="session-check" data-when="2026-08-17T01:00:00Z">
+              <input type="checkbox" name="session" value="meditation-webinar-2026-08-16">
+              <span>Sunday, Aug 16 · 6:00 PM PDT</span>
+            </label>
+          </fieldset>
 
           <label>
             <span class="field-label">Full Name</span>
@@ -462,6 +502,25 @@
         var card = document.getElementById("register");
         var thanks = document.getElementById("thankYouCard");
 
+        // Disable checkboxes for sessions whose start time has already passed
+        // (compares each .session-check's data-when ISO to now).
+        (function markPastSessions() {
+          var now = Date.now();
+          document.querySelectorAll(".session-check[data-when]").forEach(function (label) {
+            var when = Date.parse(label.getAttribute("data-when"));
+            if (isNaN(when) || when > now) return;
+            var input = label.querySelector("input[type='checkbox']");
+            if (input) { input.disabled = true; input.checked = false; }
+            label.classList.add("is-past");
+            if (!label.querySelector(".past-badge")) {
+              var b = document.createElement("span");
+              b.className = "past-badge";
+              b.textContent = "Past";
+              label.appendChild(b);
+            }
+          });
+        })();
+
         function showThanks() {
           if (card) card.hidden = true;
           if (thanks) {
@@ -482,50 +541,62 @@
             if (errorEl) errorEl.hidden = true;
 
             var fd = new FormData(form);
-            var session = String(fd.get("session") || "").trim();
-            var data = {
-              name: String(fd.get("name") || "").trim(),
-              email: String(fd.get("email") || "").trim(),
-              phone: String(fd.get("phone") || "").trim(),
-              message: String(fd.get("message") || "").trim(),
-              event_slug: session
-            };
-            if (!session) {
-              showError("Please choose which session you'd like to attend.");
+            var sessions = fd.getAll("session").map(function (s) { return String(s).trim(); }).filter(Boolean);
+            var name = String(fd.get("name") || "").trim();
+            var email = String(fd.get("email") || "").trim();
+            var phone = String(fd.get("phone") || "").trim();
+            var message = String(fd.get("message") || "").trim();
+
+            if (!sessions.length) {
+              showError("Please pick at least one session (tick one or more boxes above).");
               return;
             }
-            if (!data.name || !data.email) {
+            if (!name || !email) {
               showError("Please enter your name and email.");
               return;
             }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
               showError("Please enter a valid email address.");
               return;
             }
 
             submitBtn.disabled = true;
             var originalLabel = submitBtn.textContent;
-            submitBtn.textContent = "Registering…";
+            submitBtn.textContent = sessions.length > 1 ? "Registering (" + sessions.length + ")…" : "Registering…";
 
-            try {
-              var res = await fetch("/api/webinar-register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-              });
-              var body = await res.json().catch(function () { return {}; });
-              if (!res.ok) {
-                if (res.status === 429) throw new Error("Too many attempts — please try again in a minute.");
-                if (body && body.error === "invalid_email") throw new Error("That email doesn't look valid.");
-                if (body && body.error === "missing_fields") throw new Error("Please fill in the required fields.");
-                throw new Error("We couldn't complete your registration. Please try again.");
+            var results = [];
+            var anyFailed = false;
+            for (var i = 0; i < sessions.length; i++) {
+              try {
+                var res = await fetch("/api/webinar-register", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    name: name, email: email, phone: phone, message: message,
+                    event_slug: sessions[i]
+                  })
+                });
+                var body = await res.json().catch(function () { return {}; });
+                if (!res.ok) {
+                  if (res.status === 429) throw new Error("Too many attempts — please try again in a minute.");
+                  if (body && body.error === "invalid_email") throw new Error("That email doesn't look valid.");
+                  if (body && body.error === "missing_fields") throw new Error("Please fill in the required fields.");
+                  throw new Error("We couldn't complete your registration for one of the sessions.");
+                }
+                results.push({ slug: sessions[i], status: body.email_status || "sent" });
+              } catch (err) {
+                anyFailed = true;
+                results.push({ slug: sessions[i], status: "failed", error: err.message });
               }
-              showThanks();
-            } catch (err) {
-              showError(err.message || "Something went wrong. Please try again.");
+            }
+
+            if (anyFailed && results.every(function (r) { return r.status === "failed"; })) {
+              showError(results[0].error || "Something went wrong. Please try again.");
               submitBtn.disabled = false;
               submitBtn.textContent = originalLabel;
+              return;
             }
+            showThanks();
           });
         }
 
