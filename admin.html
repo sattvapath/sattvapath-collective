@@ -866,6 +866,46 @@
         </div>
       </section>
 
+      <section class="wrap panel" aria-label="Reviews moderation" data-permission="events">
+        <p class="eyebrow">Reviews</p>
+        <h2>Moderate reviews</h2>
+        <p class="permission-note">
+          Customer reviews land as <strong>Pending</strong> — only <strong>Approved</strong> reviews show on the public Reviews page. Use <strong>Hidden</strong> to keep a review off the public page without deleting it.
+        </p>
+        <div class="reg-toolbar" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:12px 0;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.9rem;">
+            <span>Filter status:</span>
+            <select id="revFilterStatus">
+              <option value="">All</option>
+              <option value="pending" selected>Pending</option>
+              <option value="approved">Approved</option>
+              <option value="hidden">Hidden</option>
+            </select>
+          </label>
+          <span id="revSummary" style="font-size:0.9rem; color:var(--muted);"></span>
+          <div style="margin-left:auto;">
+            <button type="button" class="button secondary" id="revRefreshBtn">Refresh</button>
+          </div>
+        </div>
+        <div id="revEmpty" class="permission-note" hidden>No reviews match this filter.</div>
+        <div style="overflow-x:auto;">
+          <table id="revTable" style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+              <tr style="text-align:left; border-bottom:1px solid var(--line);">
+                <th style="padding:8px;">Received</th>
+                <th style="padding:8px;">Reviewer</th>
+                <th style="padding:8px;">Rating</th>
+                <th style="padding:8px;">Experience</th>
+                <th style="padding:8px;">Review</th>
+                <th style="padding:8px;">Status</th>
+                <th style="padding:8px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="revTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="wrap panel" aria-label="What's on Your Heart moderation" data-permission="emotions">
         <p class="eyebrow">What's on Your Heart</p>
         <h2>Review and respond</h2>
@@ -925,24 +965,27 @@
       }
       async function refreshApiCaches() {
         try {
-          const [events, emotions, registrations, inquiries, webinarRegs] = await Promise.all([
+          const [events, emotions, registrations, inquiries, webinarRegs, reviews] = await Promise.all([
             apiGet("/api/admin/events").catch(() => []),
             apiGet("/api/emotions").catch(() => []),
             apiGet("/api/admin/registrations").catch(() => []),
             apiGet("/api/admin/inquiries").catch(() => []),
-            apiGet("/api/admin/webinar-registrations").catch(() => [])
+            apiGet("/api/admin/webinar-registrations").catch(() => []),
+            apiGet("/api/admin/reviews").catch(() => [])
           ]);
           apiEventsCache = events;
           apiEmotionsCache = emotions.map(normalizeEmotion);
           regCache = registrations;
           inqCache = inquiries;
           webinarRegCache = webinarRegs;
+          reviewsCache = reviews;
           // Mirror to localStorage so any legacy readers still see fresh data.
           setJson(emotionKey, apiEmotionsCache);
           setJson(storageKey, apiEventsCache);
           renderRegistrations();
           renderInquiries();
           renderWebinarRegistrations();
+          renderReviewsAdmin();
         } catch (err) { console.warn("API cache refresh failed", err); }
       }
       const contentKey = "sattva-site-content";
@@ -2089,6 +2132,107 @@
           showAdminStatus?.("Update failed: " + (err.message || "error"), "error");
         } finally {
           select.disabled = false;
+        }
+      });
+
+      // ---------- Reviews moderation ----------
+      let reviewsCache = [];
+      const revFilterStatus  = document.getElementById("revFilterStatus");
+      const revTableBody     = document.getElementById("revTableBody");
+      const revEmpty         = document.getElementById("revEmpty");
+      const revSummary       = document.getElementById("revSummary");
+      const revTable         = document.getElementById("revTable");
+      const revRefreshBtn    = document.getElementById("revRefreshBtn");
+
+      async function fetchReviews() {
+        try {
+          reviewsCache = await apiGet("/api/admin/reviews");
+        } catch (err) {
+          reviewsCache = [];
+          showAdminStatus?.("Could not load reviews: " + (err.message || "error"), "error");
+        }
+        renderReviewsAdmin();
+      }
+
+      function starsFor(n) {
+        const full = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
+        return "★".repeat(full) + "☆".repeat(5 - full);
+      }
+
+      function renderReviewsAdmin() {
+        if (!revTableBody) return;
+        const filter = revFilterStatus?.value || "";
+        const list = filter ? reviewsCache.filter((r) => r.status === filter) : reviewsCache;
+        revEmpty.hidden = list.length > 0;
+        revTable.hidden = list.length === 0;
+        const counts = reviewsCache.reduce((m, r) => { m[r.status] = (m[r.status] || 0) + 1; return m; }, {});
+        revSummary.textContent =
+          `${reviewsCache.length} total · ${counts.pending || 0} pending · ${counts.approved || 0} approved · ${counts.hidden || 0} hidden`;
+        revTableBody.innerHTML = list.map((r) => {
+          const bodyPreview = (r.body || "").length > 240 ? escapeHtmlAdmin(r.body.slice(0, 240)) + "…" : escapeHtmlAdmin(r.body || "");
+          const meta = [r.location ? escapeHtmlAdmin(r.location) : "", r.email ? `<a href="mailto:${escapeHtmlAdmin(r.email)}" style="color:var(--muted);">${escapeHtmlAdmin(r.email)}</a>` : ""].filter(Boolean).join(" · ");
+          return `
+            <tr data-rev-id="${escapeHtmlAdmin(r.id)}" style="border-bottom:1px solid var(--line);">
+              <td style="padding:8px; vertical-align:top; white-space:nowrap;">${escapeHtmlAdmin(formatDateTime(r.created_at))}</td>
+              <td style="padding:8px; vertical-align:top;">
+                <strong>${escapeHtmlAdmin(r.name)}</strong>
+                ${meta ? `<br><small style="color:var(--muted);">${meta}</small>` : ""}
+              </td>
+              <td style="padding:8px; vertical-align:top; color:var(--gold); font-size:1rem; letter-spacing:2px;" title="${r.rating}/5">${starsFor(r.rating)}</td>
+              <td style="padding:8px; vertical-align:top;">${escapeHtmlAdmin(r.experience) || "<span style='color:var(--muted);'>—</span>"}</td>
+              <td style="padding:8px; vertical-align:top; max-width:360px; white-space:pre-wrap;">${bodyPreview}</td>
+              <td style="padding:8px; vertical-align:top;">
+                <select data-rev-status style="font-size:0.85rem;">
+                  <option value="pending"  ${r.status === "pending"  ? "selected" : ""}>Pending</option>
+                  <option value="approved" ${r.status === "approved" ? "selected" : ""}>Approved</option>
+                  <option value="hidden"   ${r.status === "hidden"   ? "selected" : ""}>Hidden</option>
+                </select>
+              </td>
+              <td style="padding:8px; vertical-align:top;">
+                <button type="button" class="secondary" data-rev-delete style="font-size:0.8rem;">Delete</button>
+              </td>
+            </tr>`;
+        }).join("");
+      }
+
+      revFilterStatus?.addEventListener("change", renderReviewsAdmin);
+      revRefreshBtn?.addEventListener("click", fetchReviews);
+
+      revTableBody?.addEventListener("change", async (e) => {
+        if (!e.target.matches("[data-rev-status]")) return;
+        const row = e.target.closest("tr[data-rev-id]");
+        if (!row) return;
+        const id = row.dataset.revId;
+        const select = e.target;
+        select.disabled = true;
+        try {
+          const updated = await apiPatch(`/api/admin/reviews/${id}`, { status: select.value });
+          const idx = reviewsCache.findIndex((r) => r.id === id);
+          if (idx >= 0) reviewsCache[idx] = updated;
+          flashSaved(select, "Saved");
+          renderReviewsAdmin();
+        } catch (err) {
+          showAdminStatus?.("Update failed: " + (err.message || "error"), "error");
+        } finally {
+          select.disabled = false;
+        }
+      });
+
+      revTableBody?.addEventListener("click", async (e) => {
+        if (!e.target.matches("[data-rev-delete]")) return;
+        const row = e.target.closest("tr[data-rev-id]");
+        if (!row) return;
+        const id = row.dataset.revId;
+        if (!confirm("Delete this review permanently? This cannot be undone.")) return;
+        const btn = e.target;
+        btn.disabled = true;
+        try {
+          await apiDelete(`/api/admin/reviews/${id}`);
+          reviewsCache = reviewsCache.filter((r) => r.id !== id);
+          renderReviewsAdmin();
+        } catch (err) {
+          showAdminStatus?.("Delete failed: " + (err.message || "error"), "error");
+          btn.disabled = false;
         }
       });
 

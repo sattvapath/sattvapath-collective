@@ -96,6 +96,25 @@ CREATE TABLE IF NOT EXISTS contact_inquiries (
 CREATE INDEX IF NOT EXISTS contact_inquiries_status_idx  ON contact_inquiries(status);
 CREATE INDEX IF NOT EXISTS contact_inquiries_created_idx ON contact_inquiries(created_at DESC);
 
+-- Customer reviews / testimonials.
+-- status: 'pending' (default on submit) | 'approved' (public) | 'hidden'.
+CREATE TABLE IF NOT EXISTS reviews (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name         TEXT NOT NULL,
+    email        TEXT DEFAULT '',        -- private, admin-only
+    rating       INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    experience   TEXT DEFAULT '',        -- Retreat / Webinar / Guidance / etc.
+    body         TEXT NOT NULL,
+    location     TEXT DEFAULT '',        -- shown publicly, e.g. "Napa, CA"
+    status       TEXT NOT NULL DEFAULT 'pending',
+    admin_notes  TEXT DEFAULT '',
+    ip_hash      TEXT DEFAULT '',
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS reviews_status_idx  ON reviews(status);
+CREATE INDEX IF NOT EXISTS reviews_created_idx ON reviews(created_at DESC);
+
 -- Retreat / event registrations. Payment_status:
 -- 'pending'   default on POST
 -- 'paid'      admin toggles when Zelle received
@@ -179,6 +198,7 @@ DROP TRIGGER IF EXISTS emotions_updated_at      ON emotions;
 DROP TRIGGER IF EXISTS registrations_updated_at ON registrations;
 DROP TRIGGER IF EXISTS site_content_updated_at     ON site_content;
 DROP TRIGGER IF EXISTS contact_inquiries_updated_at ON contact_inquiries;
+DROP TRIGGER IF EXISTS reviews_updated_at ON reviews;
 
 CREATE TRIGGER site_content_updated_at
     BEFORE UPDATE ON site_content
@@ -198,6 +218,10 @@ CREATE TRIGGER emotions_updated_at
 
 CREATE TRIGGER registrations_updated_at
     BEFORE UPDATE ON registrations
+    FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
+
+CREATE TRIGGER reviews_updated_at
+    BEFORE UPDATE ON reviews
     FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 
 -- Seed the featured Sattva Path Retreat if not present.

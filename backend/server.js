@@ -423,6 +423,69 @@ app.delete('/api/admin/inquiries/:id', requireAdmin, async (req, res) => {
   res.json({ deleted: r.rowCount });
 });
 
+// ---------------- reviews (public) ----------------
+
+app.get('/api/reviews', async (req, res) => {
+  const r = await pool.query(
+    `SELECT id, name, rating, experience, body, location, created_at
+       FROM reviews WHERE status = 'approved' ORDER BY created_at DESC LIMIT 200`
+  );
+  res.json(r.rows);
+});
+
+app.post('/api/reviews', async (req, res) => {
+  const ip = req.ip || 'unknown';
+  if (!rateLimit(`reviews:${ip}`, 3)) return res.status(429).json({ error: 'rate_limited' });
+  const b = req.body || {};
+  // Honeypot: bots fill this hidden field; silently accept but never save.
+  if (b.website && String(b.website).trim() !== '') return res.status(201).json({ id: 'accepted' });
+  const name = String(b.name || '').trim().slice(0, 100);
+  const email = String(b.email || '').trim().slice(0, 200);
+  const rating = Number(b.rating);
+  const experience = String(b.experience || '').trim().slice(0, 100);
+  const body = String(b.body || '').trim().slice(0, 4000);
+  const location = String(b.location || '').trim().slice(0, 100);
+  if (!name || !body) return res.status(400).json({ error: 'missing_fields' });
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return res.status(400).json({ error: 'invalid_rating' });
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'invalid_email' });
+  const ipHash = crypto.createHash('sha256').update(ip).digest('hex').slice(0, 32);
+  const r = await pool.query(
+    `INSERT INTO reviews (name, email, rating, experience, body, location, ip_hash)
+     VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, created_at`,
+    [name, email, rating, experience, body, location, ipHash]
+  );
+  res.status(201).json({ id: r.rows[0].id, created_at: r.rows[0].created_at });
+});
+
+// ---------------- reviews (admin) ----------------
+
+app.get('/api/admin/reviews', requireAdmin, async (req, res) => {
+  const params = [];
+  const conditions = [];
+  if (req.query.status) { params.push(req.query.status); conditions.push(`status = $${params.length}`); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const r = await pool.query(`SELECT * FROM reviews ${where} ORDER BY created_at DESC`, params);
+  res.json(r.rows);
+});
+
+app.patch('/api/admin/reviews/:id', requireAdmin, async (req, res) => {
+  const b = req.body || {};
+  const r = await pool.query(
+    `UPDATE reviews SET
+        status      = COALESCE($2, status),
+        admin_notes = COALESCE($3, admin_notes)
+      WHERE id = $1 RETURNING *`,
+    [req.params.id, b.status, b.admin_notes]
+  );
+  if (!r.rows[0]) return res.status(404).json({ error: 'not_found' });
+  res.json(r.rows[0]);
+});
+
+app.delete('/api/admin/reviews/:id', requireAdmin, async (req, res) => {
+  const r = await pool.query(`DELETE FROM reviews WHERE id = $1`, [req.params.id]);
+  res.json({ deleted: r.rowCount });
+});
+
 // ---------------- webinar registrations (public post) ----------------
 
 function escapeHtml(s) {

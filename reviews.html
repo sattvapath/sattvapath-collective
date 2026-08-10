@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reviews | Sattva Path Collective</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="mask-icon" href="favicon.svg" color="#B8695C" />
+    <link rel="apple-touch-icon" href="assets/images/logo.png" />
+    <meta name="description" content="Reviews and reflections from participants of Sattva Path Collective's retreats, meditation sessions, and one-on-one guidance.">
+    <link rel="canonical" href="https://sattvapathcollective.com/reviews.html" />
+    <meta name="theme-color" content="#B8695C" />
+    <meta name="author" content="Sattva Path Collective" />
+    <meta name="robots" content="index,follow" />
+    <link rel="stylesheet" href="assets/styles.css">
+    <style>
+      .reviews-band { padding-bottom: 32px; }
+      .reviews-lead {
+        max-width: 720px;
+        margin-bottom: 32px;
+      }
+
+      /* --- Star input (submission form) --- */
+      .star-input {
+        display: inline-flex;
+        gap: 4px;
+        font-size: 2rem;
+        line-height: 1;
+        direction: rtl; /* trick: rightmost radio wins, lets ~ selector highlight preceding stars */
+      }
+      .star-input input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .star-input label {
+        cursor: pointer;
+        color: rgba(184, 132, 66, 0.25);
+        transition: color 0.15s ease;
+        padding: 0 2px;
+      }
+      .star-input label::before { content: "★"; }
+      .star-input label:hover,
+      .star-input label:hover ~ label,
+      .star-input input:checked ~ label {
+        color: var(--gold);
+      }
+
+      /* --- Review submission form --- */
+      .review-form-card {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 28px;
+        margin: 24px 0 48px;
+        display: grid;
+        gap: 16px;
+        max-width: 720px;
+      }
+      .review-form-card h3 {
+        margin: 0;
+        font-size: 1.4rem;
+      }
+      .review-form-card label.stack {
+        display: grid;
+        gap: 6px;
+        margin: 0;
+      }
+      .review-form-card .field-label {
+        color: var(--ink);
+        font: 700 0.72rem Arial, sans-serif;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .review-form-card .optional {
+        color: var(--muted);
+        font-weight: 400;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+      .review-form-card input:not([type="radio"]):not([type="checkbox"]),
+      .review-form-card select,
+      .review-form-card textarea {
+        padding: 12px 14px;
+        border: 1px solid rgba(37, 48, 39, 0.25);
+        border-radius: 6px;
+        font: inherit;
+        color: var(--ink);
+        background: var(--paper);
+        box-sizing: border-box;
+        width: 100%;
+      }
+      .review-form-card textarea { min-height: 120px; resize: vertical; }
+      .review-form-card input:focus,
+      .review-form-card select:focus,
+      .review-form-card textarea:focus {
+        outline: none;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(184, 132, 66, 0.18);
+      }
+      .review-form-card .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 600px) {
+        .review-form-card .two-col { grid-template-columns: 1fr; }
+      }
+      .review-form-card .honeypot {
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+      }
+      .review-form-card .form-status {
+        padding: 10px 14px;
+        border-radius: 6px;
+        font-size: 0.92rem;
+      }
+      .review-form-card .form-status.error {
+        background: rgba(180, 60, 60, 0.08);
+        color: #a33;
+      }
+      .review-form-card .form-status.success {
+        background: rgba(72, 99, 71, 0.1);
+        color: var(--leaf);
+      }
+
+      /* --- Displayed reviews --- */
+      .reviews-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 12px;
+      }
+      .review-card {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 24px;
+        display: grid;
+        gap: 10px;
+        box-shadow: var(--shadow);
+      }
+      .review-card .stars {
+        color: var(--gold);
+        font-size: 1.05rem;
+        letter-spacing: 2px;
+      }
+      .review-card .stars .empty {
+        color: rgba(184, 132, 66, 0.25);
+      }
+      .review-card blockquote {
+        margin: 4px 0;
+        color: var(--ink);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.02rem;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+      .review-card .attribution {
+        color: var(--muted);
+        font-size: 0.88rem;
+        margin-top: 8px;
+      }
+      .review-card .attribution strong { color: var(--ink); font-weight: 600; }
+      .review-card .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(184, 132, 66, 0.12);
+        color: #8a5a2a;
+        font: 700 0.68rem Arial, sans-serif;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-left: 6px;
+      }
+      .reviews-empty {
+        padding: 32px;
+        text-align: center;
+        color: var(--muted);
+        font-style: italic;
+        border: 1px dashed var(--line);
+        border-radius: 12px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sr-only" id="speechStatus" aria-live="polite"></div>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html"><img class="brand-mark" src="assets/images/logo-mark.png" alt="">Sattva Path Collective</a>
+        <div class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="guidance.html">Guidance</a>
+          <div class="has-submenu">
+            <a href="events.html">Events</a>
+            <div class="submenu">
+              <a href="events-retreat.html">Retreat</a>
+              <a href="events-meditation.html">Meditation</a>
+              <a href="events-kirtan.html">Bhajan / Kirtan gathering</a>
+            </div>
+          </div>
+          <a href="photos.html">Photos</a>
+          <a href="heart.html">What's on Your Heart</a>
+          <a href="reviews.html" aria-current="page">Reviews</a>
+          <a href="about.html">About</a>
+          <a href="assistant.html">Assistant</a>
+          <a href="contact.html">Contact</a>
+          <a href="admin.html" class="admin-link">Admin</a>
+          <div class="nav-social" aria-label="Social media">
+            <a class="social-icon social-instagram" href="https://www.instagram.com/healing_with_dr_nirupama_gupta/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg></a>
+            <a class="social-icon social-facebook" href="https://www.facebook.com/SattvaPathCollective" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg></a>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <main id="main">
+      <section class="band reviews-band">
+        <div class="section-inner">
+          <p class="section-kicker">Reviews</p>
+          <h1>What participants are saying</h1>
+          <p class="lead reviews-lead">
+            Words from those who have joined a retreat, sat in meditation, or received spiritual guidance. If you've participated too, we'd love to hear from you — scroll down to share a review.
+          </p>
+
+          <div class="reviews-grid" id="reviewsGrid"></div>
+          <div class="reviews-empty" id="reviewsEmpty" hidden>
+            No reviews posted yet — be the first to share your reflection below.
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="submit" style="padding-top:16px;">
+        <div class="section-inner">
+          <h2>Share your experience</h2>
+          <p class="lead" style="max-width:720px;">
+            Your review helps others considering the path. All submissions are read by us before appearing publicly — usually within a day or two.
+          </p>
+
+          <form class="review-form-card" id="reviewForm" novalidate>
+            <h3>Write a review</h3>
+
+            <label class="stack">
+              <span class="field-label">Your rating</span>
+              <span class="star-input" role="radiogroup" aria-label="Rating out of five stars">
+                <input type="radio" name="rating" id="star5" value="5"><label for="star5" aria-label="5 stars"></label>
+                <input type="radio" name="rating" id="star4" value="4"><label for="star4" aria-label="4 stars"></label>
+                <input type="radio" name="rating" id="star3" value="3"><label for="star3" aria-label="3 stars"></label>
+                <input type="radio" name="rating" id="star2" value="2"><label for="star2" aria-label="2 stars"></label>
+                <input type="radio" name="rating" id="star1" value="1"><label for="star1" aria-label="1 star"></label>
+              </span>
+            </label>
+
+            <label class="stack">
+              <span class="field-label">Your review</span>
+              <textarea name="body" required maxlength="4000" placeholder="What was your experience like? What stayed with you?"></textarea>
+            </label>
+
+            <div class="two-col">
+              <label class="stack">
+                <span class="field-label">Your name</span>
+                <input type="text" name="name" required maxlength="100" autocomplete="name">
+              </label>
+              <label class="stack">
+                <span class="field-label">Which experience? <span class="optional">(optional)</span></span>
+                <select name="experience">
+                  <option value="">— Choose one —</option>
+                  <option value="Retreat">Retreat</option>
+                  <option value="Meditation Webinar">Meditation Webinar</option>
+                  <option value="Bhajan / Kirtan">Bhajan / Kirtan</option>
+                  <option value="One-on-one Guidance">One-on-one Guidance</option>
+                  <option value="General">General</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="two-col">
+              <label class="stack">
+                <span class="field-label">Email <span class="optional">(optional — not shown publicly)</span></span>
+                <input type="email" name="email" maxlength="200" autocomplete="email">
+              </label>
+              <label class="stack">
+                <span class="field-label">Location <span class="optional">(optional, e.g., "Napa, CA")</span></span>
+                <input type="text" name="location" maxlength="100" autocomplete="address-level2">
+              </label>
+            </div>
+
+            <!-- Honeypot: real users leave this blank; bots often auto-fill URL fields. -->
+            <label class="honeypot" aria-hidden="true">
+              Website: <input type="text" name="website" tabindex="-1" autocomplete="off">
+            </label>
+
+            <div id="reviewFormStatus" class="form-status" hidden></div>
+
+            <div>
+              <button type="submit" class="button" id="reviewSubmitBtn">Submit Review</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <div class="footer-inner">
+        <span>Sattva Path Collective LLC</span>
+        <span class="footer-social">
+          <a class="social-icon social-instagram" href="https://www.instagram.com/healing_with_dr_nirupama_gupta/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg></a>
+          <a class="social-icon social-facebook" href="https://www.facebook.com/SattvaPathCollective" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg></a>
+        </span>
+        <span><a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <a href="contact.html">Contact</a></span>
+      </div>
+    </footer>
+    <script src="assets/main.js"></script>
+    <script>
+      (function () {
+        var grid = document.getElementById("reviewsGrid");
+        var empty = document.getElementById("reviewsEmpty");
+        var form = document.getElementById("reviewForm");
+        var submitBtn = document.getElementById("reviewSubmitBtn");
+        var statusEl = document.getElementById("reviewFormStatus");
+
+        function escapeHtml(s) {
+          return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+            return { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c];
+          });
+        }
+
+        function starLine(n) {
+          var full = Math.max(0, Math.min(5, Math.round(n)));
+          var s = "";
+          for (var i = 0; i < 5; i++) s += i < full ? "★" : '<span class="empty">★</span>';
+          return s;
+        }
+
+        function formatDate(iso) {
+          try {
+            return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+          } catch { return ""; }
+        }
+
+        function renderReviews(rows) {
+          if (!Array.isArray(rows) || !rows.length) {
+            grid.hidden = true;
+            empty.hidden = false;
+            return;
+          }
+          empty.hidden = true;
+          grid.hidden = false;
+          grid.innerHTML = rows.map(function (r) {
+            var meta = [
+              r.name ? "<strong>" + escapeHtml(r.name) + "</strong>" : "",
+              r.location ? escapeHtml(r.location) : "",
+              formatDate(r.created_at)
+            ].filter(Boolean).join(" · ");
+            var expBadge = r.experience ? '<span class="badge">' + escapeHtml(r.experience) + "</span>" : "";
+            return (
+              '<article class="review-card">' +
+                '<div class="stars" aria-label="' + r.rating + ' out of 5">' + starLine(r.rating) + expBadge + "</div>" +
+                "<blockquote>" + escapeHtml(r.body) + "</blockquote>" +
+                '<div class="attribution">' + meta + "</div>" +
+              "</article>"
+            );
+          }).join("");
+        }
+
+        async function loadReviews() {
+          try {
+            var res = await fetch("/api/reviews", { headers: { Accept: "application/json" } });
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            var rows = await res.json();
+            renderReviews(rows);
+          } catch (err) {
+            grid.hidden = true;
+            empty.hidden = false;
+            empty.textContent = "Could not load reviews right now. Please refresh in a moment.";
+          }
+        }
+
+        function showStatus(msg, type) {
+          statusEl.textContent = msg;
+          statusEl.className = "form-status " + type;
+          statusEl.hidden = false;
+        }
+
+        if (form) {
+          form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            statusEl.hidden = true;
+            var fd = new FormData(form);
+            var data = {
+              name: String(fd.get("name") || "").trim(),
+              email: String(fd.get("email") || "").trim(),
+              rating: Number(fd.get("rating")),
+              experience: String(fd.get("experience") || "").trim(),
+              body: String(fd.get("body") || "").trim(),
+              location: String(fd.get("location") || "").trim(),
+              website: String(fd.get("website") || "").trim()
+            };
+            if (!data.rating || data.rating < 1 || data.rating > 5) {
+              showStatus("Please pick a star rating.", "error"); return;
+            }
+            if (!data.name) { showStatus("Please enter your name.", "error"); return; }
+            if (!data.body) { showStatus("Please write a short review.", "error"); return; }
+            if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+              showStatus("That email doesn't look valid.", "error"); return;
+            }
+
+            submitBtn.disabled = true;
+            var originalLabel = submitBtn.textContent;
+            submitBtn.textContent = "Submitting…";
+
+            try {
+              var res = await fetch("/api/reviews", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+              });
+              var body = await res.json().catch(function () { return {}; });
+              if (!res.ok) {
+                if (res.status === 429) throw new Error("Too many attempts — please try again in a minute.");
+                if (body.error === "invalid_email") throw new Error("That email doesn't look valid.");
+                if (body.error === "invalid_rating") throw new Error("Please pick a star rating.");
+                if (body.error === "missing_fields") throw new Error("Please fill in your name and review.");
+                throw new Error("Something went wrong. Please try again.");
+              }
+              form.reset();
+              showStatus("Thank you — your review has been submitted and will appear here after a quick review by our team.", "success");
+              submitBtn.textContent = "Submitted ✓";
+              setTimeout(function () {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalLabel;
+              }, 3000);
+            } catch (err) {
+              showStatus(err.message || "Something went wrong. Please try again.", "error");
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalLabel;
+            }
+          });
+        }
+
+        loadReviews();
+      })();
+    </script>
+  </body>
+</html>
