@@ -1956,7 +1956,7 @@
         };
       }
 
-      function setupPaymentButtons(registrationId, cardAmount /*, participantCount */) {
+      function setupPaymentButtons(registrationId, cardAmount, participantCount) {
         const cardAmtEl = document.getElementById("payCardAmount");
         const cardBtn = document.getElementById("payCardBtn");
         const cardMsg = document.getElementById("payCardMsg");
@@ -1985,7 +1985,21 @@
               throw new Error(msg);
             }
             const { url } = await res.json();
-            if (url) { window.location.href = url; } else { throw new Error("No checkout URL returned"); }
+            if (url) {
+              // Meta Pixel — InitiateCheckout at handoff to Stripe.
+              try {
+                if (typeof fbq === "function") {
+                  fbq("track", "InitiateCheckout", {
+                    value: Number(cardAmount) || 0,
+                    currency: "USD",
+                    content_ids: ["sattva-retreat-2026"],
+                    content_type: "product",
+                    num_items: Number(participantCount) || 1
+                  });
+                }
+              } catch (e) { /* pixel is best-effort */ }
+              window.location.href = url;
+            } else { throw new Error("No checkout URL returned"); }
           } catch (err) {
             cardBtn.disabled = false;
             cardBtn.textContent = "Continue to secure payment";

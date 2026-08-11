@@ -183,6 +183,9 @@ CREATE INDEX IF NOT EXISTS registrations_stripe_session_idx ON registrations(str
 -- Reminder tracking for retreat/event registrations (item 7b).
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS reminder_24h_sent_at TIMESTAMPTZ;
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS reminder_1h_sent_at  TIMESTAMPTZ;
+-- Confirmation email status on submit (mirrors webinar_registrations).
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS email_status TEXT NOT NULL DEFAULT 'pending';
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS email_error  TEXT DEFAULT '';
 
 -- Auto-update updated_at on any UPDATE.
 CREATE OR REPLACE FUNCTION touch_updated_at() RETURNS TRIGGER

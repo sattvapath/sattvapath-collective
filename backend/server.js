@@ -507,7 +507,9 @@ function formatEventWhen(dt) {
 // Event-driven confirmation email — replaces the old hardcoded webinar body
 // (item 7b, Stage B). Reads title, date, zoom_link, location, email_extra
 // from the event row. isOnline = has a link (Zoom or Teams URL).
-function eventConfirmationEmail(event, { name, email, phone }) {
+// extras (optional): { paymentNote, participantCount } — used by the retreat
+// registration flow to include a "payment pending" line and participant count.
+function eventConfirmationEmail(event, { name, email, phone }, extras = {}) {
   const safeName  = escapeHtml(name);
   const safeEmail = escapeHtml(email);
   const safePhone = phone ? escapeHtml(phone) : '(not provided)';
@@ -517,6 +519,8 @@ function eventConfirmationEmail(event, { name, email, phone }) {
   const where     = (event && event.location) || '';
   const link      = (event && event.zoom_link || '').trim();
   const extra     = (event && event.email_extra || '').trim();
+  const paymentNote     = (extras.paymentNote || '').trim();
+  const participantCount = Number(extras.participantCount || 0);
 
   const joinRowHtml = isOnline
     ? `<li>Join link: <a href="${link}">${escapeHtml(link)}</a></li>`
@@ -524,8 +528,16 @@ function eventConfirmationEmail(event, { name, email, phone }) {
   const joinRowText = isOnline
     ? `  Link:  ${link}`
     : (where ? `  Where: ${where}` : '');
+  const partyRowHtml = participantCount > 1
+    ? `<li>Participants: ${participantCount}</li>`
+    : '';
+  const partyRowText = participantCount > 1
+    ? `  Party: ${participantCount} people`
+    : null;
   const extraHtml = extra ? `<p>${escapeHtml(extra).replace(/\n/g, '<br>')}</p>` : '';
   const extraText = extra ? `\n${extra}\n` : '';
+  const paymentHtml = paymentNote ? `<p style="padding:12px 14px; border-left:3px solid #b88442; background:#faf3e6; color:#5f4522;">${escapeHtml(paymentNote)}</p>` : '';
+  const paymentText = paymentNote ? `\n${paymentNote}\n` : '';
 
   const html = `
 <div style="font-family:Arial,Helvetica,sans-serif; color:#253027; line-height:1.55; font-size:15px;">
@@ -536,6 +548,7 @@ function eventConfirmationEmail(event, { name, email, phone }) {
     <li>Name: ${safeName}</li>
     <li>Email: <a href="mailto:${safeEmail}">${safeEmail}</a></li>
     <li>Phone: ${safePhone}</li>
+    ${partyRowHtml}
   </ul>
   <p><strong>Event details:</strong></p>
   <ul>
@@ -544,6 +557,7 @@ function eventConfirmationEmail(event, { name, email, phone }) {
     ${joinRowHtml}
   </ul>
   ${extraHtml}
+  ${paymentHtml}
   <p>${isOnline ? 'Save this link' : 'See you'} &mdash; we&rsquo;ll also send a reminder before the session. See you there!</p>
   <p style="color:#5f6d61; font-size:13px; margin-top:24px;">&mdash; Sattva Path Collective</p>
 </div>`.trim();
@@ -557,12 +571,14 @@ function eventConfirmationEmail(event, { name, email, phone }) {
     `  Name:  ${name}`,
     `  Email: ${email}`,
     `  Phone: ${phone || '(not provided)'}`,
+    partyRowText,
     ``,
     `Event details:`,
     when ? `  When:  ${when}` : null,
     `  Host:  Nirupama Gupta`,
     joinRowText || null,
     extraText,
+    paymentText,
     isOnline ? "Save this link — we'll also send a reminder before the session. See you there!"
              : "See you there — we'll also send a reminder before the session.",
     ``,
@@ -869,7 +885,56 @@ app.post('/api/registrations', async (req, res) => {
       String(r.source || 'website').slice(0, 40),
     ]
   );
-  res.status(201).json({ id: inserted.rows[0].id, created_at: inserted.rows[0].created_at });
+  const regRow = inserted.rows[0];
+
+  // Fire the confirmation email + admin notification. Don't fail the request
+  // if email sending errors — the registration is saved either way.
+  try {
+    const evQ = await pool.query(
+      `SELECT id, type, title, date, location, zoom_link, email_extra, event_datetime
+         FROM events WHERE id = $1`,
+      [eventId]
+    );
+    const event = evQ.rows[0] || null;
+    const emailReg = {
+      id: regRow.id,
+      created_at: regRow.created_at,
+      name: r.contact_name,
+      email: r.contact_email,
+      phone: r.contact_phone,
+      message: '',
+    };
+    const paymentNote = Number(r.total_amount || 0) > 0
+      ? `Your registration is currently marked as payment pending. Please complete your card payment via the Stripe link on your registration confirmation screen, or contact us for Zelle instructions. Total due: $${Number(r.total_amount).toFixed(2)}.`
+      : '';
+    const conf = eventConfirmationEmail(event, emailReg, { paymentNote, participantCount: Number(r.participant_count || participants.length || 1) });
+    const notif = webinarNotificationEmail({ ...emailReg, message: `Retreat registration — ${participants.length} participant(s), total $${Number(r.total_amount || 0).toFixed(2)}` });
+    if (mailer) {
+      await mailer.sendMail({
+        from: SMTP_FROM, to: emailReg.email,
+        subject: conf.subject, html: conf.html, text: conf.text,
+        replyTo: NOTIFY_EMAIL || SMTP_USER,
+      });
+      if (NOTIFY_EMAIL) {
+        await mailer.sendMail({
+          from: SMTP_FROM, to: NOTIFY_EMAIL,
+          subject: (event && event.title) ? `New registration for ${event.title}: ${emailReg.name}` : notif.subject,
+          html: notif.html, text: notif.text,
+          replyTo: emailReg.email,
+        });
+      }
+      await pool.query(`UPDATE registrations SET email_status='sent' WHERE id=$1`, [regRow.id]);
+    } else {
+      await pool.query(`UPDATE registrations SET email_status='failed', email_error=$2 WHERE id=$1`,
+        [regRow.id, 'smtp_not_configured']);
+    }
+  } catch (err) {
+    console.error('Registration confirmation email failed:', err.message);
+    await pool.query(`UPDATE registrations SET email_status='failed', email_error=$2 WHERE id=$1`,
+      [regRow.id, String(err.message || err).slice(0, 500)]).catch(() => {});
+  }
+
+  res.status(201).json({ id: regRow.id, created_at: regRow.created_at });
 });
 
 // ---------------- Stripe Checkout (public) ----------------
@@ -929,7 +994,7 @@ app.get('/api/checkout-status', async (req, res) => {
   const { session_id } = req.query;
   if (!session_id) return res.status(400).json({ error: 'missing_session_id' });
   const r = await pool.query(
-    `SELECT id, contact_name, total_amount, payment_status, stripe_paid_at
+    `SELECT id, contact_name, total_amount, payment_status, participant_count, stripe_paid_at
        FROM registrations WHERE stripe_session_id = $1`,
     [session_id]
   );
@@ -939,6 +1004,7 @@ app.get('/api/checkout-status', async (req, res) => {
     status: reg.payment_status,
     contact_name: reg.contact_name,
     total_amount: reg.total_amount,
+    participant_count: reg.participant_count,
     paid_at: reg.stripe_paid_at,
   });
 });

@@ -10,6 +10,19 @@
     <meta name="description" content="Thank you for your payment.">
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="assets/styles.css">
+    <!-- Meta Pixel -->
+    <script>
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+      document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '1062822743176923');
+      fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1062822743176923&ev=PageView&noscript=1" alt=""/></noscript>
+    <!-- End Meta Pixel -->
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to main content</a>
@@ -80,6 +93,20 @@
                 <p>Registration for <strong>${escapeHtml(data.contact_name || "")}</strong> is now marked as paid. You should also receive a receipt from Stripe by email.</p>
                 <p>We look forward to sitting with you at the retreat. If anything comes up in the meantime, reply to that email or reach out via the <a href="contact.html">contact page</a>.</p>
               `;
+              // Meta Pixel Purchase — fire once per session_id (survives page refresh).
+              try {
+                const pixelKey = "fb_purchase_fired_" + sessionId;
+                if (!sessionStorage.getItem(pixelKey) && typeof fbq === "function") {
+                  fbq("track", "Purchase", {
+                    value: Number(data.total_amount) || 0,
+                    currency: "USD",
+                    content_ids: ["sattva-retreat-2026"],
+                    content_type: "product",
+                    num_items: Number(data.participant_count) || 1
+                  });
+                  sessionStorage.setItem(pixelKey, "1");
+                }
+              } catch (e) { /* pixel is best-effort */ }
               return;
             }
           } catch { /* keep polling */ }
