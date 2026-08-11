@@ -58,11 +58,18 @@ function buildReminderEmail(event, registration, hoursOut) {
     subject = `Reminder: ${eventTitle} is tomorrow — ${eventWhen}`;
     introSoft = 'tomorrow';
     introExact = eventWhen;
-  } else {
+  } else if (hoursOut === 1) {
     subject = isOnline
       ? `Starting in about an hour — join Zoom for ${eventTitle}`
       : `${eventTitle} starts in about an hour`;
     introSoft = 'in about an hour';
+    introExact = eventWhen;
+  } else {
+    // hoursOut === 0 → "starting right now"
+    subject = isOnline
+      ? `Starting now — ${eventTitle}, join here`
+      : `${eventTitle} is starting now`;
+    introSoft = isOnline ? 'starting right now — join the link below' : 'starting right now';
     introExact = eventWhen;
   }
 
@@ -138,7 +145,11 @@ async function processEventReminder(event, hoursOut, sentAtColumn) {
   const target = new Date(new Date(event.event_datetime).getTime() - hoursOut * 60 * 60 * 1000);
   const diffMin = (now - target) / 60000;
 
-  if (now > new Date(event.event_datetime)) return;         // event already started
+  // For 24h/1h reminders, don't fire if the event has already started.
+  // For the 0h "starting now" reminder, we allow the send window to straddle
+  // the actual start time (±WINDOW_MIN) — otherwise it would only ever fire
+  // in the ~10 min before start.
+  if (hoursOut > 0 && now > new Date(event.event_datetime)) return;
   if (Math.abs(diffMin) > WINDOW_MIN) return;               // not in send window
 
   const { rows, table } = await findRecipients(event, sentAtColumn);
@@ -247,7 +258,8 @@ async function processAbandonedRegistrations() {
     if (events.rows.length) {
       for (const event of events.rows) {
         await processEventReminder(event, 24, 'reminder_24h_sent_at');
-        await processEventReminder(event, 1, 'reminder_1h_sent_at');
+        await processEventReminder(event, 1,  'reminder_1h_sent_at');
+        await processEventReminder(event, 0,  'reminder_start_sent_at');
       }
     } else {
       console.log('No upcoming events with event_datetime set.');

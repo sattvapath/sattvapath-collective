@@ -171,8 +171,9 @@ CREATE TABLE IF NOT EXISTS webinar_registrations (
 CREATE INDEX IF NOT EXISTS webinar_registrations_event_idx   ON webinar_registrations(event_slug);
 CREATE INDEX IF NOT EXISTS webinar_registrations_created_idx ON webinar_registrations(created_at DESC);
 -- Reminder tracking (idempotent — safe on re-runs).
-ALTER TABLE webinar_registrations ADD COLUMN IF NOT EXISTS reminder_24h_sent_at TIMESTAMPTZ;
-ALTER TABLE webinar_registrations ADD COLUMN IF NOT EXISTS reminder_1h_sent_at  TIMESTAMPTZ;
+ALTER TABLE webinar_registrations ADD COLUMN IF NOT EXISTS reminder_24h_sent_at   TIMESTAMPTZ;
+ALTER TABLE webinar_registrations ADD COLUMN IF NOT EXISTS reminder_1h_sent_at    TIMESTAMPTZ;
+ALTER TABLE webinar_registrations ADD COLUMN IF NOT EXISTS reminder_start_sent_at TIMESTAMPTZ;
 
 -- Backfill Stripe columns on existing registrations tables (safe re-runs).
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS payment_method    TEXT DEFAULT '';
@@ -181,8 +182,9 @@ ALTER TABLE registrations ADD COLUMN IF NOT EXISTS stripe_payment_id TEXT DEFAUL
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS stripe_paid_at    TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS registrations_stripe_session_idx ON registrations(stripe_session_id);
 -- Reminder tracking for retreat/event registrations (item 7b).
-ALTER TABLE registrations ADD COLUMN IF NOT EXISTS reminder_24h_sent_at TIMESTAMPTZ;
-ALTER TABLE registrations ADD COLUMN IF NOT EXISTS reminder_1h_sent_at  TIMESTAMPTZ;
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS reminder_24h_sent_at   TIMESTAMPTZ;
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS reminder_1h_sent_at    TIMESTAMPTZ;
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS reminder_start_sent_at TIMESTAMPTZ;
 -- Confirmation email status on submit (mirrors webinar_registrations).
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS email_status TEXT NOT NULL DEFAULT 'pending';
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS email_error  TEXT DEFAULT '';

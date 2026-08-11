@@ -224,6 +224,12 @@ app.post('/api/admin/events', requireAdmin, async (req, res) => {
   if (!e.id || !e.type || !e.status || !e.title || !e.date || !e.location || !e.description) {
     return res.status(400).json({ error: 'missing_fields' });
   }
+  // event_datetime is required so the reminder scheduler can compute 24h/1h/
+  // start-time windows. Enforced on new events; PATCH still allows it to be
+  // updated but not cleared to NULL (see PATCH branch's __clear__ handling).
+  if (!e.event_datetime) {
+    return res.status(400).json({ error: 'missing_event_datetime' });
+  }
   const r = await pool.query(
     `INSERT INTO events
        (id, type, status, title, date, location, price, age, description, fields,

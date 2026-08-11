@@ -2108,6 +2108,20 @@
           populateRoomDropdowns();
           populateSpotsDropdowns();
           updatePaymentTotal();
+          // Meta Pixel — step 4 of the funnel (PDF: "Accommodation Selected")
+          // fires when a room is picked, treating the room as the cart item.
+          try {
+            if (event.target.matches("[data-group-field='roomId']") && event.target.value && typeof fbq === "function") {
+              const room = ROOM_BY_ID[event.target.value];
+              fbq("track", "AddToCart", {
+                value: room ? Number(room.single || 0) : 0,
+                currency: "USD",
+                content_ids: [event.target.value],
+                content_name: room ? `${room.label} (${room.village})` : event.target.value,
+                content_category: "Retreat Room"
+              });
+            }
+          } catch (e) { /* best-effort */ }
         }
         if (event.target.matches("input, select, textarea")) {
           const message = customValidationMessage(event.target);
@@ -2237,6 +2251,18 @@
           clearFormState();
           showConfirmationEmailPreview(participants);
           setupPaymentButtons(created.id, totalDue, participants.length);
+          // Meta Pixel — step 2 of the funnel (PDF: "Registration Form Submitted").
+          try {
+            if (typeof fbq === "function") {
+              fbq("track", "CompleteRegistration", {
+                value: Number(totalDue) || 0,
+                currency: "USD",
+                content_ids: ["sattva-retreat-2026"],
+                num_items: participants.length,
+                registration_id: created.id
+              });
+            }
+          } catch (e) { /* best-effort */ }
         } catch (err) {
           showError(err.message || "We could not submit your registration. Please try again or email us.");
         } finally {
@@ -2444,6 +2470,17 @@
           if (target === TOTAL_STEPS) renderReview();
           const anchor = document.querySelector('.wizard-steps');
           if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Meta Pixel — step 3 of the funnel (PDF: "Accommodation Page View")
+          // fires when the wizard advances into step 2 (Stay & preferences).
+          try {
+            if (target === 2 && typeof fbq === "function") {
+              fbq("track", "ViewContent", {
+                content_name: "Accommodation",
+                content_category: "Retreat Registration",
+                content_ids: ["sattva-retreat-2026"]
+              });
+            }
+          } catch (e) { /* best-effort */ }
         }
 
         nextBtn.addEventListener('click', () => {
