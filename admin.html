@@ -813,6 +813,7 @@
             <thead>
               <tr style="text-align:left; border-bottom:1px solid var(--line);">
                 <th style="padding:8px;">Received</th>
+                <th style="padding:8px;">Event</th>
                 <th style="padding:8px;">Name / Email</th>
                 <th style="padding:8px;">Phone</th>
                 <th style="padding:8px;">Message</th>
@@ -1903,9 +1904,13 @@
         const remind1      = list.filter((r) => r.reminder_1h_sent_at).length;
         webinarRegSummary.textContent =
           `${list.length} total · ${sentCount} confirmations sent${failedCount ? " · " + failedCount + " failed" : ""} · 24h: ${remind24} · 1h: ${remind1}`;
-        webinarRegTableBody.innerHTML = list.map((r) => `
+        webinarRegTableBody.innerHTML = list.map((r) => {
+          const ev = apiEventsCache.find((e) => e.id === r.event_slug);
+          const eventLabel = ev ? escapeHtmlAdmin(ev.title) : `<span style='color:var(--muted);'>${escapeHtmlAdmin(r.event_slug || '—')}</span>`;
+          return `
           <tr style="border-bottom:1px solid var(--line);">
             <td style="padding:8px; vertical-align:top; white-space:nowrap;">${escapeHtmlAdmin(formatDateTime(r.created_at))}</td>
+            <td style="padding:8px; vertical-align:top; max-width:180px;">${eventLabel}<br><small style='color:var(--muted); font-size:0.75rem;'>${escapeHtmlAdmin(r.event_slug || '')}</small></td>
             <td style="padding:8px; vertical-align:top;">
               <strong>${escapeHtmlAdmin(r.name)}</strong><br>
               <a href="mailto:${escapeHtmlAdmin(r.email)}">${escapeHtmlAdmin(r.email)}</a>
@@ -1921,7 +1926,8 @@
             </td>
             <td style="padding:8px; vertical-align:top; white-space:nowrap;">${r.reminder_24h_sent_at ? statusBadge(formatDateTime(r.reminder_24h_sent_at), true) : "<span style='color:var(--muted);'>—</span>"}</td>
             <td style="padding:8px; vertical-align:top; white-space:nowrap;">${r.reminder_1h_sent_at ? statusBadge(formatDateTime(r.reminder_1h_sent_at), true) : "<span style='color:var(--muted);'>—</span>"}</td>
-          </tr>`).join("");
+          </tr>`;
+        }).join("");
       }
 
       webinarRegRefreshBtn?.addEventListener("click", fetchWebinarRegistrations);

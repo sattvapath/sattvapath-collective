@@ -85,6 +85,54 @@ app.post('/api/stripe-webhook', express.raw({ type: 'application/json' }), async
             WHERE id = $1`,
           [regId, session.id, session.payment_intent || '']
         );
+
+        // Now that payment is confirmed, send the customer confirmation email
+        // that was deferred from POST /api/registrations. Only sends if
+        // email_status is 'deferred_until_paid' — safe against duplicate
+        // webhook deliveries.
+        try {
+          const regQ = await pool.query(
+            `SELECT r.id, r.contact_name, r.contact_email, r.contact_phone,
+                    r.participant_count, r.total_amount, r.email_status,
+                    r.event_id, r.created_at,
+                    e.id AS ev_id, e.type, e.title, e.date, e.location,
+                    e.zoom_link, e.email_extra, e.event_datetime
+               FROM registrations r
+               LEFT JOIN events e ON e.id = r.event_id
+              WHERE r.id = $1`,
+            [regId]
+          );
+          const reg = regQ.rows[0];
+          if (reg && reg.email_status === 'deferred_until_paid' && mailer && reg.contact_email) {
+            const ev = reg.ev_id ? {
+              id: reg.ev_id, type: reg.type, title: reg.title, date: reg.date,
+              location: reg.location, zoom_link: reg.zoom_link,
+              email_extra: reg.email_extra, event_datetime: reg.event_datetime,
+            } : null;
+            const conf = eventConfirmationEmail(ev, {
+              name: reg.contact_name, email: reg.contact_email, phone: reg.contact_phone,
+            }, {
+              participantCount: Number(reg.participant_count || 1),
+              paymentNote: `Payment confirmed: $${Number(reg.total_amount || 0).toFixed(2)} received. Thank you!`,
+            });
+            await mailer.sendMail({
+              from: SMTP_FROM, to: reg.contact_email,
+              subject: conf.subject, html: conf.html, text: conf.text,
+              replyTo: NOTIFY_EMAIL || SMTP_USER,
+            });
+            await pool.query(`UPDATE registrations SET email_status='sent' WHERE id=$1`, [regId]);
+            // Also nudge admin so they know payment landed.
+            if (NOTIFY_EMAIL) {
+              sendAdminAlert(
+                `Payment received — ${reg.contact_name}`,
+                `Stripe just confirmed a payment for a retreat registration.\n\nRegistration: ${regId}\nName: ${reg.contact_name}\nEmail: ${reg.contact_email}\nAmount: $${Number(reg.total_amount || 0).toFixed(2)}\nParty: ${reg.participant_count}\n\nCustomer confirmation email has been sent.`,
+                null
+              );
+            }
+          }
+        } catch (err) {
+          console.error('Post-payment confirmation email failed:', err.message);
+        }
       }
     } else if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
       const session = event.data.object;
@@ -932,8 +980,12 @@ app.post('/api/registrations', async (req, res) => {
   );
   const regRow = inserted.rows[0];
 
-  // Fire the confirmation email + admin notification. Don't fail the request
-  // if email sending errors — the registration is saved either way.
+  // Email dispatch after INSERT.
+  //  - Free events (total_amount == 0): send customer confirmation immediately.
+  //  - Paid events (total_amount > 0):  DEFER customer confirmation until the
+  //    Stripe webhook flips payment_status='paid'. Admin notification always
+  //    fires so the site owner knows a registration came in either way.
+  // Don't fail the request if email errors — the registration is saved.
   try {
     const evQ = await pool.query(
       `SELECT id, type, title, date, location, zoom_link, email_extra, event_datetime
@@ -941,6 +993,8 @@ app.post('/api/registrations', async (req, res) => {
       [eventId]
     );
     const event = evQ.rows[0] || null;
+    const totalAmount = Number(r.total_amount || 0);
+    const isPaidEvent = totalAmount > 0;
     const emailReg = {
       id: regRow.id,
       created_at: regRow.created_at,
@@ -949,18 +1003,14 @@ app.post('/api/registrations', async (req, res) => {
       phone: r.contact_phone,
       message: '',
     };
-    const paymentNote = Number(r.total_amount || 0) > 0
-      ? `Your registration is currently marked as payment pending. Please complete your card payment via the Stripe link on your registration confirmation screen, or contact us for Zelle instructions. Total due: $${Number(r.total_amount).toFixed(2)}.`
-      : '';
-    const conf = eventConfirmationEmail(event, emailReg, { paymentNote, participantCount: Number(r.participant_count || participants.length || 1) });
-    const notif = webinarNotificationEmail({ ...emailReg, message: `Retreat registration — ${participants.length} participant(s), total $${Number(r.total_amount || 0).toFixed(2)}` });
+
     if (mailer) {
-      await mailer.sendMail({
-        from: SMTP_FROM, to: emailReg.email,
-        subject: conf.subject, html: conf.html, text: conf.text,
-        replyTo: NOTIFY_EMAIL || SMTP_USER,
-      });
+      // Admin notification — always sent, marks it as pending payment when applicable.
       if (NOTIFY_EMAIL) {
+        const notifMsg = isPaidEvent
+          ? `Retreat registration — ${participants.length} participant(s), total $${totalAmount.toFixed(2)} (PAYMENT PENDING — customer confirmation will send after Stripe confirms payment)`
+          : `Retreat registration — ${participants.length} participant(s), free (customer confirmation sent immediately)`;
+        const notif = webinarNotificationEmail({ ...emailReg, message: notifMsg });
         await mailer.sendMail({
           from: SMTP_FROM, to: NOTIFY_EMAIL,
           subject: (event && event.title) ? `New registration for ${event.title}: ${emailReg.name}` : notif.subject,
@@ -968,7 +1018,20 @@ app.post('/api/registrations', async (req, res) => {
           replyTo: emailReg.email,
         });
       }
-      await pool.query(`UPDATE registrations SET email_status='sent' WHERE id=$1`, [regRow.id]);
+
+      if (!isPaidEvent) {
+        // Free event — send customer confirmation now.
+        const conf = eventConfirmationEmail(event, emailReg, { participantCount: Number(r.participant_count || participants.length || 1) });
+        await mailer.sendMail({
+          from: SMTP_FROM, to: emailReg.email,
+          subject: conf.subject, html: conf.html, text: conf.text,
+          replyTo: NOTIFY_EMAIL || SMTP_USER,
+        });
+        await pool.query(`UPDATE registrations SET email_status='sent' WHERE id=$1`, [regRow.id]);
+      } else {
+        // Paid event — customer confirmation waits for the Stripe webhook.
+        await pool.query(`UPDATE registrations SET email_status='deferred_until_paid' WHERE id=$1`, [regRow.id]);
+      }
     } else {
       await pool.query(`UPDATE registrations SET email_status='failed', email_error=$2 WHERE id=$1`,
         [regRow.id, 'smtp_not_configured']);
