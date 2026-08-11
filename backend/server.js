@@ -791,11 +791,12 @@ app.post('/api/registrations', async (req, res) => {
 
   // For the retreat, every participant must include the currently-required fields.
   // Guards against stale/cached versions of register.html that omit newer fields
-  // (gender, shirtSize were added 2026-07-24).
+  // (gender, shirt_size were added 2026-07-24). Snake_case matches the payload
+  // register.html actually sends (previous camelCase list was a bug — always fired).
   if (eventId === RETREAT_EVENT_ID && participants.length) {
     const REQUIRED_PARTICIPANT_FIELDS = [
-      'firstName', 'lastName', 'age', 'gender', 'shirtSize',
-      'email', 'phone', 'emergencyName', 'emergencyPhone',
+      'first_name', 'last_name', 'age', 'gender', 'shirt_size',
+      'email', 'phone', 'emergency_name', 'emergency_phone',
     ];
     for (let i = 0; i < participants.length; i++) {
       const p = participants[i] || {};
