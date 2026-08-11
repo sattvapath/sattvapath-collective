@@ -33,6 +33,29 @@ const mailer = (SMTP_USER && SMTP_PASS) ? nodemailer.createTransport({
 }) : null;
 if (!mailer) console.warn('SMTP not configured (SMTP_USER/SMTP_PASS unset) — outbound email disabled.');
 
+// Fire-and-forget admin alert. Never throws — errors logged to console. Used
+// to notify the site owner about registration failures, payment failures,
+// and abandoned registrations. Bare-minimum HTML to keep it inbox-friendly.
+async function sendAdminAlert(subject, plainBody, htmlBody) {
+  if (!mailer || !NOTIFY_EMAIL) {
+    console.warn('Admin alert skipped (mailer or NOTIFY_EMAIL missing):', subject);
+    return;
+  }
+  const safePlain = String(plainBody || '');
+  const safeHtml = htmlBody || `<pre style="font-family:monospace;background:#f7f5ef;padding:12px;border-radius:6px;">${safePlain.replace(/[&<>]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]))}</pre>`;
+  try {
+    await mailer.sendMail({
+      from: SMTP_FROM || `Sattva Path Alerts <${SMTP_USER}>`,
+      to: NOTIFY_EMAIL,
+      subject: `[Sattva Alert] ${subject}`,
+      text: safePlain,
+      html: safeHtml,
+    });
+  } catch (err) {
+    console.error('sendAdminAlert failed:', err.message);
+  }
+}
+
 const app = express();
 app.set('trust proxy', 'loopback');
 
@@ -73,6 +96,21 @@ app.post('/api/stripe-webhook', express.raw({ type: 'application/json' }), async
             WHERE id = $1 AND payment_status = 'pending'`,
           [regId, session.id]
         );
+        // Alert admin about the payment failure — user may need follow-up.
+        try {
+          const q = await pool.query(
+            `SELECT contact_name, contact_email, contact_phone, total_amount, participant_count
+               FROM registrations WHERE id = $1`,
+            [regId]
+          );
+          const reg = q.rows[0] || {};
+          const reason = event.type === 'checkout.session.expired' ? 'Stripe session expired (user did not complete checkout)' : 'Stripe reported async payment failure';
+          sendAdminAlert(
+            `Payment failed — ${reg.contact_name || 'unknown'}`,
+            `${reason}\n\nRegistration ID: ${regId}\nName: ${reg.contact_name || ''}\nEmail: ${reg.contact_email || ''}\nPhone: ${reg.contact_phone || ''}\nParty size: ${reg.participant_count || 0}\nAmount: $${Number(reg.total_amount || 0).toFixed(2)}\nStripe session: ${session.id}\n\nAdmin panel: https://sattvapathcollective.com/admin.html`,
+            null
+          );
+        } catch (err) { console.error('Payment-failure alert lookup failed:', err.message); }
       }
     }
     res.json({ received: true });
@@ -794,6 +832,7 @@ app.get('/api/retreat/room-availability', async (req, res) => {
 });
 
 app.post('/api/registrations', async (req, res) => {
+ try {
   const ip = req.ip || 'unknown';
   if (!rateLimit(`reg:${ip}`, 5)) return res.status(429).json({ error: 'rate_limited' });
   const r = req.body || {};
@@ -935,6 +974,15 @@ app.post('/api/registrations', async (req, res) => {
   }
 
   res.status(201).json({ id: regRow.id, created_at: regRow.created_at });
+ } catch (err) {
+  console.error('registrations error:', err?.message || err);
+  sendAdminAlert(
+    'Retreat registration submission failed',
+    `A user tried to submit the retreat registration form and the API errored out.\n\nError: ${err?.message || String(err)}\nStack: ${err?.stack || '(no stack)'}\n\nContact from payload (if any):\n  Name:  ${req.body?.contact_name || '(none)'}\n  Email: ${req.body?.contact_email || '(none)'}\n  Phone: ${req.body?.contact_phone || '(none)'}\n\nCheck server logs on the VPS: journalctl -u sattva-api -n 50 --no-pager`,
+    null
+  );
+  res.status(500).json({ error: 'server_error' });
+ }
 });
 
 // ---------------- Stripe Checkout (public) ----------------
@@ -977,6 +1025,9 @@ app.post('/api/checkout-session', async (req, res) => {
         },
         quantity: 1,
       }],
+      // Force Stripe to send a payment receipt regardless of dashboard
+      // "Successful payment receipts" toggle (item #1 of the alert-batch).
+      payment_intent_data: { receipt_email: reg.contact_email },
       success_url: `${SITE_BASE_URL}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE_BASE_URL}/payment-cancel.html?registration_id=${reg.id}`,
     });
@@ -984,6 +1035,11 @@ app.post('/api/checkout-session', async (req, res) => {
     res.json({ url: session.url, id: session.id });
   } catch (err) {
     console.error('checkout-session error:', err?.message || err);
+    sendAdminAlert(
+      'Stripe checkout-session creation failed',
+      `A user tried to start a Stripe checkout but the API call failed.\n\nRegistration ID: ${req.body?.registration_id || '(unknown)'}\nError: ${err?.message || String(err)}\n\nStack:\n${err?.stack || '(no stack)'}\n\nCheck admin panel: https://sattvapathcollective.com/admin.html`,
+      null
+    );
     res.status(500).json({ error: err?.message || 'checkout_failed' });
   }
 });

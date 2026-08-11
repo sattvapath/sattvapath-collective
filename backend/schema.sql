@@ -186,6 +186,8 @@ ALTER TABLE registrations ADD COLUMN IF NOT EXISTS reminder_1h_sent_at  TIMESTAM
 -- Confirmation email status on submit (mirrors webinar_registrations).
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS email_status TEXT NOT NULL DEFAULT 'pending';
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS email_error  TEXT DEFAULT '';
+-- Track admin "abandoned registration" alerts so we only email once per row.
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS abandoned_alert_sent_at TIMESTAMPTZ;
 
 -- Auto-update updated_at on any UPDATE.
 CREATE OR REPLACE FUNCTION touch_updated_at() RETURNS TRIGGER

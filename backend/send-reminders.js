@@ -167,6 +167,73 @@ async function processEventReminder(event, hoursOut, sentAtColumn) {
   }
 }
 
+// Alert admin (NOTIFY_EMAIL) about retreat registrations that submitted but
+// never completed payment. Fires once per row after 2 hours of pending status.
+const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || SMTP_USER;
+const ABANDONED_HOURS = 2;
+
+async function processAbandonedRegistrations() {
+  if (!NOTIFY_EMAIL) return;
+  const q = await pool.query(
+    `SELECT id, event_id, contact_name, contact_email, contact_phone,
+            participant_count, participants, total_amount,
+            stripe_session_id, created_at
+       FROM registrations
+      WHERE payment_status = 'pending'
+        AND abandoned_alert_sent_at IS NULL
+        AND created_at < NOW() - INTERVAL '${ABANDONED_HOURS} hours'
+      ORDER BY created_at ASC`
+  );
+  if (!q.rows.length) return;
+  console.log(`Abandoned registration alerts: ${q.rows.length} pending`);
+  for (const reg of q.rows) {
+    try {
+      const parts = Array.isArray(reg.participants) ? reg.participants : [];
+      const partsText = parts.map((p, i) => {
+        const name = p.name || `${p.first_name || ''} ${p.last_name || ''}`.trim();
+        return `  ${i + 1}. ${name || '(unnamed)'}  age ${p.age || '?'}  email ${p.email || '(none)'}  phone ${p.phone || '(none)'}`;
+      }).join('\n');
+      const attemptedStripe = reg.stripe_session_id ? 'YES (Stripe session was created — they clicked "Continue to secure payment" but the payment did not complete)' : 'NO (they submitted the registration but never clicked "Continue to secure payment")';
+      const bodyText = [
+        `A registration has been sitting as PENDING PAYMENT for more than ${ABANDONED_HOURS} hours.`,
+        ``,
+        `Registration ID: ${reg.id}`,
+        `Submitted:       ${new Date(reg.created_at).toISOString()}`,
+        `Attempted Stripe: ${attemptedStripe}`,
+        ``,
+        `Primary contact:`,
+        `  Name:  ${reg.contact_name || ''}`,
+        `  Email: ${reg.contact_email || ''}`,
+        `  Phone: ${reg.contact_phone || ''}`,
+        ``,
+        `Party size:  ${reg.participant_count || parts.length}`,
+        `Total due:   $${Number(reg.total_amount || 0).toFixed(2)}`,
+        ``,
+        `Participants:`,
+        partsText || '  (none listed)',
+        ``,
+        `Suggest: reach out to ${reg.contact_email} to see if they need help completing the payment.`,
+        ``,
+        `Admin panel: https://sattvapathcollective.com/admin.html`,
+      ].join('\n');
+      await mailer.sendMail({
+        from: SMTP_FROM,
+        to: NOTIFY_EMAIL,
+        subject: `[Sattva Alert] Registration pending payment — ${reg.contact_name || 'unknown'}`,
+        text: bodyText,
+        replyTo: reg.contact_email || undefined,
+      });
+      await pool.query(
+        `UPDATE registrations SET abandoned_alert_sent_at = NOW() WHERE id = $1`,
+        [reg.id]
+      );
+      console.log(`  alerted admin about ${reg.contact_email}`);
+    } catch (err) {
+      console.error(`  abandoned-alert send failed for ${reg.id}: ${err.message}`);
+    }
+  }
+}
+
 (async () => {
   try {
     const events = await pool.query(
@@ -177,15 +244,16 @@ async function processEventReminder(event, hoursOut, sentAtColumn) {
           AND status IN ('Posted', 'Closed')`
     );
 
-    if (!events.rows.length) {
+    if (events.rows.length) {
+      for (const event of events.rows) {
+        await processEventReminder(event, 24, 'reminder_24h_sent_at');
+        await processEventReminder(event, 1, 'reminder_1h_sent_at');
+      }
+    } else {
       console.log('No upcoming events with event_datetime set.');
-      return;
     }
 
-    for (const event of events.rows) {
-      await processEventReminder(event, 24, 'reminder_24h_sent_at');
-      await processEventReminder(event, 1, 'reminder_1h_sent_at');
-    }
+    await processAbandonedRegistrations();
   } catch (err) {
     console.error('Reminder job error:', err);
     process.exitCode = 1;
