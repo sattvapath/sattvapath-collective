@@ -694,47 +694,95 @@ function eventConfirmationEmail(event, { name, email, phone }, extras = {}) {
 function paymentPendingEmail(event, { name, email, phone }, stripeUrl, totalAmount) {
   const safeName = escapeHtml(name);
   const title = (event && event.title) || 'the event';
+  const safeTitle = escapeHtml(title);
   const amount = Number(totalAmount || 0).toFixed(2);
   const safeUrl = escapeHtml(stripeUrl || '');
+
   const html = `
-<div style="font-family:Arial,Helvetica,sans-serif; color:#253027; line-height:1.55; font-size:15px;">
+<div style="font-family:Arial,Helvetica,sans-serif; color:#253027; line-height:1.6; font-size:15px; max-width:640px;">
   <p>Hi ${safeName},</p>
-  <p>Thank you for registering for <strong>${escapeHtml(title)}</strong>. We&rsquo;ve received your details.</p>
-  <p><strong>One more step — complete your payment to secure your spot.</strong></p>
-  <p style="margin:24px 0;">
+
+  <p>Thank you for registering for <strong>${safeTitle}</strong>. 🌿</p>
+
+  <p>We&rsquo;ve received your registration details, and your spot is almost confirmed.</p>
+
+  <p><strong>One more step &mdash; complete your payment to secure your spot.</strong></p>
+
+  <p style="margin:28px 0;">
     <a href="${safeUrl}"
        style="display:inline-block; background:#486347; color:#fffdf8;
               padding:14px 28px; border-radius:6px; text-decoration:none;
               font-weight:600; letter-spacing:0.03em;">
-      Pay $${amount} securely on Stripe &rarr;
+      Complete Your Payment &mdash; $${amount} &rarr;
     </a>
   </p>
-  <p style="color:#5f6d61; font-size:13px;">Or paste this link into your browser:<br>
-     <a href="${safeUrl}">${safeUrl}</a></p>
-  <p style="color:#5f6d61; font-size:13px;">This payment link is active for <strong>24 hours</strong>. If it expires, please reply to this email and we&rsquo;ll send a fresh one — no need to re-register.</p>
-  <p>Once your payment is confirmed, we&rsquo;ll send a second email with the full event details and reminders.</p>
+
+  <p>Your payment link is active for the next <strong>24 hours</strong>.</p>
+
+  <p><strong>What happens after you pay?</strong></p>
+
+  <p style="margin:6px 0 4px;"><strong>&#10003; Your spot is confirmed</strong><br>
+    <span style="color:#5f6d61;">Once your payment is received, your registration will be officially confirmed.</span></p>
+
+  <p style="margin:14px 0 4px;"><strong>&#10003; You&rsquo;ll receive your retreat details</strong><br>
+    <span style="color:#5f6d61;">We&rsquo;ll send you the complete event information, including the schedule, accommodation details, and what to expect.</span></p>
+
+  <p style="margin:14px 0 4px;"><strong>&#10003; We&rsquo;ll keep you prepared</strong><br>
+    <span style="color:#5f6d61;">As the retreat gets closer, you&rsquo;ll receive important reminders and everything you need to prepare for your experience.</span></p>
+
+  <p style="margin-top:24px;"><strong>Having trouble with the payment button?</strong><br>
+    You can use the payment link below:<br>
+    <a href="${safeUrl}">${safeUrl}</a></p>
+
+  <p>If the link expires, simply reply to this email and we&rsquo;ll send you a fresh one &mdash; <strong>there&rsquo;s no need to register again.</strong></p>
+
+  <p style="margin-top:20px;">We&rsquo;re looking forward to welcoming you to <strong>${safeTitle}</strong> and creating a beautiful, meaningful experience together. &#10024;</p>
+
+  <p style="margin-top:24px;">Warmly,<br>
+    <strong>Sattva Path Retreat Team</strong></p>
+
   <hr style="border:0; border-top:1px solid #e8e2d0; margin:24px 0 12px;">
-  <p style="color:#5f6d61; font-size:13px; margin:0 0 6px;"><strong>Questions?</strong> Reach us at <a href="mailto:sattvapathcollective@gmail.com">sattvapathcollective@gmail.com</a> &mdash; we&rsquo;re happy to help.</p>
-  <p style="color:#5f6d61; font-size:13px; margin:0;">&mdash; Sattva Path Collective</p>
+  <p style="color:#5f6d61; font-size:13px; margin:0;"><strong>Questions?</strong> Reach us at <a href="mailto:sattvapathcollective@gmail.com">sattvapathcollective@gmail.com</a> &mdash; we&rsquo;re happy to help.</p>
 </div>`.trim();
 
   const text = [
     `Hi ${name},`,
     ``,
-    `Thank you for registering for ${title}. We've received your details.`,
+    `Thank you for registering for ${title}. 🌿`,
     ``,
-    `ONE MORE STEP — please complete your payment to secure your spot.`,
+    `We've received your registration details, and your spot is almost confirmed.`,
     ``,
-    `Pay $${amount} securely on Stripe:`,
+    `ONE MORE STEP — complete your payment to secure your spot.`,
+    ``,
+    `[ Complete Your Payment — $${amount} → ]`,
     `${stripeUrl}`,
     ``,
-    `This payment link is active for 24 hours. If it expires, reply to this email and we'll send a fresh one — no need to re-register.`,
+    `Your payment link is active for the next 24 hours.`,
     ``,
-    `Once your payment is confirmed, we'll send a second email with the full event details.`,
+    `WHAT HAPPENS AFTER YOU PAY?`,
     ``,
+    `✓ Your spot is confirmed`,
+    `  Once your payment is received, your registration will be officially confirmed.`,
+    ``,
+    `✓ You'll receive your retreat details`,
+    `  We'll send you the complete event information, including the schedule, accommodation details, and what to expect.`,
+    ``,
+    `✓ We'll keep you prepared`,
+    `  As the retreat gets closer, you'll receive important reminders and everything you need to prepare for your experience.`,
+    ``,
+    `HAVING TROUBLE WITH THE PAYMENT BUTTON?`,
+    `You can use the payment link below:`,
+    `${stripeUrl}`,
+    ``,
+    `If the link expires, simply reply to this email and we'll send you a fresh one — there's no need to register again.`,
+    ``,
+    `We're looking forward to welcoming you to ${title} and creating a beautiful, meaningful experience together. ✨`,
+    ``,
+    `Warmly,`,
+    `Sattva Path Retreat Team`,
+    ``,
+    `---`,
     `Questions? Reach us at sattvapathcollective@gmail.com — we're happy to help.`,
-    ``,
-    `— Sattva Path Collective`
   ].join('\n');
 
   return {
