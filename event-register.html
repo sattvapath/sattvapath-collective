@@ -65,27 +65,11 @@
         margin: 0 auto;
       }
 
-      .header {
-        border-bottom: 1px solid var(--line);
-        background: rgba(251, 247, 239, 0.96);
-      }
-
-      .nav {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        min-height: 68px;
-      }
-
-      a {
-        color: inherit;
-      }
-
-      .brand {
-        font-weight: 700;
-        text-decoration: none;
-      }
+      /* .header and .nav rules removed — the page now uses the site-wide
+         .site-header + .nav from assets/styles.css. The old inline rules
+         were sized for a minimal two-item header (brand + back button) and
+         were making the standard nav render taller and space-between'd
+         when we swapped in the full nav. */
 
       .hero {
         padding: 56px 0 24px;
