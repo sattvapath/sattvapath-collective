@@ -1,0 +1,77 @@
+name: Deploy backend to VPS
+
+# Fires whenever backend/ (or this workflow file) changes on main. Also
+# available as a manual "Run workflow" button on GitHub → Actions.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+# Don't let two deploys run in parallel (they'd race each other on the VPS).
+# A newer push cancels an in-flight older deploy.
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Load SSH deploy key into the agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Trust the VPS host key (TOFU)
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Sync backend/ to /opt/sattva-api/
+        run: |
+          rsync -avz \
+            --exclude 'node_modules/' \
+            --exclude 'package-lock.json' \
+            backend/ \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/sattva-api/
+
+      - name: npm install (idempotent — fast when nothing changed)
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            'cd /opt/sattva-api && npm install --omit=dev'
+
+      - name: Apply schema migration (idempotent — safe re-runs)
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            'sudo -u postgres psql sattva -f /opt/sattva-api/schema.sql'
+
+      - name: Restart sattva-api service
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            'systemctl restart sattva-api'
+
+      - name: Health check (fail loudly if the service didn't come back)
+        run: |
+          sleep 3
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            'systemctl is-active sattva-api && curl --fail -sS http://127.0.0.1:3000/api/health'
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Backend deploy — commit \`${GITHUB_SHA:0:7}\`"
+            echo ""
+            echo "- Target: ${{ secrets.VPS_HOST }}:/opt/sattva-api/"
+            echo "- Status: ${{ job.status }}"
+            echo ""
+            echo "If this failed, SSH in and check \`journalctl -u sattva-api -n 40 --no-pager\`."
+          } >> "$GITHUB_STEP_SUMMARY"
