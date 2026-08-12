@@ -524,6 +524,24 @@
           });
         })();
 
+        // If the URL contains ?session=<slug>, pre-check that box so a QR code
+        // or share link can land people directly on a specific date. Silently
+        // no-op for unknown slugs or already-past sessions.
+        (function preSelectFromUrl() {
+          try {
+            var slug = new URLSearchParams(location.search).get("session");
+            if (!slug) return;
+            var input = document.querySelector(
+              'input[type="checkbox"][name="session"][value="' + slug.replace(/"/g, '') + '"]'
+            );
+            if (input && !input.disabled) {
+              input.checked = true;
+              var card = document.getElementById("register");
+              if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          } catch (e) { /* best-effort */ }
+        })();
+
         function showThanks() {
           if (card) card.hidden = true;
           if (thanks) {
