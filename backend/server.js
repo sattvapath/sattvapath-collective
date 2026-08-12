@@ -776,7 +776,10 @@ app.post('/api/webinar-register', async (req, res) => {
 
 app.get('/api/admin/webinar-registrations', requireAdmin, async (req, res) => {
   const r = await pool.query(
-    `SELECT id, event_slug, name, email, phone, message, email_status, email_error, created_at
+    `SELECT id, event_slug, name, email, phone, message,
+            email_status, email_error,
+            reminder_24h_sent_at, reminder_1h_sent_at, reminder_start_sent_at,
+            created_at
        FROM webinar_registrations
       ORDER BY created_at DESC`
   );

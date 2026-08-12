@@ -820,6 +820,7 @@
                 <th style="padding:8px;">Confirmation</th>
                 <th style="padding:8px;">24h reminder</th>
                 <th style="padding:8px;">1h reminder</th>
+                <th style="padding:8px;">At start</th>
               </tr>
             </thead>
             <tbody id="webinarRegTableBody"></tbody>
@@ -1902,8 +1903,9 @@
         const failedCount  = list.filter((r) => r.email_status === "failed").length;
         const remind24     = list.filter((r) => r.reminder_24h_sent_at).length;
         const remind1      = list.filter((r) => r.reminder_1h_sent_at).length;
+        const remindStart  = list.filter((r) => r.reminder_start_sent_at).length;
         webinarRegSummary.textContent =
-          `${list.length} total · ${sentCount} confirmations sent${failedCount ? " · " + failedCount + " failed" : ""} · 24h: ${remind24} · 1h: ${remind1}`;
+          `${list.length} total · ${sentCount} confirmations sent${failedCount ? " · " + failedCount + " failed" : ""} · 24h: ${remind24} · 1h: ${remind1} · at start: ${remindStart}`;
         webinarRegTableBody.innerHTML = list.map((r) => {
           const ev = apiEventsCache.find((e) => e.id === r.event_slug);
           const eventLabel = ev ? escapeHtmlAdmin(ev.title) : `<span style='color:var(--muted);'>${escapeHtmlAdmin(r.event_slug || '—')}</span>`;
@@ -1926,6 +1928,7 @@
             </td>
             <td style="padding:8px; vertical-align:top; white-space:nowrap;">${r.reminder_24h_sent_at ? statusBadge(formatDateTime(r.reminder_24h_sent_at), true) : "<span style='color:var(--muted);'>—</span>"}</td>
             <td style="padding:8px; vertical-align:top; white-space:nowrap;">${r.reminder_1h_sent_at ? statusBadge(formatDateTime(r.reminder_1h_sent_at), true) : "<span style='color:var(--muted);'>—</span>"}</td>
+            <td style="padding:8px; vertical-align:top; white-space:nowrap;">${r.reminder_start_sent_at ? statusBadge(formatDateTime(r.reminder_start_sent_at), true) : "<span style='color:var(--muted);'>—</span>"}</td>
           </tr>`;
         }).join("");
       }
