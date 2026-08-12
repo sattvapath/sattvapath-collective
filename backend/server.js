@@ -645,13 +645,15 @@ function eventConfirmationEmail(event, { name, email, phone }, extras = {}) {
   <p><strong>Event details:</strong></p>
   <ul>
     ${when ? `<li>When: ${escapeHtml(when)}</li>` : ''}
-    <li>Host: Nirupama Gupta</li>
+    <li>Host: Sattva Path Collective</li>
     ${joinRowHtml}
   </ul>
   ${extraHtml}
   ${paymentHtml}
   <p>${isOnline ? 'Save this link' : 'See you'} &mdash; we&rsquo;ll also send a reminder before the session. See you there!</p>
-  <p style="color:#5f6d61; font-size:13px; margin-top:24px;">&mdash; Sattva Path Collective</p>
+  <hr style="border:0; border-top:1px solid #e8e2d0; margin:24px 0 12px;">
+  <p style="color:#5f6d61; font-size:13px; margin:0 0 6px;"><strong>Questions?</strong> Reach us at <a href="mailto:sattvapathcollective@gmail.com">sattvapathcollective@gmail.com</a> &mdash; we&rsquo;re happy to help.</p>
+  <p style="color:#5f6d61; font-size:13px; margin:0;">&mdash; Sattva Path Collective</p>
 </div>`.trim();
 
   const text = [
@@ -667,12 +669,14 @@ function eventConfirmationEmail(event, { name, email, phone }, extras = {}) {
     ``,
     `Event details:`,
     when ? `  When:  ${when}` : null,
-    `  Host:  Nirupama Gupta`,
+    `  Host:  Sattva Path Collective`,
     joinRowText || null,
     extraText,
     paymentText,
     isOnline ? "Save this link — we'll also send a reminder before the session. See you there!"
              : "See you there — we'll also send a reminder before the session.",
+    ``,
+    `Questions? Reach us at sattvapathcollective@gmail.com — we're happy to help.`,
     ``,
     `— Sattva Path Collective`
   ].filter((v) => v !== null && v !== undefined).join('\n');
@@ -681,6 +685,93 @@ function eventConfirmationEmail(event, { name, email, phone }, extras = {}) {
     subject: `You're registered — ${title}`,
     html, text
   };
+}
+
+// Payment-pending email — sent at submit for paid events, includes a
+// direct Stripe checkout URL so the customer can complete payment from
+// their inbox. The full "you're confirmed" event details come later via
+// eventConfirmationEmail once the Stripe webhook confirms payment.
+function paymentPendingEmail(event, { name, email, phone }, stripeUrl, totalAmount) {
+  const safeName = escapeHtml(name);
+  const title = (event && event.title) || 'the event';
+  const amount = Number(totalAmount || 0).toFixed(2);
+  const safeUrl = escapeHtml(stripeUrl || '');
+  const html = `
+<div style="font-family:Arial,Helvetica,sans-serif; color:#253027; line-height:1.55; font-size:15px;">
+  <p>Hi ${safeName},</p>
+  <p>Thank you for registering for <strong>${escapeHtml(title)}</strong>. We&rsquo;ve received your details.</p>
+  <p><strong>One more step — complete your payment to secure your spot.</strong></p>
+  <p style="margin:24px 0;">
+    <a href="${safeUrl}"
+       style="display:inline-block; background:#486347; color:#fffdf8;
+              padding:14px 28px; border-radius:6px; text-decoration:none;
+              font-weight:600; letter-spacing:0.03em;">
+      Pay $${amount} securely on Stripe &rarr;
+    </a>
+  </p>
+  <p style="color:#5f6d61; font-size:13px;">Or paste this link into your browser:<br>
+     <a href="${safeUrl}">${safeUrl}</a></p>
+  <p style="color:#5f6d61; font-size:13px;">This payment link is active for <strong>24 hours</strong>. If it expires, please reply to this email and we&rsquo;ll send a fresh one — no need to re-register.</p>
+  <p>Once your payment is confirmed, we&rsquo;ll send a second email with the full event details and reminders.</p>
+  <hr style="border:0; border-top:1px solid #e8e2d0; margin:24px 0 12px;">
+  <p style="color:#5f6d61; font-size:13px; margin:0 0 6px;"><strong>Questions?</strong> Reach us at <a href="mailto:sattvapathcollective@gmail.com">sattvapathcollective@gmail.com</a> &mdash; we&rsquo;re happy to help.</p>
+  <p style="color:#5f6d61; font-size:13px; margin:0;">&mdash; Sattva Path Collective</p>
+</div>`.trim();
+
+  const text = [
+    `Hi ${name},`,
+    ``,
+    `Thank you for registering for ${title}. We've received your details.`,
+    ``,
+    `ONE MORE STEP — please complete your payment to secure your spot.`,
+    ``,
+    `Pay $${amount} securely on Stripe:`,
+    `${stripeUrl}`,
+    ``,
+    `This payment link is active for 24 hours. If it expires, reply to this email and we'll send a fresh one — no need to re-register.`,
+    ``,
+    `Once your payment is confirmed, we'll send a second email with the full event details.`,
+    ``,
+    `Questions? Reach us at sattvapathcollective@gmail.com — we're happy to help.`,
+    ``,
+    `— Sattva Path Collective`
+  ].join('\n');
+
+  return {
+    subject: `Please complete your payment — ${title}`,
+    html, text
+  };
+}
+
+// Create a Stripe checkout session for a registration and return the URL.
+// Used by both /api/registrations (to include the URL in the paymentPending
+// email) and /api/checkout-session (frontend button click). Throws if
+// Stripe isn't configured or the amount is invalid.
+async function createStripeSessionFor(reg) {
+  if (!stripe) throw new Error('stripe_not_configured');
+  const amountCents = Math.round(Number(reg.total_amount || 0) * 100);
+  if (amountCents < 50) throw new Error('invalid_amount');
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    customer_email: reg.contact_email,
+    client_reference_id: reg.id,
+    metadata: { registration_id: reg.id, event_id: reg.event_id || '' },
+    line_items: [{
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: `Sattva Path Retreat registration (${reg.participant_count} ${reg.participant_count === 1 ? 'person' : 'people'})`,
+          description: `Registration for ${reg.contact_name}`,
+        },
+        unit_amount: amountCents,
+      },
+      quantity: 1,
+    }],
+    payment_intent_data: { receipt_email: reg.contact_email },
+    success_url: `${SITE_BASE_URL}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${SITE_BASE_URL}/payment-cancel.html?registration_id=${reg.id}`,
+  });
+  return session;
 }
 
 function webinarNotificationEmail({ name, email, phone, message, id, created_at }) {
@@ -1032,8 +1123,45 @@ app.post('/api/registrations', async (req, res) => {
         });
         await pool.query(`UPDATE registrations SET email_status='sent' WHERE id=$1`, [regRow.id]);
       } else {
-        // Paid event — customer confirmation waits for the Stripe webhook.
-        await pool.query(`UPDATE registrations SET email_status='deferred_until_paid' WHERE id=$1`, [regRow.id]);
+        // Paid event — create Stripe checkout session and send a
+        // payment-pending email with the link so the customer can complete
+        // payment from their inbox. Full event details go later, once the
+        // Stripe webhook confirms payment.
+        try {
+          const sess = await createStripeSessionFor({
+            id: regRow.id,
+            contact_email: r.contact_email,
+            contact_name: r.contact_name,
+            participant_count: Number(r.participant_count || participants.length || 1),
+            total_amount: totalAmount,
+            event_id: eventId,
+          });
+          // Persist the session id so admin can see it and the webhook can match.
+          await pool.query(
+            `UPDATE registrations SET stripe_session_id=$2 WHERE id=$1`,
+            [regRow.id, sess.id]
+          );
+          const pay = paymentPendingEmail(event, emailReg, sess.url, totalAmount);
+          await mailer.sendMail({
+            from: SMTP_FROM, to: emailReg.email,
+            subject: pay.subject, html: pay.html, text: pay.text,
+            replyTo: NOTIFY_EMAIL || SMTP_USER,
+          });
+          await pool.query(`UPDATE registrations SET email_status='payment_link_sent' WHERE id=$1`, [regRow.id]);
+        } catch (stripeErr) {
+          // Stripe unavailable — fall back to "deferred until paid" and
+          // alert admin so they can follow up manually.
+          console.error('Payment-pending Stripe session creation failed:', stripeErr.message);
+          await pool.query(
+            `UPDATE registrations SET email_status='deferred_until_paid', email_error=$2 WHERE id=$1`,
+            [regRow.id, `stripe_session_failed: ${String(stripeErr.message || stripeErr).slice(0, 300)}`]
+          );
+          sendAdminAlert(
+            'Payment link creation failed for new registration',
+            `Could not create a Stripe checkout session for registration ${regRow.id} (${r.contact_email}).\n\nError: ${stripeErr.message}\n\nCustomer received NO payment-link email. Please follow up manually.`,
+            null
+          );
+        }
       }
     } else {
       await pool.query(`UPDATE registrations SET email_status='failed', email_error=$2 WHERE id=$1`,
@@ -1076,34 +1204,8 @@ app.post('/api/checkout-session', async (req, res) => {
     const reg = r.rows[0];
     if (!reg) return res.status(404).json({ error: 'registration_not_found' });
     if (reg.payment_status === 'paid') return res.status(409).json({ error: 'already_paid' });
-    const amountCents = Math.round(Number(reg.total_amount || 0) * 100);
-    if (amountCents < 50) return res.status(400).json({ error: 'invalid_amount' });
 
-    // For Checkout Sessions, payment methods enabled in the Stripe dashboard
-    // (Settings -> Payment methods) show up automatically. No need to list them.
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      customer_email: reg.contact_email,
-      client_reference_id: reg.id,
-      metadata: { registration_id: reg.id, event_id: reg.event_id || '' },
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `Sattva Path Retreat registration (${reg.participant_count} ${reg.participant_count === 1 ? 'person' : 'people'})`,
-            description: `Registration for ${reg.contact_name}`,
-          },
-          unit_amount: amountCents,
-        },
-        quantity: 1,
-      }],
-      // Force Stripe to send a payment receipt regardless of dashboard
-      // "Successful payment receipts" toggle (item #1 of the alert-batch).
-      payment_intent_data: { receipt_email: reg.contact_email },
-      success_url: `${SITE_BASE_URL}/payment-success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${SITE_BASE_URL}/payment-cancel.html?registration_id=${reg.id}`,
-    });
-
+    const session = await createStripeSessionFor(reg);
     res.json({ url: session.url, id: session.id });
   } catch (err) {
     console.error('checkout-session error:', err?.message || err);
