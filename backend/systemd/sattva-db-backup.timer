@@ -1,0 +1,13 @@
+[Unit]
+Description=Run Sattva Path database backup nightly at 09:15 UTC (02:15 PDT)
+
+[Timer]
+# 09:15 UTC = 02:15 America/Los_Angeles (PDT) — early morning, off-peak.
+# Persistent=true means the job runs on next boot if the VPS was down when it
+# was supposed to fire, so a reboot never silently skips a nightly backup.
+OnCalendar=*-*-* 09:15:00
+Persistent=true
+Unit=sattva-db-backup.service
+
+[Install]
+WantedBy=timers.target
