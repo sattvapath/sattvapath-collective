@@ -728,6 +728,94 @@ async function renderDynamicEvents() {
   } catch { /* keep old content if any */ }
 }
 
+// Format an ISO datetime like "Thursday, August 20, 2026" and "7:00 PM PDT".
+function formatWebinarWhen(iso) {
+  if (!iso) return { day: "", time: "" };
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return { day: "", time: "" };
+  try {
+    return {
+      day: new Intl.DateTimeFormat("en-US", {
+        weekday: "long", month: "long", day: "numeric", year: "numeric",
+        timeZone: "America/Los_Angeles"
+      }).format(d),
+      time: new Intl.DateTimeFormat("en-US", {
+        hour: "numeric", minute: "2-digit",
+        timeZone: "America/Los_Angeles", timeZoneName: "short"
+      }).format(d)
+    };
+  } catch { return { day: d.toDateString(), time: d.toLocaleTimeString() }; }
+}
+
+function webinarCardHTML(event, options = {}) {
+  const when = formatWebinarWhen(event.event_datetime);
+  const dateText = when.day || event.date || "";
+  const timeText = when.time || "";
+  const link = (event.zoom_link || "").trim();
+  const locationText = event.location || (link ? "via Microsoft Teams" : "");
+  const locationHtml = link
+    ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(locationText || "Join link")}</a>`
+    : escapeHtml(locationText);
+  const isPast = !!options.past;
+  const registerHref = `meditation-webinars.html?session=${encodeURIComponent(event.id)}`;
+  return `
+    <div class="wide-event featured-webinar-block${isPast ? " is-closed" : ""}">
+      ${isPast ? '<span class="closed-badge">Past event</span>' : ""}
+      <h3>${escapeHtml(event.title || "Meditation Webinar")}</h3>
+      ${event.description ? `<p>${escapeHtml(event.description)}</p>` : ""}
+      <div class="wide-event-meta">
+        ${dateText ? `<div><span class="wide-event-label">Date</span><span>${escapeHtml(dateText)}</span></div>` : ""}
+        ${timeText ? `<div><span class="wide-event-label">Time</span><span>${escapeHtml(timeText)}</span></div>` : ""}
+        ${locationHtml ? `<div><span class="wide-event-label">Location</span><span>${locationHtml}</span></div>` : ""}
+      </div>
+      ${isPast ? "" : `<div class="actions"><a class="button" href="${registerHref}">Register Now</a></div>`}
+    </div>`;
+}
+
+// Fetch Webinar events and split them into upcoming/past by event_datetime.
+// Renders into #<upcomingId> and #<pastId> (either may be missing on a page).
+// The past section, if a parent element with id `<pastId>Section` exists, is
+// hidden entirely when there are no past events to show.
+async function renderMeditationWebinars(upcomingId, pastId) {
+  const upcomingEl = upcomingId ? document.getElementById(upcomingId) : null;
+  const pastEl = pastId ? document.getElementById(pastId) : null;
+  const pastSection = pastId ? document.getElementById(`${pastId}Section`) : null;
+  if (!upcomingEl && !pastEl) return;
+
+  let events = [];
+  try {
+    events = await apiGet("/api/events?type=Webinar");
+  } catch {
+    if (upcomingEl) upcomingEl.innerHTML = "";
+    if (pastEl) pastEl.innerHTML = "";
+    if (pastSection) pastSection.hidden = true;
+    return;
+  }
+  const now = Date.now();
+  const withDate = (events || []).filter((e) => e.status === "Posted" && e.event_datetime);
+  const upcoming = withDate
+    .filter((e) => Date.parse(e.event_datetime) > now)
+    .sort((a, b) => Date.parse(a.event_datetime) - Date.parse(b.event_datetime));
+  const past = withDate
+    .filter((e) => Date.parse(e.event_datetime) <= now)
+    .sort((a, b) => Date.parse(b.event_datetime) - Date.parse(a.event_datetime));
+
+  if (upcomingEl) {
+    upcomingEl.innerHTML = upcoming.length
+      ? upcoming.map((e) => webinarCardHTML(e)).join("")
+      : `<div class="empty-state">No upcoming meditation webinars posted yet. Check back soon.</div>`;
+  }
+  if (pastEl) {
+    if (past.length) {
+      pastEl.innerHTML = past.map((e) => webinarCardHTML(e, { past: true })).join("");
+      if (pastSection) pastSection.hidden = false;
+    } else {
+      pastEl.innerHTML = "";
+      if (pastSection) pastSection.hidden = true;
+    }
+  }
+}
+
 // ---------------------- init ----------------------
 
 renderFeaturedRetreat();
@@ -735,6 +823,7 @@ renderDynamicEvents();
 renderEventsByType("Retreat", "retreatEvents", "No additional retreat dates posted yet.");
 renderEventsByType("Meditation", "meditationEvents", "No meditation gatherings posted yet. Check back soon.");
 renderEventsByType("Kirtan/Bhajan", "kirtanEvents", "No kirtan or bhajan gatherings posted yet. Check back soon.");
+renderMeditationWebinars("webinarUpcoming", "webinarPast");
 applySiteContent();
 renderCustomSections();
 renderGallery();

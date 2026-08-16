@@ -290,7 +290,15 @@ VALUES
     ('meditation-webinar-2026-08-16', 'Webinar', 'Posted', 'Meditation Webinar — Sunday Evening',
      'Sunday, August 16, 2026 at 6:00 PM PDT', 'via Microsoft Teams', 'Free', 'All ages',
      'A one-hour live meditation session with Nirupama Gupta over Microsoft Teams.',
-     '2026-08-17 01:00:00+00', 'https://teams.live.com/meet/9366432296211?p=UNN7WZsiGx9L8ZXeL2')
+     '2026-08-17 01:00:00+00', 'https://teams.live.com/meet/9366432296211?p=UNN7WZsiGx9L8ZXeL2'),
+    ('meditation-webinar-2026-08-20', 'Webinar', 'Posted', 'Meditation Webinar — Thursday Evening',
+     'Thursday, August 20, 2026 at 7:00 PM PDT', 'via Microsoft Teams', 'Free', 'All ages',
+     'A one-hour live meditation session with Nirupama Gupta over Microsoft Teams.',
+     '2026-08-21 02:00:00+00', 'https://teams.live.com/meet/9324486012732?p=6S0L23NZ9yVbsnSWzs'),
+    ('meditation-webinar-2026-08-23', 'Webinar', 'Posted', 'Meditation Webinar — Sunday Evening',
+     'Sunday, August 23, 2026 at 5:30 PM PDT', 'via Microsoft Teams', 'Free', 'All ages',
+     'A one-hour live meditation session with Nirupama Gupta over Microsoft Teams.',
+     '2026-08-24 00:30:00+00', 'https://teams.live.com/dl/launcher/launcher.html?url=%2F_%23%2Fmeet%2F9347395651010%3Fp%3DfJGzcccY8AInUIUrPf%26anon%3Dtrue&type=meet&deeplinkId=4e6422b2-32db-40d6-bba9-6e736640e74a&directDl=true&msLaunch=true&enableMobilePage=true&suppressPrompt=true')
 ON CONFLICT (id) DO NOTHING;
 
 COMMIT;

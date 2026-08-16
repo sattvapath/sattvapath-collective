@@ -235,10 +235,11 @@ app.get('/api/events', async (req, res) => {
   let where = `status IN ('Posted','Closed')`;
   if (type) { params.push(type); where += ` AND type = $${params.length}`; }
   const r = await pool.query(
-    `SELECT id, type, status, title, date, location, price, age, description, fields
+    `SELECT id, type, status, title, date, location, price, age, description, fields,
+            event_datetime, zoom_link
        FROM events
       WHERE ${where}
-      ORDER BY (status='Posted') DESC, updated_at DESC`,
+      ORDER BY (status='Posted') DESC, event_datetime ASC NULLS LAST, updated_at DESC`,
     params
   );
   res.json(r.rows);
@@ -246,7 +247,8 @@ app.get('/api/events', async (req, res) => {
 
 app.get('/api/events/:id', async (req, res) => {
   const r = await pool.query(
-    `SELECT id, type, status, title, date, location, price, age, description, fields
+    `SELECT id, type, status, title, date, location, price, age, description, fields,
+            event_datetime, zoom_link
        FROM events WHERE id = $1 AND status IN ('Posted','Closed')`,
     [req.params.id]
   );

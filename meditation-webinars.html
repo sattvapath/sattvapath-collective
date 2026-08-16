@@ -399,19 +399,8 @@
           A one-hour live meditation with Nirupama Gupta over Microsoft Teams. Take a pause from your busy life and reconnect with yourself. <span class="highlight">Spots are limited.</span> <a href="#register">Reserve your seat &rarr;</a>
         </p>
 
-        <ul class="session-list" aria-label="Session dates">
-          <li>
-            <span class="session-day">Thursday, Aug 13</span>
-            <span class="session-time">6:30 PM PDT</span>
-          </li>
-          <li>
-            <span class="session-day">Saturday, Aug 15</span>
-            <span class="session-time">11:00 AM PDT</span>
-          </li>
-          <li>
-            <span class="session-day">Sunday, Aug 16</span>
-            <span class="session-time">6:00 PM PDT</span>
-          </li>
+        <ul class="session-list" id="heroSessionList" aria-label="Session dates">
+          <li><span class="session-day" style="opacity:.7;">Loading upcoming sessions&hellip;</span></li>
         </ul>
 
         <p class="hosted-by-line">Hosted by <strong>Nirupama Gupta</strong></p>
@@ -424,18 +413,11 @@
         <form id="webinarForm" novalidate>
           <fieldset class="session-picker">
             <legend class="field-label">Choose one or more sessions</legend>
-            <label class="session-check" data-when="2026-08-14T01:30:00Z">
-              <input type="checkbox" name="session" value="meditation-webinar-2026-08-13">
-              <span>Thursday, Aug 13 · 6:30 PM PDT</span>
-            </label>
-            <label class="session-check" data-when="2026-08-15T18:00:00Z">
-              <input type="checkbox" name="session" value="meditation-webinar-2026-08-15">
-              <span>Saturday, Aug 15 · 11:00 AM PDT</span>
-            </label>
-            <label class="session-check" data-when="2026-08-17T01:00:00Z">
-              <input type="checkbox" name="session" value="meditation-webinar-2026-08-16">
-              <span>Sunday, Aug 16 · 6:00 PM PDT</span>
-            </label>
+            <div id="sessionPickerList" data-loading="true">
+              <p class="session-empty" style="margin:8px 4px; color:var(--muted); font-size:0.9rem;">
+                Loading upcoming sessions&hellip;
+              </p>
+            </div>
           </fieldset>
 
           <label>
@@ -504,42 +486,113 @@
         var errorEl = document.getElementById("formError");
         var card = document.getElementById("register");
         var thanks = document.getElementById("thankYouCard");
+        var heroList = document.getElementById("heroSessionList");
+        var pickerList = document.getElementById("sessionPickerList");
 
-        // Disable checkboxes for sessions whose start time has already passed
-        // (compares each .session-check's data-when ISO to now).
-        (function markPastSessions() {
-          var now = Date.now();
-          document.querySelectorAll(".session-check[data-when]").forEach(function (label) {
-            var when = Date.parse(label.getAttribute("data-when"));
-            if (isNaN(when) || when > now) return;
-            var input = label.querySelector("input[type='checkbox']");
-            if (input) { input.disabled = true; input.checked = false; }
-            label.classList.add("is-past");
-            if (!label.querySelector(".past-badge")) {
-              var b = document.createElement("span");
-              b.className = "past-badge";
-              b.textContent = "Past";
-              label.appendChild(b);
-            }
+        function escHtml(s) {
+          return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+            return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
           });
-        })();
+        }
 
-        // If the URL contains ?session=<slug>, pre-check that box so a QR code
-        // or share link can land people directly on a specific date. Silently
-        // no-op for unknown slugs or already-past sessions.
-        (function preSelectFromUrl() {
+        // Format an ISO datetime as e.g. "Thursday, Aug 20" and "7:00 PM PDT".
+        function formatWhen(iso) {
+          if (!iso) return { day: "", time: "" };
+          var d = new Date(iso);
+          if (isNaN(d.getTime())) return { day: "", time: "" };
+          try {
+            var day = new Intl.DateTimeFormat("en-US", {
+              weekday: "long", month: "short", day: "numeric",
+              timeZone: "America/Los_Angeles"
+            }).format(d);
+            var time = new Intl.DateTimeFormat("en-US", {
+              hour: "numeric", minute: "2-digit",
+              timeZone: "America/Los_Angeles", timeZoneName: "short"
+            }).format(d);
+            return { day: day, time: time };
+          } catch (e) {
+            return { day: d.toDateString(), time: d.toLocaleTimeString() };
+          }
+        }
+
+        function renderHeroList(sessions) {
+          if (!heroList) return;
+          if (!sessions.length) {
+            heroList.innerHTML = '<li><span class="session-day" style="opacity:.85;">No upcoming sessions right now — check back soon.</span></li>';
+            return;
+          }
+          heroList.innerHTML = sessions.map(function (s) {
+            var w = formatWhen(s.event_datetime);
+            return '<li>'
+              + '<span class="session-day">' + escHtml(w.day) + '</span>'
+              + '<span class="session-time">' + escHtml(w.time) + '</span>'
+              + '</li>';
+          }).join("");
+        }
+
+        function renderPickerList(sessions) {
+          if (!pickerList) return;
+          pickerList.removeAttribute("data-loading");
+          if (!sessions.length) {
+            pickerList.innerHTML = '<p class="session-empty" style="margin:8px 4px; color:var(--muted); font-size:0.9rem;">'
+              + 'No upcoming sessions are open for registration right now. Please check back soon.</p>';
+            return;
+          }
+          pickerList.innerHTML = sessions.map(function (s) {
+            var w = formatWhen(s.event_datetime);
+            var label = w.day && w.time ? (w.day + " · " + w.time) : (s.title || s.id);
+            return '<label class="session-check">'
+              + '<input type="checkbox" name="session" value="' + escHtml(s.id) + '">'
+              + '<span>' + escHtml(label) + '</span>'
+              + '</label>';
+          }).join("");
+        }
+
+        // Pre-select a session if the URL contains ?session=<slug> — supports
+        // QR codes / share links that land people on a specific date. No-op
+        // silently for slugs that don't match a currently-open session.
+        function preSelectFromUrl() {
           try {
             var slug = new URLSearchParams(location.search).get("session");
             if (!slug) return;
-            var input = document.querySelector(
-              'input[type="checkbox"][name="session"][value="' + slug.replace(/"/g, '') + '"]'
+            var input = pickerList && pickerList.querySelector(
+              'input[type="checkbox"][name="session"][value="' + slug.replace(/"/g, "") + '"]'
             );
             if (input && !input.disabled) {
               input.checked = true;
-              var card = document.getElementById("register");
-              if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
+              var reg = document.getElementById("register");
+              if (reg) reg.scrollIntoView({ behavior: "smooth", block: "start" });
             }
           } catch (e) { /* best-effort */ }
+        }
+
+        // Fetch upcoming Webinar events from the API, sort by start time,
+        // filter out past ones, and render both the hero list + registration
+        // checkbox picker. On failure, show a graceful "check back" message
+        // so the page still works cosmetically.
+        (function loadUpcomingSessions() {
+          fetch("/api/events?type=Webinar", { credentials: "same-origin" })
+            .then(function (r) { return r.ok ? r.json() : []; })
+            .then(function (events) {
+              var now = Date.now();
+              var upcoming = (Array.isArray(events) ? events : [])
+                .filter(function (e) {
+                  if (e.status !== "Posted") return false;
+                  if (!e.event_datetime) return false;
+                  var t = Date.parse(e.event_datetime);
+                  return !isNaN(t) && t > now;
+                })
+                .sort(function (a, b) {
+                  return Date.parse(a.event_datetime) - Date.parse(b.event_datetime);
+                });
+              renderHeroList(upcoming);
+              renderPickerList(upcoming);
+              preSelectFromUrl();
+            })
+            .catch(function () {
+              renderHeroList([]);
+              renderPickerList([]);
+            });
         })();
 
         function showThanks() {

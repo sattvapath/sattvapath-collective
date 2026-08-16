@@ -43,13 +43,33 @@ function escapeHtml(s) {
   );
 }
 
+// Human-readable meeting provider inferred from the join URL, so email copy
+// says "Microsoft Teams" for Teams links and "Zoom" for Zoom links instead of
+// hardcoding "Zoom" for every online session. Falls back to a generic
+// "meeting" label for unknown hosts.
+function meetingProviderFromUrl(url) {
+  const u = String(url || '').toLowerCase();
+  if (!u) return { name: 'meeting', joinLabel: 'Join the meeting' };
+  if (u.includes('teams.microsoft.com') || u.includes('teams.live.com') || u.includes('teams.office.com')) {
+    return { name: 'Microsoft Teams', joinLabel: 'Join the Microsoft Teams meeting' };
+  }
+  if (u.includes('zoom.us') || u.includes('zoom.com')) {
+    return { name: 'Zoom', joinLabel: 'Join the Zoom room' };
+  }
+  if (u.includes('meet.google.com')) {
+    return { name: 'Google Meet', joinLabel: 'Join the Google Meet' };
+  }
+  return { name: 'meeting', joinLabel: 'Join the meeting' };
+}
+
 function buildReminderEmail(event, registration, hoursOut) {
   const isOnline = !!(event.zoom_link && event.zoom_link.trim());
   const safeName = escapeHtml(registration.name);
   const eventTitle = event.title;
   const eventWhen = event.date; // freeform human-readable date string
   const eventWhere = event.location || '';
-  const zoomLink = (event.zoom_link || '').trim();
+  const joinUrl = (event.zoom_link || '').trim();
+  const provider = meetingProviderFromUrl(joinUrl);
   const emailExtra = (event.email_extra || '').trim();
 
   let subject, introSoft, introExact, joinBlockHtml, joinBlockText;
@@ -60,7 +80,7 @@ function buildReminderEmail(event, registration, hoursOut) {
     introExact = eventWhen;
   } else if (hoursOut === 1) {
     subject = isOnline
-      ? `Starting in about an hour — join Zoom for ${eventTitle}`
+      ? `Starting in about an hour — join ${provider.name} for ${eventTitle}`
       : `${eventTitle} starts in about an hour`;
     introSoft = 'in about an hour';
     introExact = eventWhen;
@@ -75,9 +95,9 @@ function buildReminderEmail(event, registration, hoursOut) {
 
   if (isOnline) {
     joinBlockHtml = `
-      <p><strong>Join the Zoom room:</strong><br>
-         <a href="${zoomLink}">${escapeHtml(zoomLink)}</a></p>`;
-    joinBlockText = `Join the Zoom room:\n${zoomLink}`;
+      <p><strong>${escapeHtml(provider.joinLabel)}:</strong><br>
+         <a href="${joinUrl}">${escapeHtml(joinUrl)}</a></p>`;
+    joinBlockText = `${provider.joinLabel}:\n${joinUrl}`;
   } else if (eventWhere) {
     joinBlockHtml = `<p><strong>Location:</strong> ${escapeHtml(eventWhere)}</p>`;
     joinBlockText = `Location: ${eventWhere}`;
