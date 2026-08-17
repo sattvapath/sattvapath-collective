@@ -2493,9 +2493,12 @@
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        // Wizard guard: if user is on an earlier step (e.g. hit Enter in an input),
-        // treat submit as "Next" instead of submitting to Stripe.
-        if (form.dataset.step && form.dataset.step !== '3') {
+        // Wizard guard: if user is on an earlier step (e.g. hit Enter in an
+        // input), treat submit as "Next" instead of submitting to Stripe.
+        // Uses the wizard's own step-indicator count so this stays correct if
+        // the number of steps changes again.
+        const finalStep = document.querySelectorAll('.wizard-steps li[data-step-index]').length || 4;
+        if (form.dataset.step && Number(form.dataset.step) < finalStep) {
           document.querySelector('#nextBtn')?.click();
           return;
         }
