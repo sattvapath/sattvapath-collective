@@ -526,6 +526,78 @@
       .fee-summary strong { color: var(--leaf); }
       .fee-summary small { color: var(--muted); }
 
+      /* Additional stay + meals (Step 2 order-level extras) */
+      .extras-fieldset {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        background: #fdfaf1;
+      }
+      .extras-fieldset legend {
+        padding: 0 6px;
+        color: var(--leaf);
+        font-weight: 700;
+      }
+      .extras-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .extras-row label {
+        margin: 0;
+        font-weight: 600;
+      }
+      .extras-row select {
+        max-width: 140px;
+        padding: 8px 12px;
+      }
+      .extras-detail {
+        margin-top: 12px;
+        padding: 12px 14px;
+        background: #fffdf8;
+        border-radius: 6px;
+        border-left: 3px solid var(--gold);
+      }
+      .extras-detail .choice {
+        display: block;
+        margin: 6px 0;
+      }
+      .extras-detail .night-price {
+        color: var(--muted);
+        font-size: 0.9em;
+        margin-left: 4px;
+      }
+      .extras-empty {
+        font-style: italic;
+        color: var(--muted);
+        margin: 0;
+      }
+      .extra-meal-day {
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px dashed rgba(0,0,0,0.08);
+      }
+      .extra-meal-day:first-child {
+        border-top: none;
+        padding-top: 0;
+        margin-top: 0;
+      }
+      .extra-meal-day h4 {
+        margin: 0 0 6px;
+        font-size: 0.95rem;
+        color: var(--leaf);
+      }
+      .extras-summary {
+        margin-top: 14px;
+        padding: 10px 14px;
+        border-radius: 6px;
+        background: #eef4ea;
+        color: var(--ink);
+        font-size: 0.92rem;
+      }
+      .extras-summary strong { color: var(--leaf); }
+
       .occupancy-choice {
         display: flex;
         flex-wrap: wrap;
@@ -1065,6 +1137,53 @@
 
               <div id="additionalParticipants" data-step-view="1 2"></div>
 
+              <div class="field" data-step-view="2">
+                <fieldset class="extras-fieldset">
+                  <legend>Additional stay &amp; meals <span style="font-weight:400;color:var(--muted);">(optional)</span></legend>
+                  <p class="help" style="margin-top:4px;">
+                    The retreat covers Saturday night lodging plus meals from Saturday lunch through Sunday brunch. If you'd like to arrive a day early or stay a day later, add extra nights and meals below.
+                  </p>
+
+                  <div class="extras-row">
+                    <label for="extraStayChoice">Need additional stay?</label>
+                    <select id="extraStayChoice">
+                      <option value="no" selected>No</option>
+                      <option value="yes">Yes</option>
+                    </select>
+                  </div>
+                  <div id="extraStayDetails" class="extras-detail" hidden>
+                    <p class="help" style="margin:0 0 8px;"><strong>Pick the extra night(s)</strong> &mdash; each night is charged at your room's per-night rate.</p>
+                    <label class="choice extras-night-choice">
+                      <input type="checkbox" data-extra-night="2026-09-18" data-night-label="Friday, Sep 18">
+                      <span>Friday, Sep 18 (night before retreat) <span class="night-price" data-night-price="2026-09-18"></span></span>
+                    </label>
+                    <label class="choice extras-night-choice">
+                      <input type="checkbox" data-extra-night="2026-09-20" data-night-label="Sunday, Sep 20">
+                      <span>Sunday, Sep 20 (night after retreat) <span class="night-price" data-night-price="2026-09-20"></span></span>
+                    </label>
+                  </div>
+
+                  <div class="extras-row" style="margin-top:14px;">
+                    <label for="extraMealsChoice">Need additional meals?</label>
+                    <select id="extraMealsChoice">
+                      <option value="no" selected>No</option>
+                      <option value="yes">Yes</option>
+                    </select>
+                  </div>
+                  <div id="extraMealsDetails" class="extras-detail" hidden>
+                    <p class="help" style="margin:0 0 8px;">
+                      <strong>Per person, per meal:</strong> Breakfast $28 &middot; Lunch $36 &middot; Dinner $42.
+                      Meal options appear for each extra day you've selected above.
+                    </p>
+                    <div id="extraMealsList">
+                      <p class="help extras-empty">Pick at least one extra night above to see meal options.</p>
+                    </div>
+                  </div>
+
+                  <div id="extrasSummary" class="extras-summary" hidden aria-live="polite"></div>
+                </fieldset>
+              </div>
+
               <div class="field" data-step-view="3">
                 <div id="reviewSummary" aria-live="polite"></div>
               </div>
@@ -1350,6 +1469,23 @@
         { id: "lodge-8", label: "Lodge 8", village: "Lodge", beds: 3, maxOccupancy: 2, single: 195, shared: 97.5 },
       ];
       const ROOM_BY_ID = Object.fromEntries(ROOMS.map((r) => [r.id, r]));
+
+      // ---- Optional extras (extra nights + meals) — order-level, Step 2 ----
+      // Each extra night is charged at the same per-night rate as the room the
+      // participant already booked (room.shared × spots), so a party of 3
+      // adding Fri night pays roughly what they paid for Sat night's lodging.
+      // Meals are per person per meal — party of N ordering "Fri Dinner" is
+      // charged N × $42. Meal availability is derived from the extra nights
+      // selected: Fri stayover unlocks Fri meals; Sun stayover unlocks Mon
+      // meals (the checkout-day breakfast/lunch/dinner). We deliberately don't
+      // duplicate meals the retreat itself already serves.
+      const EXTRA_NIGHT_OPTIONS = [
+        { date: '2026-09-18', label: 'Friday, Sep 18',   mealDay: { date: '2026-09-18', label: 'Friday, Sep 18' } },
+        { date: '2026-09-20', label: 'Sunday, Sep 20',   mealDay: { date: '2026-09-21', label: 'Monday, Sep 21' } },
+      ];
+      const MEAL_PRICES = { breakfast: 28, lunch: 36, dinner: 42 };
+      const MEAL_ORDER  = ['breakfast', 'lunch', 'dinner'];
+      const MEAL_LABEL  = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' };
 
       // Spots already taken globally per room id, fetched from the server so
       // the dropdown reflects other people's registrations, not just this form.
@@ -1637,9 +1773,150 @@
         return fees;
       }
       function totalPaymentDue(participants = null) {
-        if (participants) return participants.reduce((t, p) => t + Number(p.fee || 0), 0);
-        return selectedParticipantFees().reduce((t, f) => t + f, 0);
+        const base = participants
+          ? participants.reduce((t, p) => t + Number(p.fee || 0), 0)
+          : selectedParticipantFees().reduce((t, f) => t + f, 0);
+        return base + computeExtras().total;
       }
+      // Per-night lodging cost across the whole party (sum of participant
+      // room fees for a single night). Used to price each extra night.
+      function partyLodgingPerNight() {
+        const count = Number(participantCount.value);
+        let sum = 0;
+        for (let i = 1; i <= count; i += 1) {
+          const room = selectedRoom(i);
+          const spots = selectedSpots(i);
+          if (!room || !spots) continue;
+          sum += spots * room.shared; // NIGHTS=1 by design
+        }
+        return sum;
+      }
+
+      // Extras state, extracted from the DOM. Returns { nights: [...], meals: [...], nightsCost, mealsCost, total }.
+      // nights is an array of { date, label, cost } for each checked night.
+      // meals is an array of { date, dayLabel, meal, unitPrice, personCount, cost }.
+      function computeExtras() {
+        const stayOn   = document.querySelector('#extraStayChoice')?.value === 'yes';
+        const mealsOn  = document.querySelector('#extraMealsChoice')?.value === 'yes';
+        const perNight = partyLodgingPerNight();
+        const partySize = Number(participantCount.value) || 0;
+
+        const nights = [];
+        if (stayOn) {
+          document.querySelectorAll('[data-extra-night]:checked').forEach((cb) => {
+            const date  = cb.getAttribute('data-extra-night');
+            const label = cb.getAttribute('data-night-label') || date;
+            nights.push({ date, label, cost: perNight });
+          });
+        }
+
+        const meals = [];
+        if (mealsOn) {
+          document.querySelectorAll('[data-extra-meal]:checked').forEach((cb) => {
+            const date      = cb.getAttribute('data-meal-date');
+            const dayLabel  = cb.getAttribute('data-meal-day-label') || date;
+            const meal      = cb.getAttribute('data-extra-meal');
+            const unitPrice = MEAL_PRICES[meal] || 0;
+            meals.push({
+              date, dayLabel, meal, unitPrice,
+              personCount: partySize,
+              cost: unitPrice * partySize,
+            });
+          });
+        }
+
+        const nightsCost = nights.reduce((s, n) => s + n.cost, 0);
+        const mealsCost  = meals.reduce((s, m) => s + m.cost, 0);
+        return { nights, meals, nightsCost, mealsCost, total: nightsCost + mealsCost };
+      }
+
+      // Rebuild the meal checkbox list. Each extra night unlocks one "meal day"
+      // (Fri stayover → Fri meals; Sun stayover → Mon meals — see
+      // EXTRA_NIGHT_OPTIONS). Preserves user's previous meal picks by
+      // remembering which (date,meal) pairs were checked and re-checking them
+      // if the day is still available after nights change.
+      function renderExtraMealOptions() {
+        const list = document.querySelector('#extraMealsList');
+        if (!list) return;
+        const previouslyChecked = new Set(
+          Array.from(list.querySelectorAll('[data-extra-meal]:checked'))
+            .map((cb) => `${cb.getAttribute('data-meal-date')}|${cb.getAttribute('data-extra-meal')}`)
+        );
+        const nightDates = new Set(
+          Array.from(document.querySelectorAll('[data-extra-night]:checked'))
+            .map((cb) => cb.getAttribute('data-extra-night'))
+        );
+        const mealDays = EXTRA_NIGHT_OPTIONS
+          .filter((n) => nightDates.has(n.date))
+          .map((n) => n.mealDay);
+
+        if (!mealDays.length) {
+          list.innerHTML = '<p class="help extras-empty">Pick at least one extra night above to see meal options.</p>';
+          return;
+        }
+
+        const partySize = Number(participantCount.value) || 1;
+        list.innerHTML = mealDays.map((day) => `
+          <div class="extra-meal-day">
+            <h4>${day.label}</h4>
+            ${MEAL_ORDER.map((meal) => {
+              const unit  = MEAL_PRICES[meal];
+              const total = unit * partySize;
+              const partyNote = partySize > 1 ? ` &middot; $${unit} × ${partySize} = <strong>$${total}</strong>` : ` &middot; <strong>$${unit}</strong>`;
+              const wasChecked = previouslyChecked.has(`${day.date}|${meal}`);
+              return `
+                <label class="choice">
+                  <input type="checkbox"
+                         data-extra-meal="${meal}"
+                         data-meal-date="${day.date}"
+                         data-meal-day-label="${day.label}"
+                         ${wasChecked ? 'checked' : ''}>
+                  <span>${MEAL_LABEL[meal]}${partyNote}</span>
+                </label>`;
+            }).join('')}
+          </div>
+        `).join('');
+      }
+
+      // Sync the extras UI: show/hide the detail blocks based on the two
+      // Yes/No dropdowns, refresh the per-night price hints, rebuild the meal
+      // options if the selected nights changed, redraw the extras summary line.
+      function updateExtrasUI() {
+        const stayOn  = document.querySelector('#extraStayChoice')?.value === 'yes';
+        const mealsOn = document.querySelector('#extraMealsChoice')?.value === 'yes';
+        const stayDetails  = document.querySelector('#extraStayDetails');
+        const mealsDetails = document.querySelector('#extraMealsDetails');
+        if (stayDetails)  stayDetails.hidden  = !stayOn;
+        if (mealsDetails) mealsDetails.hidden = !mealsOn;
+
+        // Uncheck (and clear) any nights the user is hiding via Stay=No
+        if (!stayOn) {
+          document.querySelectorAll('[data-extra-night]:checked').forEach((cb) => { cb.checked = false; });
+        }
+
+        // Update per-night price hints based on current room selections.
+        const perNight = partyLodgingPerNight();
+        document.querySelectorAll('[data-night-price]').forEach((el) => {
+          el.textContent = perNight > 0 ? `— $${perNight.toFixed(2)}/night` : '';
+        });
+
+        if (mealsOn) renderExtraMealOptions();
+
+        // Extras summary
+        const summary = document.querySelector('#extrasSummary');
+        const { nights, meals, nightsCost, mealsCost, total } = computeExtras();
+        if (!summary) return;
+        if (total <= 0) { summary.hidden = true; summary.innerHTML = ''; return; }
+        const nightLine = nights.length
+          ? `<div>${nights.length} extra night${nights.length === 1 ? '' : 's'}: <strong>$${nightsCost.toFixed(2)}</strong> (${nights.map((n) => n.label).join(', ')})</div>`
+          : '';
+        const mealLine = meals.length
+          ? `<div>${meals.length} extra meal${meals.length === 1 ? '' : 's'} × party of ${Number(participantCount.value) || 1}: <strong>$${mealsCost.toFixed(2)}</strong></div>`
+          : '';
+        summary.innerHTML = `${nightLine}${mealLine}<div style="margin-top:6px;"><strong>Extras subtotal: $${total.toFixed(2)}</strong></div>`;
+        summary.hidden = false;
+      }
+
       function updatePaymentTotal() {
         const count = Number(participantCount.value);
         let total = 0, complete = 0;
@@ -1667,10 +1944,16 @@
             else              note.innerHTML   = `<strong>Room: $${(spots * room.shared).toFixed(2)} for 1 night (${spots} spot${spots === 1 ? "" : "s"})</strong> · Retreat fee $${currentRetreatFee()} · <strong>Participant total: $${participantTotalFee(i).toFixed(2)}</strong>`;
           }
         }
+        updateExtrasUI();
+        const extras = computeExtras();
+        total += extras.total;
         paymentTotalAmount.textContent = formatCurrency(total);
-        paymentTotalHelp.textContent = complete === count
+        const baseNote = complete === count
           ? "This is the total you'll pay by card or bank at checkout."
           : `Room + spots chosen for ${complete} of ${count} participant${count === 1 ? "" : "s"}.`;
+        paymentTotalHelp.textContent = extras.total > 0
+          ? `${baseNote} Includes $${extras.total.toFixed(2)} in extras (${extras.nights.length} night${extras.nights.length === 1 ? '' : 's'}, ${extras.meals.length} meal${extras.meals.length === 1 ? '' : 's'}).`
+          : baseNote;
       }
 
       function populateRoomDropdowns() {
@@ -1953,6 +2236,14 @@
         const location = retreatLocation();
         const paymentTotal = formatCurrency(totalPaymentDue(participants));
         const recipients = uniqueEmails(participants);
+        const extras = computeExtras();
+        const extraLines = extras.total > 0 ? [
+          "",
+          "Additional stay & meals:",
+          ...extras.nights.map((n) => `  ${n.label} — ${formatCurrency(n.cost)}`),
+          ...extras.meals.map((m) => `  ${m.dayLabel} ${MEAL_LABEL[m.meal] || m.meal} — $${m.unitPrice} × ${m.personCount} = ${formatCurrency(m.cost)}`),
+          `  Extras subtotal: ${formatCurrency(extras.total)}`,
+        ] : [];
         const body = [
           `From: ${confirmationSenderName}`,
           `Reply-To: ${contactEmail}`,
@@ -1965,6 +2256,7 @@
           `Date: ${date}`,
           `Location: ${location}`,
           `Total payment due: ${paymentTotal}`,
+          ...extraLines,
           "",
           "Participant details included in this registration:",
           participantEmailDetails(participants),
@@ -2208,9 +2500,11 @@
         if (submitButton) { submitButton.disabled = true; submitButton.textContent = "Sending..."; }
 
         const primary = participants[0] || {};
-        const totalDue = totalPaymentDue(participants);
         const retreatFeeTotal = participants.reduce((sum, p) => sum + Number(p.retreatFee || 0), 0);
         const lodgingTotal = participants.reduce((sum, p) => sum + Number(p.roomFee || 0), 0);
+        const extras = computeExtras();
+        // totalPaymentDue already folds extras.total in, so no second add.
+        const totalDue = totalPaymentDue(participants);
         const feeType = new Date().toISOString().slice(0, 10) < EARLY_BIRD_CUTOFF ? "early_bird" : "regular";
 
         const payload = {
@@ -2231,6 +2525,18 @@
           accommodation: primary.accommodation || "",
           accommodation_details: {
             rooms: participants.map((p) => ({ role: p.role, room: p.room, spots: p.spots, roommate: p.roommate })),
+            extras: {
+              extra_stay: extras.nights.length > 0,
+              extra_meals: extras.meals.length > 0,
+              nights: extras.nights.map((n) => ({ date: n.date, label: n.label, cost: n.cost })),
+              meals: extras.meals.map((m) => ({
+                date: m.date, day_label: m.dayLabel, meal: m.meal,
+                unit_price: m.unitPrice, person_count: m.personCount, cost: m.cost,
+              })),
+              nights_cost: extras.nightsCost,
+              meals_cost: extras.mealsCost,
+              extras_total: extras.total,
+            },
           },
           dietary_notes: participants.map((p) => p.notes).filter(Boolean).join(" | "),
           emergency_name: primary.emergencyName || "",
@@ -2239,6 +2545,7 @@
           fee_per_person: currentRetreatFee(),
           retreat_fee_total: retreatFeeTotal,
           lodging_total: lodgingTotal,
+          extras_total: extras.total,
           total_amount: totalDue,
           liability_accepted: !!document.querySelector("#liabilityConfirm")?.checked,
           source: "website",
@@ -2302,8 +2609,24 @@
         snapshotForm();
       });
 
+      // Extras (additional stay + meals) wiring. Listen at the fieldset level
+      // so newly-rendered meal checkboxes are picked up without re-binding.
+      const extrasFieldset = document.querySelector('.extras-fieldset');
+      if (extrasFieldset) {
+        extrasFieldset.addEventListener('change', (event) => {
+          const el = event.target;
+          if (
+            el.matches('#extraStayChoice, #extraMealsChoice') ||
+            el.matches('[data-extra-night]') ||
+            el.matches('[data-extra-meal]')
+          ) {
+            updatePaymentTotal();
+          }
+        });
+      }
+
       const FORM_STATE_KEY = "sattva-retreat-registration-inprogress";
-      const TOP_LEVEL_FIELDS = ["#questions", "#ageConfirm", "#liabilityConfirm"];
+      const TOP_LEVEL_FIELDS = ["#questions", "#ageConfirm", "#liabilityConfirm", "#extraStayChoice", "#extraMealsChoice"];
 
       function snapshotForm() {
         try {
@@ -2320,6 +2643,12 @@
             state.participants[idx] = state.participants[idx] || {};
             state.participants[idx][key] = el.value;
           });
+          // Persist which extra nights + meals are checked (checkbox arrays
+          // aren't covered by TOP_LEVEL_FIELDS).
+          state.extraNights = Array.from(document.querySelectorAll('[data-extra-night]:checked'))
+            .map((cb) => cb.getAttribute('data-extra-night'));
+          state.extraMeals = Array.from(document.querySelectorAll('[data-extra-meal]:checked'))
+            .map((cb) => `${cb.getAttribute('data-meal-date')}|${cb.getAttribute('data-extra-meal')}`);
           sessionStorage.setItem(FORM_STATE_KEY, JSON.stringify(state));
         } catch { /* ignore quota errors */ }
       }
@@ -2348,7 +2677,23 @@
               });
             });
           }
+          // Restore extra-night checkboxes first — this drives which meal
+          // options are rendered, so it must run before we re-check the meals.
+          if (Array.isArray(state.extraNights)) {
+            state.extraNights.forEach((date) => {
+              const cb = document.querySelector(`[data-extra-night="${date}"]`);
+              if (cb) cb.checked = true;
+            });
+          }
           updateRoommateRequirements();
+          updateExtrasUI(); // rebuilds the meal option DOM based on restored nights
+          if (Array.isArray(state.extraMeals)) {
+            state.extraMeals.forEach((sig) => {
+              const [date, meal] = sig.split('|');
+              const cb = document.querySelector(`[data-extra-meal="${meal}"][data-meal-date="${date}"]`);
+              if (cb) cb.checked = true;
+            });
+          }
           updatePaymentTotal();
         } catch { /* ignore malformed state */ }
       }
@@ -2480,10 +2825,28 @@
                 </div>
               </div>`);
           }
+          const extras = computeExtras();
+          let extrasBlock = '';
+          if (extras.total > 0) {
+            const nightRows = extras.nights.map((n) =>
+              `<div>&bull; ${escapeHtml(n.label)} &mdash; ${formatCurrency(n.cost)}</div>`).join('');
+            const mealRows = extras.meals.map((m) =>
+              `<div>&bull; ${escapeHtml(m.dayLabel)} ${escapeHtml(MEAL_LABEL[m.meal] || m.meal)} &mdash; $${m.unitPrice} × ${m.personCount} = ${formatCurrency(m.cost)}</div>`).join('');
+            extrasBlock = `
+              <div class="review-participant" style="border:1px solid var(--gold); border-radius:var(--radius); padding:14px 16px; margin-bottom:12px; background:#fdf6e6;">
+                <strong style="display:block; color:var(--leaf); margin-bottom:6px;">Additional stay &amp; meals</strong>
+                <div style="font-size:0.92rem;">
+                  ${nightRows || ''}
+                  ${mealRows || ''}
+                  <div style="margin-top:6px;"><strong>Extras subtotal: ${formatCurrency(extras.total)}</strong></div>
+                </div>
+              </div>`;
+          }
           reviewSummary.innerHTML = `
             <p class="section-kicker" style="margin-bottom:10px;">Please review before paying</p>
             <p style="margin:0 0 12px;"><strong>${count} participant${count === 1 ? '' : 's'}</strong> · ${escapeHtml(feeType)}</p>
-            ${parts.join('')}`;
+            ${parts.join('')}
+            ${extrasBlock}`;
         }
 
         function escapeHtml(s) {
