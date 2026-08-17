@@ -1014,7 +1014,8 @@
          data-step-view="1 2" is visible in both Step 1 and Step 2. */
       .wizard[data-step="1"] [data-step-view]:not([data-step-view~="1"]),
       .wizard[data-step="2"] [data-step-view]:not([data-step-view~="2"]),
-      .wizard[data-step="3"] [data-step-view]:not([data-step-view~="3"]) {
+      .wizard[data-step="3"] [data-step-view]:not([data-step-view~="3"]),
+      .wizard[data-step="4"] [data-step-view]:not([data-step-view~="4"]) {
         display: none !important;
       }
 
@@ -1114,7 +1115,9 @@
               <li class="step-connector" aria-hidden="true"></li>
               <li data-step-index="2"><span class="step-num"><span class="step-num-digit">2</span></span><span class="step-label">Stay &amp; preferences</span></li>
               <li class="step-connector" aria-hidden="true"></li>
-              <li data-step-index="3"><span class="step-num"><span class="step-num-digit">3</span></span><span class="step-label">Review &amp; pay</span></li>
+              <li data-step-index="3"><span class="step-num"><span class="step-num-digit">3</span></span><span class="step-label">Additional stay</span></li>
+              <li class="step-connector" aria-hidden="true"></li>
+              <li data-step-index="4"><span class="step-num"><span class="step-num-digit">4</span></span><span class="step-label">Review &amp; pay</span></li>
             </ol>
 
             <div class="fields">
@@ -1142,11 +1145,11 @@
 
               <div id="additionalParticipants" data-step-view="1 2"></div>
 
-              <div class="field" data-step-view="2">
+              <div class="field" data-step-view="3">
                 <fieldset class="extras-fieldset">
-                  <legend>Additional stay &amp; meals <span style="font-weight:400;color:var(--muted);">(optional)</span></legend>
+                  <legend>Additional stay outside of retreat <span style="font-weight:400;color:var(--muted);">(optional)</span></legend>
                   <p class="help" style="margin-top:4px;">
-                    The retreat covers Saturday night lodging plus meals from Saturday lunch through Sunday brunch. If you'd like to arrive a day early or stay a day later, add extra nights and meals below.
+                    The retreat covers Saturday night lodging plus meals from Saturday lunch through Sunday brunch. If you'd like to arrive a day early or stay a day later, add extra nights and meals below. If you don't need either, just click <strong>Next</strong> to continue.
                   </p>
 
                   <div class="extras-row">
@@ -1189,11 +1192,11 @@
                 </fieldset>
               </div>
 
-              <div class="field" data-step-view="3">
+              <div class="field" data-step-view="4">
                 <div id="reviewSummary" aria-live="polite"></div>
               </div>
 
-              <div class="field" data-step-view="3">
+              <div class="field" data-step-view="4">
                 <div class="payment-total" id="paymentTotal" aria-live="polite">
                   <strong>Total payment</strong>
                   <span id="paymentTotalAmount">$0</span>
@@ -1204,12 +1207,12 @@
                 </p>
               </div>
 
-              <div class="field" data-step-view="3">
+              <div class="field" data-step-view="4">
                 <label for="questions">Questions or notes for Sattva Path Collective</label>
                 <textarea id="questions" name="entry.1333964764" data-speech></textarea>
               </div>
 
-              <div class="field" data-step-view="3">
+              <div class="field" data-step-view="4">
                 <fieldset>
                   <legend>Age confirmation <span class="required">*</span></legend>
                   <label class="choice">
@@ -1219,7 +1222,7 @@
                 </fieldset>
               </div>
 
-              <div class="field" data-step-view="3">
+              <div class="field" data-step-view="4">
                 <fieldset>
                   <legend>Liability & Cancellation Agreement <span class="required">*</span></legend>
                   <label class="choice">
@@ -2758,10 +2761,11 @@
         const backBtn  = document.querySelector('#backBtn');
         const submitBtn = document.querySelector('#submitBtn');
         const reviewSummary = document.querySelector('#reviewSummary');
-        const TOTAL_STEPS = 3;
+        const TOTAL_STEPS = 4;
         const STEP_NEXT_LABEL = {
           1: 'Next: Stay & preferences →',
-          2: 'Next: Review & pay →',
+          2: 'Next: Additional stay outside retreat →',
+          3: 'Next: Review & pay →',
         };
 
         function currentStep() {
