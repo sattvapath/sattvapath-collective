@@ -573,20 +573,25 @@
         color: var(--muted);
         margin: 0;
       }
-      .extra-meal-day {
-        margin-top: 10px;
-        padding-top: 8px;
-        border-top: 1px dashed rgba(0,0,0,0.08);
+      .extra-meal-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px 20px;
       }
-      .extra-meal-day:first-child {
-        border-top: none;
-        padding-top: 0;
-        margin-top: 0;
+      .extra-meal-day {
+        padding: 10px 12px;
+        border: 1px solid rgba(0,0,0,0.06);
+        border-radius: 6px;
+        background: #fdf9ee;
       }
       .extra-meal-day h4 {
         margin: 0 0 6px;
         font-size: 0.95rem;
         color: var(--leaf);
+      }
+      .extra-meal-day .choice {
+        display: block;
+        margin: 4px 0;
       }
       .extras-summary {
         margin-top: 14px;
@@ -1475,13 +1480,26 @@
       // participant already booked (room.shared × spots), so a party of 3
       // adding Fri night pays roughly what they paid for Sat night's lodging.
       // Meals are per person per meal — party of N ordering "Fri Dinner" is
-      // charged N × $42. Meal availability is derived from the extra nights
-      // selected: Fri stayover unlocks Fri meals; Sun stayover unlocks Mon
-      // meals (the checkout-day breakfast/lunch/dinner). We deliberately don't
-      // duplicate meals the retreat itself already serves.
+      // charged N × $42.
+      //
+      // mealDays per night lists ONLY the meals the retreat itself doesn't
+      // already serve on that day, so we never double-charge:
+      //   - Fri stayover: Fri B/L/D (guest arrival — retreat covers nothing Fri)
+      //   - Sun stayover: Sun L/D (retreat ends Sun noon after brunch) + Mon B/L/D
       const EXTRA_NIGHT_OPTIONS = [
-        { date: '2026-09-18', label: 'Friday, Sep 18',   mealDay: { date: '2026-09-18', label: 'Friday, Sep 18' } },
-        { date: '2026-09-20', label: 'Sunday, Sep 20',   mealDay: { date: '2026-09-21', label: 'Monday, Sep 21' } },
+        {
+          date: '2026-09-18', label: 'Friday, Sep 18',
+          mealDays: [
+            { date: '2026-09-18', label: 'Friday, Sep 18', meals: ['breakfast', 'lunch', 'dinner'] },
+          ],
+        },
+        {
+          date: '2026-09-20', label: 'Sunday, Sep 20',
+          mealDays: [
+            { date: '2026-09-20', label: 'Sunday, Sep 20', meals: ['lunch', 'dinner'] },
+            { date: '2026-09-21', label: 'Monday, Sep 21', meals: ['breakfast', 'lunch', 'dinner'] },
+          ],
+        },
       ];
       const MEAL_PRICES = { breakfast: 28, lunch: 36, dinner: 42 };
       const MEAL_ORDER  = ['breakfast', 'lunch', 'dinner'];
@@ -1830,11 +1848,11 @@
         return { nights, meals, nightsCost, mealsCost, total: nightsCost + mealsCost };
       }
 
-      // Rebuild the meal checkbox list. Each extra night unlocks one "meal day"
-      // (Fri stayover → Fri meals; Sun stayover → Mon meals — see
-      // EXTRA_NIGHT_OPTIONS). Preserves user's previous meal picks by
-      // remembering which (date,meal) pairs were checked and re-checking them
-      // if the day is still available after nights change.
+      // Rebuild the meal checkbox list. Each extra night contributes one or
+      // more "meal days" (see EXTRA_NIGHT_OPTIONS.mealDays), and each meal day
+      // only lists the meals the retreat itself doesn't already serve.
+      // Preserves user's previous picks by remembering which (date,meal) pairs
+      // were checked and re-checking them if the day is still available.
       function renderExtraMealOptions() {
         const list = document.querySelector('#extraMealsList');
         if (!list) return;
@@ -1846,9 +1864,15 @@
           Array.from(document.querySelectorAll('[data-extra-night]:checked'))
             .map((cb) => cb.getAttribute('data-extra-night'))
         );
-        const mealDays = EXTRA_NIGHT_OPTIONS
+        // Flatten mealDays across all selected nights, de-duped by date so
+        // overlapping stayovers don't render the same day twice.
+        const dayMap = new Map();
+        EXTRA_NIGHT_OPTIONS
           .filter((n) => nightDates.has(n.date))
-          .map((n) => n.mealDay);
+          .forEach((n) => n.mealDays.forEach((d) => {
+            if (!dayMap.has(d.date)) dayMap.set(d.date, d);
+          }));
+        const mealDays = Array.from(dayMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 
         if (!mealDays.length) {
           list.innerHTML = '<p class="help extras-empty">Pick at least one extra night above to see meal options.</p>';
@@ -1856,10 +1880,10 @@
         }
 
         const partySize = Number(participantCount.value) || 1;
-        list.innerHTML = mealDays.map((day) => `
+        const columns = mealDays.map((day) => `
           <div class="extra-meal-day">
             <h4>${day.label}</h4>
-            ${MEAL_ORDER.map((meal) => {
+            ${day.meals.map((meal) => {
               const unit  = MEAL_PRICES[meal];
               const total = unit * partySize;
               const partyNote = partySize > 1 ? ` &middot; $${unit} × ${partySize} = <strong>$${total}</strong>` : ` &middot; <strong>$${unit}</strong>`;
@@ -1876,6 +1900,7 @@
             }).join('')}
           </div>
         `).join('');
+        list.innerHTML = `<div class="extra-meal-grid">${columns}</div>`;
       }
 
       // Sync the extras UI: show/hide the detail blocks based on the two
