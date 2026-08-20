@@ -298,7 +298,19 @@ VALUES
     ('meditation-webinar-2026-08-23', 'Webinar', 'Posted', 'Meditation Webinar — Sunday Evening',
      'Sunday, August 23, 2026 at 5:30 PM PDT', 'via Microsoft Teams', 'Free', 'All ages',
      'A one-hour live meditation session with Nirupama Gupta over Microsoft Teams.',
-     '2026-08-24 00:30:00+00', 'https://teams.live.com/dl/launcher/launcher.html?url=%2F_%23%2Fmeet%2F9347395651010%3Fp%3DfJGzcccY8AInUIUrPf%26anon%3Dtrue&type=meet&deeplinkId=4e6422b2-32db-40d6-bba9-6e736640e74a&directDl=true&msLaunch=true&enableMobilePage=true&suppressPrompt=true')
+     '2026-08-24 00:30:00+00', 'https://teams.live.com/dl/launcher/launcher.html?url=%2F_%23%2Fmeet%2F9347395651010%3Fp%3DfJGzcccY8AInUIUrPf%26anon%3Dtrue&type=meet&deeplinkId=4e6422b2-32db-40d6-bba9-6e736640e74a&directDl=true&msLaunch=true&enableMobilePage=true&suppressPrompt=true'),
+    ('meditation-webinar-2026-08-25', 'Webinar', 'Posted', 'Meditation Webinar — Tuesday Evening',
+     'Tuesday, August 25, 2026 at 6:30 PM PDT', 'via Microsoft Teams', 'Free', 'All ages',
+     'A one-hour live meditation session with Nirupama Gupta over Microsoft Teams.',
+     '2026-08-26 01:30:00+00', 'https://teams.live.com/dl/launcher/launcher.html?url=%2F_%23%2Fmeet%2F93771470570572%3Fp%3Dk903HuskJmWs32GzOE%26anon%3Dtrue&type=meet&deeplinkId=430074ba-64d9-407a-9539-ea4c44713502&directDl=true&msLaunch=true&enableMobilePage=true&suppressPrompt=true'),
+    ('meditation-webinar-2026-08-27', 'Webinar', 'Posted', 'Meditation Webinar — Thursday Evening',
+     'Thursday, August 27, 2026 at 6:30 PM PDT', 'via Microsoft Teams', 'Free', 'All ages',
+     'A one-hour live meditation session with Nirupama Gupta over Microsoft Teams.',
+     '2026-08-28 01:30:00+00', 'https://teams.live.com/dl/launcher/launcher.html?url=%2F_%23%2Fmeet%2F9343801229283%3Fp%3DRcQ0ApZBsDWeSKzduU%26anon%3Dtrue&type=meet&deeplinkId=d8e674cf-1046-4c85-97f0-da8f098fe481&directDl=true&msLaunch=true&enableMobilePage=true&suppressPrompt=true'),
+    ('meditation-webinar-2026-08-29', 'Webinar', 'Posted', 'Meditation Webinar — Saturday Morning',
+     'Saturday, August 29, 2026 at 11:00 AM PDT', 'via Microsoft Teams', 'Free', 'All ages',
+     'A one-hour live meditation session with Nirupama Gupta over Microsoft Teams.',
+     '2026-08-29 18:00:00+00', 'https://teams.live.com/dl/launcher/launcher.html?url=%2F_%23%2Fmeet%2F9310130131844%3Fp%3DDHPlG27xCUuuEKhihv%26anon%3Dtrue&type=meet&deeplinkId=409e7f3f-0ec9-4b49-b880-c7483f524a96&directDl=true&msLaunch=true&enableMobilePage=true&suppressPrompt=true')
 ON CONFLICT (id) DO NOTHING;
 
 COMMIT;
