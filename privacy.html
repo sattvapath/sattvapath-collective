@@ -32,7 +32,25 @@
         font-size: 0.95rem;
       }
     </style>
-  </head>
+      <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1062822743176923');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1062822743176923&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+
+</head>
   <body>
     <div class="sr-only" id="speechStatus" aria-live="polite"></div>
     <a class="skip-link" href="#main">Skip to main content</a>
@@ -83,7 +101,7 @@
           <li><strong>Retreat registration</strong> — for each participant we collect first and last name, age, gender, T-shirt size, email, phone, accommodation preference, and emergency contact name and phone. We also record whether you accepted our liability agreement.</li>
           <li><strong>"What's on Your Heart" posts</strong> — the message text you submit (which is displayed publicly on that page), and an anonymous browser identifier stored in your browser's local storage. That identifier lets you edit or delete your own posts later; it is not linked to any name or email.</li>
           <li><strong>Payment information</strong> — payments are processed by Stripe. We do not receive or store your card or bank account numbers. We receive a payment confirmation and a Stripe reference so we can associate payment with a registration.</li>
-          <li><strong>Automatic information</strong> — IP address, browser type, device information, and pages visited. This is collected via standard web-server logs and via the Meta Pixel on pages that use it (currently the events-retreat and register pages).</li>
+          <li><strong>Automatic information</strong> — IP address, browser type, device information, and pages visited. This is collected via standard web-server logs and via the Meta Pixel, which is loaded on every page of this site.</li>
         </ul>
 
         <h2>3. How we use your information</h2>
@@ -101,7 +119,7 @@
         <ul>
           <li><strong>Enchanted Hills Napa</strong> — our retreat venue. For each retreat participant we share the name, email, phone, room choice, dietary or accessibility notes, and emergency contact so the venue can check you in and reach a contact in case of emergency.</li>
           <li><strong>Stripe</strong> — for payment processing. See <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe's privacy policy</a>.</li>
-          <li><strong>Meta Platforms (Facebook / Instagram)</strong> — Meta Pixel loads on the events-retreat and register pages and reports pageview data to Meta for advertising analytics. See <a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">Meta's privacy policy</a>.</li>
+          <li><strong>Meta Platforms (Facebook / Instagram)</strong> — the Meta Pixel loads on every page of this site and reports pageview data to Meta for advertising analytics. See <a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">Meta's privacy policy</a>.</li>
           <li><strong>Service providers</strong> — hosting (GitHub Pages), email delivery, and similar operational vendors, only to the extent needed to run our site and services.</li>
           <li><strong>Legal</strong> — if required by law, court order, or to protect the rights, property, or safety of Sattva Path Collective, our participants, or others.</li>
         </ul>
